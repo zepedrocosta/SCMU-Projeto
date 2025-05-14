@@ -1,22 +1,30 @@
+/**
+ * Smart Aquarium 
+ * SCMU - 24/25 - NOVA FCT
+ * @author: José Costa - 62637
+ * @author: Rodrigo Albuquerque - 70294
+ * @author: Rafael Mira - 59243
+ */
+
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
 // GPIO Connections
 #define TEMPERATURE_SENSOR 4 // DS18B20
-#define TdsSensorPin 34 // TDS Sensor 
+#define TdsSensorPin 34      // TDS Sensor
+
+#define VREF 3.3  // Reference voltage for the ADC
+#define SCOUNT 30 // sum of sample point
 
 OneWire oneWire(TEMPERATURE_SENSOR);
 DallasTemperature sensors(&oneWire);
-
-#define VREF 3.3
-#define SCOUNT 30
 
 int analogBuffer[SCOUNT];
 
 void setup()
 {
   Serial.begin(9600);
-  sensors.begin(); // Inicia o sensor de temperatura
+  sensors.begin();              // Inicia o sensor de temperatura
   pinMode(TdsSensorPin, INPUT); // TDS
 }
 
@@ -51,7 +59,7 @@ float readTDS(float temperature)
   for (int i = 0; i < SCOUNT; i++)
   {
     analogBuffer[i] = analogRead(TdsSensorPin);
-    delay(2); // pequeno delay para estabilidade entre amostras
+    delay(2); // pequeno delay para estabilidade entre amostras (2 milissegundos)
   }
 
   int medianValue = getMedianNum(analogBuffer, SCOUNT);
@@ -66,10 +74,9 @@ float readTDS(float temperature)
   Serial.print(tds, 0);
   Serial.println(" ppm");
 
-
   return tds;
 }
-
+ 
 int getMedianNum(int bArray[], int iFilterLen)
 {
   int bTab[iFilterLen];
