@@ -1,3 +1,19 @@
+# To bootstap the app
+
+-   npx create-expo-app@latest --template blank-typescript
+
+# Libs used
+
+-   [Expo router](https://expo.github.io/router/docs/) - npx expo install expo-router react-native-safe-area-context react-native-screens expo-linking expo-constants expo-status-bar
+
+-   [React Hook Form](https://react-hook-form.com/) - npm install react-hook-form
+
+-   [Zod](https://zod.dev/) - npm install zod @hookform/resolvers
+
+-   [Tanstack Query](https://tanstack.com/query/latest) - npm install @tanstack/react-query
+
+-   [React Native Paper](https://nativebase.io/) - npm install react-native-paper react-native-vector-icons
+
 # How to run the app:
 
 1. Install Expo Go in your phone
