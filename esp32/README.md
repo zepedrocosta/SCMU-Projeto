@@ -6,6 +6,15 @@
 
 ![alt text](images/image.png)
 
+## Sensor/Actuators checklist
+
+- [x] Temperature Sensor
+- [x] TDS Sensor
+- [ ] pH Sensor
+- [ ] Light Sensor
+- [ ] Depth Sensor (Ultrasonic)
+- [ ] OLED Display
+
 ## Libraries Used
 
 - DallasTemperature
