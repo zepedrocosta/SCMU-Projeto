@@ -14,6 +14,8 @@
 
 -   [React Native Paper](https://nativebase.io/) - npm install react-native-paper react-native-vector-icons
 
+-   [others] - npm install react-native-reanimated react-native-gesture-handler
+
 # How to run the app:
 
 1. Install Expo Go in your phone

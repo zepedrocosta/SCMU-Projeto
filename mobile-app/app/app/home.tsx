@@ -52,10 +52,6 @@ export default function HomePage() {
 
 	return (
 		<View style={styles.container}>
-			<Text variant="titleLarge" style={{ marginBottom: 16 }}>
-				Welcome to the Home Page!
-			</Text>
-
 			<Searchbar
 				placeholder="Search aquarium"
 				onChangeText={handleSearch}
