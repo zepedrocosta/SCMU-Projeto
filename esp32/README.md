@@ -19,7 +19,7 @@ All sensitive information is stored in a separate file called `secrets.h`. You c
 
 const char* ssid = "YOUR_WIFI_SSID";
 const char* password = "YOUR_WIFI_PASSWORD";
-const char *serverUrl = "YOUR_SERVER_URL";
+const char* serverUrl = "YOUR_SERVER_URL";
 
 #endif
 ```
@@ -37,6 +37,9 @@ const char *serverUrl = "YOUR_SERVER_URL";
 
 - DallasTemperature
 - OneWire
+- WiFi
+- HTTPClient
+- ArduinoJson
 
 ## Bibliography
 

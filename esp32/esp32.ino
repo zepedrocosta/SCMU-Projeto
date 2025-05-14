@@ -10,6 +10,8 @@
 #include <DallasTemperature.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <ArduinoJson.h>
+
 #include <secrets.h>
 
 // GPIO Connections
@@ -27,6 +29,7 @@ int analogBuffer[SCOUNT];
 void setup()
 {
   Serial.begin(9600);
+  delay(2000);
   Serial.println("Initializing SCMU project!");
   sensors.begin();              // Inicia o sensor de temperatura
   pinMode(TdsSensorPin, INPUT); // TDS
@@ -38,7 +41,7 @@ void setup()
     delay(500);
     Serial.print(".");
   }
-  Serial.println("\nConnected to WiFi");
+  Serial.println("\nConnected to WiFi\n");
 }
 
 void loop()
@@ -98,18 +101,25 @@ void sendData(float temperature, float tds)
     http.begin(serverUrl);
     http.addHeader("Content-Type", "application/json");
 
-    String json = "{\"temperature\":" + String(temperature, 2) + ",\"tds\":" + String(tds, 2) + "}";
-    int httpResponseCode = http.POST(json);
+    // Create JSON
+    StaticJsonDocument<200> jsonDoc;
+    jsonDoc["temperature"] = temperature;
+    jsonDoc["tds"] = tds;
+
+    String jsonStr;
+    serializeJson(jsonDoc, jsonStr);   
+
+    int httpResponseCode = http.POST(jsonStr);
 
     if (httpResponseCode > 0)
     {
-      Serial.print("Server Response Code: ");
-      Serial.println(httpResponseCode);
+      Serial.printf("POST... code: %d\n", httpResponseCode);
+      String response = http.getString();
+      Serial.println(response);
     }
     else
     {
-      Serial.print("Error sending POST: ");
-      Serial.println(httpResponseCode);
+      Serial.printf("POST... failed, error: %s\n", http.errorToString(httpResponseCode).c_str());
     }
 
     http.end();
