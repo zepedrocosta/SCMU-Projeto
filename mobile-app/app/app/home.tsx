@@ -1,6 +1,8 @@
 import { View, StyleSheet, FlatList } from "react-native";
 import { Text, List } from "react-native-paper";
 import { useRouter } from "expo-router";
+import { Searchbar } from "react-native-paper";
+import { useState } from "react";
 
 const items = [
 	{ id: "1", title: "Item 1", description: "Go to Item 1 page" },
@@ -28,8 +30,24 @@ const items = [
 export default function HomePage() {
 	const router = useRouter();
 
+	const [visibleItems, setVisibleItems] = useState(items);
+
+	const [searchQuery, setSearchQuery] = useState("");
+
 	const handlePress = (itemId: string) => {
 		router.push(`/aquarium/${itemId}`);
+	};
+
+	const handleSearch = (query: string) => {
+		setSearchQuery(query);
+		if (query) {
+			const filteredItems = items.filter((item) =>
+				item.title.toLowerCase().includes(query.toLowerCase())
+			);
+			setVisibleItems(filteredItems);
+		} else {
+			setVisibleItems(items);
+		}
 	};
 
 	return (
@@ -37,8 +55,16 @@ export default function HomePage() {
 			<Text variant="titleLarge" style={{ marginBottom: 16 }}>
 				Welcome to the Home Page!
 			</Text>
+
+			<Searchbar
+				placeholder="Search aquarium"
+				onChangeText={handleSearch}
+				value={searchQuery}
+				style={{ width: "95%", marginBottom: 25 }}
+			/>
+
 			<FlatList
-				data={items}
+				data={visibleItems}
 				keyExtractor={(item) => item.id}
 				renderItem={({ item }) => (
 					<List.Item
