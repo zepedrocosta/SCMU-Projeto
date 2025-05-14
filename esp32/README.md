@@ -6,6 +6,24 @@
 
 ![alt text](images/image.png)
 
+- Baud Rate: 9600
+
+## Secrets
+
+All sensitive information is stored in a separate file called `secrets.h`. You can create this file by copying the template provided below.
+
+```cpp
+#ifndef SECRETS_H
+
+#define SECRETS_H
+
+const char* ssid = "YOUR_WIFI_SSID";
+const char* password = "YOUR_WIFI_PASSWORD";
+const char *serverUrl = "YOUR_SERVER_URL";
+
+#endif
+```
+
 ## Sensor/Actuators checklist
 
 - [x] Temperature Sensor

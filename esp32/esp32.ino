@@ -1,5 +1,5 @@
 /**
- * Smart Aquarium 
+ * Smart Aquarium
  * SCMU - 24/25 - NOVA FCT
  * @author: José Costa - 62637
  * @author: Rodrigo Albuquerque - 70294
@@ -8,6 +8,9 @@
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <secrets.h>
 
 // GPIO Connections
 #define TEMPERATURE_SENSOR 4 // DS18B20
@@ -24,8 +27,18 @@ int analogBuffer[SCOUNT];
 void setup()
 {
   Serial.begin(9600);
+  Serial.println("Initializing SCMU project!");
   sensors.begin();              // Inicia o sensor de temperatura
   pinMode(TdsSensorPin, INPUT); // TDS
+
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nConnected to WiFi");
 }
 
 void loop()
@@ -76,7 +89,37 @@ float readTDS(float temperature)
 
   return tds;
 }
- 
+
+void sendData(float temperature, float tds)
+{
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    HTTPClient http;
+    http.begin(serverUrl);
+    http.addHeader("Content-Type", "application/json");
+
+    String json = "{\"temperature\":" + String(temperature, 2) + ",\"tds\":" + String(tds, 2) + "}";
+    int httpResponseCode = http.POST(json);
+
+    if (httpResponseCode > 0)
+    {
+      Serial.print("Server Response Code: ");
+      Serial.println(httpResponseCode);
+    }
+    else
+    {
+      Serial.print("Error sending POST: ");
+      Serial.println(httpResponseCode);
+    }
+
+    http.end();
+  }
+  else
+  {
+    Serial.println("WiFi not connected");
+  }
+}
+
 int getMedianNum(int bArray[], int iFilterLen)
 {
   int bTab[iFilterLen];
