@@ -21,6 +21,6 @@ public class ScmuApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        aq.save(new Aquarium("Aquarium 1", "FCT", 0, 0, new HashSet<>()));
+        //aq.save(new Aquarium("Aquarium 1", "FCT", 0, 0, new HashSet<>()));
     }
 }
