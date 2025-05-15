@@ -16,7 +16,8 @@
 
 // GPIO Connections
 #define TEMPERATURE_SENSOR 4 // DS18B20
-#define TdsSensorPin 34      // TDS Sensor
+#define TDS_SENSOR 34        // TDS Sensor
+#define LDR_SENSOR 35        // LDR Sensor
 
 #define VREF 3.3  // Reference voltage for the ADC
 #define SCOUNT 30 // sum of sample point
@@ -31,8 +32,9 @@ void setup()
   Serial.begin(9600);
   delay(2000);
   Serial.println("Initializing SCMU project!");
-  sensors.begin();              // Inicia o sensor de temperatura
-  pinMode(TdsSensorPin, INPUT); // TDS
+  sensors.begin();            // Inicia o sensor de temperatura
+  pinMode(TDS_SENSOR, INPUT); // TDS
+  pinMode(LDR_SENSOR, INPUT);
 
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
@@ -48,6 +50,7 @@ void loop()
 {
   float tempC = readTemperature();
   float tdsValue = readTDS(tempC);
+  int hasLight = readLDR(); // 0 -> há luz / 1 -> não há luz
 
   delay(2000); // espera 2 segundos entre leituras
 }
@@ -74,7 +77,7 @@ float readTDS(float temperature)
 {
   for (int i = 0; i < SCOUNT; i++)
   {
-    analogBuffer[i] = analogRead(TdsSensorPin);
+    analogBuffer[i] = analogRead(TDS_SENSOR);
     delay(2); // pequeno delay para estabilidade entre amostras (2 milissegundos)
   }
 
@@ -93,6 +96,18 @@ float readTDS(float temperature)
   return tds;
 }
 
+int readLDR()
+{
+  int lightState = digitalRead(LDR_SENSOR);
+
+  if (lightState == HIGH)
+    Serial.println("It is dark");
+  else
+    Serial.println("It is light");
+
+  return lightState;
+}
+
 void sendData(float temperature, float tds)
 {
   if (WiFi.status() == WL_CONNECTED)
@@ -107,7 +122,7 @@ void sendData(float temperature, float tds)
     jsonDoc["tds"] = tds;
 
     String jsonStr;
-    serializeJson(jsonDoc, jsonStr);   
+    serializeJson(jsonDoc, jsonStr);
 
     int httpResponseCode = http.POST(jsonStr);
 

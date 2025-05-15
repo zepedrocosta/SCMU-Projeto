@@ -29,7 +29,7 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - [x] Temperature Sensor
 - [x] TDS Sensor
 - [ ] pH Sensor
-- [ ] Light Sensor
+- [x] Light Sensor
 - [ ] Depth Sensor (Ultrasonic)
 - [ ] OLED Display
 
@@ -47,3 +47,4 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - <https://www.youtube.com/watch?v=Vy650KLXIyY&ab_channel=ThalesFerreira>
 - <https://wiki.keyestudio.com/KS0429_keyestudio_TDS_Meter_V1.0#TDS_Meter>
 - <https://randomnerdtutorials.com/esp32-tds-water-quality-sensor>
+- <https://esp32io.com/tutorials/esp32-ldr-module>
