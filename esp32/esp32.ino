@@ -108,7 +108,7 @@ int readLDR()
   return lightState;
 }
 
-void sendData(float temperature, float tds)
+void sendData(float temperature, float tds, int ldr)
 {
   if (WiFi.status() == WL_CONNECTED)
   {
@@ -120,6 +120,7 @@ void sendData(float temperature, float tds)
     StaticJsonDocument<200> jsonDoc;
     jsonDoc["temperature"] = temperature;
     jsonDoc["tds"] = tds;
+    jsonDoc["ldr"] = ldr;
 
     String jsonStr;
     serializeJson(jsonDoc, jsonStr);
