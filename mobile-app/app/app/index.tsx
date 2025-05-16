@@ -3,7 +3,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { View, StyleSheet, Image } from "react-native";
 import { TextInput, Button, Text, Card } from "react-native-paper";
-import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useLogin } from "../utils/services/AuthService";
 
@@ -27,8 +26,6 @@ export default function LoginPage() {
 	});
 
 	const [showPassword, setShowPassword] = useState(false);
-
-	const router = useRouter();
 
 	const onSubmit = (data: LoginInput) => {
 		console.log("Login data:", data);

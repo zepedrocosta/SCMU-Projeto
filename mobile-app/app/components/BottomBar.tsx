@@ -2,9 +2,10 @@ import { useRouter } from "expo-router";
 import * as React from "react";
 import { StyleSheet, View } from "react-native";
 import { Appbar, Badge } from "react-native-paper";
+import { useRoutes } from "../utils/routes";
 
 export default function BottomBar() {
-	const router = useRouter();
+	const router = useRoutes();
 
 	const notifications = -1;
 
@@ -15,21 +16,21 @@ export default function BottomBar() {
 			<Appbar.Action
 				icon="account"
 				onPress={() => {
-					router.push("/account");
+					router.gotoAccount();
 				}}
 			/>
 
-			<Appbar.Action icon="home" onPress={() => router.push("/home")} />
+			<Appbar.Action icon="home" onPress={() => router.gotoHome()} />
 
 			<Appbar.Action
 				icon="plus"
 				onPress={() => {
-					router.push("/connect-to-aquarium");
+					// router.push("/connect-to-aquarium");
 				}}
 			/>
 
 			<View style={{ marginRight: 16 }}>
-				<Appbar.Action icon="bell" onPress={() => router.push("/notifications")} />
+				<Appbar.Action icon="bell" onPress={() => router.gotoNotifications()} />
 				{notifications > 0 && <Badge style={styles.badge}>{notifications}</Badge>}
 			</View>
 		</Appbar>

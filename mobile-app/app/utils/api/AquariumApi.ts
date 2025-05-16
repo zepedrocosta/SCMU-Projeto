@@ -22,21 +22,6 @@ export async function getAquariumById(aquariumId: string): Promise<AquariumRespo
 		});
 }
 
-// TODO uncomment when backend is ready
-// export async function getUserAquariums(userId: string): Promise<AquariumResponse[]> {
-// 	return await axiosInstance
-// 		.get<AquariumResponse[]>(
-// 			ENDPOINTS.USER_AQUARIUMS.replace(URL_PLACEHOLDER.USER_ID, userId)
-// 		)
-// 		.then((response) => {
-// 			return response.data;
-// 		})
-// 		.catch((error) => {
-// 			console.error("Error fetching aquariums by user ID:", error);
-// 			throw error;
-// 		});
-// }
-
 export async function getUserAquariums(userId: string): Promise<AquariumResponse[]> {
 	const mockResponse: AquariumResponse[] = [
 		{
@@ -52,4 +37,17 @@ export async function getUserAquariums(userId: string): Promise<AquariumResponse
 	];
 
 	return mockResponse;
+
+	// TODO uncomment when backend is ready
+	// 	return await axiosInstance
+	// 		.get<AquariumResponse[]>(
+	// 			ENDPOINTS.USER_AQUARIUMS.replace(URL_PLACEHOLDER.USER_ID, userId)
+	// 		)
+	// 		.then((response) => {
+	// 			return response.data;
+	// 		})
+	// 		.catch((error) => {
+	// 			console.error("Error fetching aquariums by user ID:", error);
+	// 			throw error;
+	// 		});
 }

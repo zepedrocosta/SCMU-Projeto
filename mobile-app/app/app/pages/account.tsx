@@ -2,19 +2,31 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Avatar, Text, List, Divider, Button } from "react-native-paper";
+import { useStateContext } from "../../context/StateContext";
+import { EVENTS } from "../../context/reducer";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRoutes } from "../../utils/routes";
 
 export default function AccountPage() {
-	const router = useRouter();
+	const { user, dispatch } = useStateContext();
+
+	const router = useRoutes();
+
+	const handleLogout = () => {
+		AsyncStorage.removeItem("appState");
+		dispatch({ type: EVENTS.CLEAR_USER });
+		router.gotoIndex();
+	};
 
 	return (
 		<View style={styles.container}>
 			<View style={styles.header}>
 				<Avatar.Icon size={72} icon="account" style={styles.avatar} />
 				<Text variant="titleLarge" style={styles.name}>
-					John Doe
+					{user.name || "Test User"}
 				</Text>
 				<Text variant="bodyMedium" style={styles.email}>
-					john.doe@email.com
+					{user.email || "test@gmail.com"}
 				</Text>
 			</View>
 			<Divider style={{ marginVertical: 16 }} />
@@ -29,7 +41,7 @@ export default function AccountPage() {
 					title="Notifications"
 					left={(props) => <List.Icon {...props} icon="bell" />}
 					onPress={() => {
-						router.push("/notifications");
+						router.gotoNotifications();
 					}}
 				/>
 			</List.Section>
@@ -38,7 +50,7 @@ export default function AccountPage() {
 				mode="contained-tonal"
 				icon="logout"
 				onPress={() => {
-					// TODO: Implement logout functionality
+					handleLogout();
 				}}
 				style={styles.logout}
 			>

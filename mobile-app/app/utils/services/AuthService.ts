@@ -6,10 +6,10 @@ import { getUserInfo } from "../api/UserApi";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useStateContext } from "../../context/StateContext";
 import { EVENTS } from "../../context/reducer";
-import { useRouter } from "expo-router";
+import { useRoutes } from "../routes";
 
 export function useLogin() {
-	const router = useRouter();
+	const router = useRoutes();
 
 	const { dispatch } = useStateContext();
 
@@ -50,7 +50,7 @@ export function useLogin() {
 				console.error("Error fetching user data:", error);
 			}
 
-			router.push("/home");
+			router.gotoHome(true);
 		},
 	});
 }

@@ -3,19 +3,19 @@ import { Text, List } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { Searchbar } from "react-native-paper";
 import { useEffect, useState } from "react";
-import { useStateContext } from "../context/StateContext";
+import { useStateContext } from "../../context/StateContext";
+import { useRoutes } from "../../utils/routes";
 
 export default function HomePage() {
 	const { aquariums } = useStateContext();
-
-	const router = useRouter();
+	const router = useRoutes();
 
 	const [visibleItems, setVisibleItems] = useState(aquariums);
 
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const handlePress = (itemId: string) => {
-		router.push(`/aquarium/${itemId}`);
+		router.gotoAquarium(itemId);
 	};
 
 	const handleSearch = (query: string) => {
