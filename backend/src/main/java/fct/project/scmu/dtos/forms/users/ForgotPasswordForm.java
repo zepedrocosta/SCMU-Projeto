@@ -15,9 +15,6 @@ import java.io.Serializable;
 public class ForgotPasswordForm implements Serializable {
 
     @NotBlank
-    private String verifyHash;
-
-    @NotBlank
     private String newPassword;
 
     @NotBlank

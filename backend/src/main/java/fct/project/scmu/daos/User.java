@@ -34,14 +34,8 @@ public class User extends DAO implements UserDetails, Serializable {
     @Column(length = 64, unique = true, nullable = false)
     private String email;
 
-    @Column(length = 13, nullable = false)
-    private String phoneNum;
-
-    @Column(unique = true, nullable = false)
-    private String verifyHash = new BigInteger(650, new SecureRandom()).toString(32);
-
     @Enumerated
-    private UserStatus status = UserStatus.INACTIVE;
+    private UserStatus status = UserStatus.ACTIVE;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

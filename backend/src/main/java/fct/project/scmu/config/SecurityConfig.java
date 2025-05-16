@@ -44,6 +44,7 @@ public class SecurityConfig {
             new AntPathRequestMatcher("/rest/users/activate/**", HttpMethod.PUT.name()),
             new AntPathRequestMatcher("/rest/users/forgot-password/**", HttpMethod.PUT.name()),
             new AntPathRequestMatcher("/rest/users/forgot-password", HttpMethod.PUT.name()),
+            new AntPathRequestMatcher("/rest/aquariums/snapshot", HttpMethod.POST.name()),
             request -> !request.getRequestURI().contains("rest")
     };
 
