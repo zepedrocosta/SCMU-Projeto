@@ -7,6 +7,7 @@ export const ROUTES = {
 	ACCOUNT: "/pages/account",
 	AQUARIUM: "/pages/aquarium",
 	NOTIFICATIONS: "/pages/notifications",
+	REGISTER: "/pages/register",
 };
 
 export const useRoutes = () => {
@@ -36,11 +37,16 @@ export const useRoutes = () => {
 		router.push(ROUTES.NOTIFICATIONS);
 	};
 
+	const gotoRegister = () => {
+		router.push(ROUTES.REGISTER);
+	};
+
 	return {
 		gotoIndex,
 		gotoHome,
 		gotoAccount,
 		gotoAquarium,
 		gotoNotifications,
+		gotoRegister,
 	};
 };

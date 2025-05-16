@@ -5,6 +5,8 @@ import { View, StyleSheet, Image } from "react-native";
 import { TextInput, Button, Text, Card } from "react-native-paper";
 import { useState } from "react";
 import { useLogin } from "../utils/services/AuthService";
+import { useRouter } from "expo-router";
+import { useRoutes } from "../utils/routes";
 
 const loginSchema = z.object({
 	email: z.string().email({ message: "Invalid email" }),
@@ -14,6 +16,8 @@ const loginSchema = z.object({
 type LoginInput = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+	const router = useRoutes();
+
 	const { mutate } = useLogin();
 
 	const {
@@ -72,6 +76,14 @@ export default function LoginPage() {
 					>
 						Login
 					</Button>
+
+					<Button
+						mode="text"
+						onPress={() => router.gotoRegister()}
+						style={{ marginTop: 8 }}
+					>
+						Don't have an account? Register here
+					</Button>
 				</Card.Content>
 			</Card>
 		</View>
@@ -94,52 +106,3 @@ const styles = StyleSheet.create({
 		marginBottom: 40,
 	},
 });
-
-// import { useForm } from "react-hook-form";
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import * as z from "zod";
-// import { View, StyleSheet, Image } from "react-native";
-// import { TextInput, Button, Text, Card } from "react-native-paper";
-// import { useRouter } from "expo-router";
-// import { useState } from "react";
-
-// export default function LoginPage() {
-// 	const router = useRouter();
-
-// 	return (
-// 		<View style={styles.container}>
-// 			<Card>
-// 				<Card.Title title="Temporary Login Bypass" />
-// 				<Card.Content>
-// 					<Button
-// 						mode="contained"
-// 						onPress={() => {
-// 							console.log("Bypassed login");
-// 							router.push("/home");
-// 						}}
-// 						style={{ marginTop: 24 }}
-// 					>
-// 						Login
-// 					</Button>
-// 				</Card.Content>
-// 			</Card>
-// 		</View>
-// 	);
-// }
-
-// const styles = StyleSheet.create({
-// 	container: {
-// 		flex: 1,
-// 		justifyContent: "center",
-// 		padding: 16,
-// 	},
-// 	error: {
-// 		color: "red",
-// 		marginTop: 4,
-// 	},
-// 	logo: {
-// 		width: 150,
-// 		height: 150,
-// 		marginBottom: 40,
-// 	},
-// });
