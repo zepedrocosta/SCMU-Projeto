@@ -24,18 +24,11 @@ import java.util.concurrent.ExecutionException;
 @RequestMapping("/rest/users")
 public class UserController extends AbstractController {
 
-    //TODO: Check email methods
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserResponsePrivilege> create(@Validated @RequestBody UserForm form)
-            throws ExecutionException, InterruptedException, MessagingException {
+    public ResponseEntity<UserResponsePrivilege> create(@Validated @RequestBody UserForm form) {
         return ok(userService.create(convert(form, User.class)), UserResponsePrivilege.class);
-    }
-
-    @PutMapping("/resendEmail")
-    public ResponseEntity<Void> resendEmail(@RequestParam String email) {
-        return ok(userService.resendEmail(email));
     }
 
     @GetMapping("/{nickname}")
@@ -47,9 +40,8 @@ public class UserController extends AbstractController {
 
     @PutMapping("/{nickname}")
     @PreAuthorize("hasAnyRole('ADMIN') or authentication.principal.nickname == #form.nickname")
-    public ResponseEntity<UserResponsePrivilege> edit(@Validated @RequestPart EditUserForm form,
-                                                      @RequestPart(required = false) MultipartFile profilePic) throws ExecutionException, InterruptedException {
-        return ok(userService.edit(form, profilePic), UserResponsePrivilege.class);
+    public ResponseEntity<UserResponsePrivilege> edit(@Validated @RequestPart EditUserForm form) {
+        return ok(userService.edit(form), UserResponsePrivilege.class);
     }
 
     @DeleteMapping("/{nickname}")
@@ -93,32 +85,6 @@ public class UserController extends AbstractController {
     @PreAuthorize("authentication.principal.nickname == #form.nickname")
     public ResponseEntity<UserResponsePrivilege> changePassword(@Validated @RequestBody ChangePasswordForm form) {
         return ok(userService.changePassword(form), UserResponsePrivilege.class);
-    }
-
-    @PutMapping("/request-email")
-    public ResponseEntity<UserResponsePrivilege> requestEmail(@RequestParam String email) {
-        return ok(userService.requestEmail(email), UserResponsePrivilege.class);
-    }
-
-    @PutMapping("/change-email/{verifyHash}")
-    public ResponseEntity<UserResponsePrivilege> changeEmail(@PathVariable String verifyHash) {
-        return ok(userService.changeEmail(verifyHash), UserResponsePrivilege.class);
-    }
-
-    @PutMapping("/forgot-password/{email}")
-    public ResponseEntity<UserResponsePrivilege> forgotPasswordEmail(@PathVariable String email) {
-        return ok(userService.forgotPasswordEmail(email), UserResponsePrivilege.class);
-    }
-
-    @PutMapping("/forgot-password")
-    public ResponseEntity<UserResponsePrivilege> changeForgottenPassword(
-            @Validated @RequestBody ForgotPasswordForm form) {
-        return ok(userService.changeForgottenPassword(form), UserResponsePrivilege.class);
-    }
-
-    @PutMapping("/activate/{verifyHash}")
-    public ResponseEntity<UserResponsePrivilege> activateAccount(@PathVariable String verifyHash) {
-        return ok(userService.activateAccount(verifyHash), UserResponsePrivilege.class);
     }
 
 }
