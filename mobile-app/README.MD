@@ -14,7 +14,10 @@
 
 -   [React Native Paper](https://nativebase.io/) - npm install react-native-paper react-native-vector-icons
 
--   [others] - npm install react-native-reanimated react-native-gesture-handler
+-   [others]
+    -   npm install react-native-reanimated react-native-gesture-handler
+    -   npm install axios
+    -   npm install @react-native-async-storage/async-storage
 
 # How to run the app:
 
