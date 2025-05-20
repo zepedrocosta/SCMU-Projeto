@@ -12,6 +12,10 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
 #include <secrets.h>
 
 // GPIO Connections
@@ -22,8 +26,18 @@
 #define VREF 3.3  // Reference voltage for the ADC
 #define SCOUNT 30 // sum of sample point
 
+// OLED display settings
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+#define VALUE_X 75       // X position of the value
+#define START_Y 20       // first line below header
+#define LINE_SPACING 8   // line spacing
+#define OLED_RESET -1
+
 OneWire oneWire(TEMPERATURE_SENSOR);
 DallasTemperature sensors(&oneWire);
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 int analogBuffer[SCOUNT];
 
@@ -44,6 +58,13 @@ void setup()
     Serial.print(".");
   }
   Serial.println("\nConnected to WiFi\n");
+
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+  { // Address 0x3D for 128x64
+    Serial.println(F("SSD1306 allocation failed"));
+    for (;;)
+      ;
+  }
 }
 
 void loop()
@@ -51,6 +72,10 @@ void loop()
   float tempC = readTemperature();
   float tdsValue = readTDS(tempC);
   int hasLight = readLDR(); // 0 -> há luz / 1 -> não há luz
+
+  showData(tempC, tdsValue, hasLight);
+
+  // sendData(tempC, tdsValue, hasLight);
 
   delay(2000); // espera 2 segundos entre leituras
 }
@@ -112,10 +137,6 @@ void sendData(float temperature, float tds, int ldr)
 {
   if (WiFi.status() == WL_CONNECTED)
   {
-    HTTPClient http;
-    http.begin(serverUrl);
-    http.addHeader("Content-Type", "application/json");
-
     // Create JSON
     StaticJsonDocument<200> jsonDoc;
     jsonDoc["temperature"] = temperature;
@@ -124,6 +145,12 @@ void sendData(float temperature, float tds, int ldr)
 
     String jsonStr;
     serializeJson(jsonDoc, jsonStr);
+
+    Serial.println(jsonStr);
+
+    HTTPClient http;
+    http.begin(serverUrl);
+    http.addHeader("Content-Type", "application/json");
 
     int httpResponseCode = http.POST(jsonStr);
 
@@ -144,6 +171,69 @@ void sendData(float temperature, float tds, int ldr)
   {
     Serial.println("WiFi not connected");
   }
+}
+
+void showData(float temperature, float tds, int ldr)
+{
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+
+  printHeader();
+
+  /* row 0 ─ Temperature */
+  display.setCursor(0, START_Y + 0 * LINE_SPACING);
+  display.print("Temperature:");
+  display.setCursor(VALUE_X, START_Y + 0 * LINE_SPACING);
+  display.print(temperature, 1); // 1 decimal
+  display.print(" C");
+
+  /* row 1 ─ TDS */
+  display.setCursor(0, START_Y + 1 * LINE_SPACING);
+  display.print("TDS Value:");
+  display.setCursor(VALUE_X, START_Y + 1 * LINE_SPACING);
+  display.print(tds, 0);
+  display.print(" ppm");
+
+  /* row 2 ─ LDR */
+  display.setCursor(0, START_Y + 2 * LINE_SPACING);
+  display.print("LDR State:");
+  display.setCursor(VALUE_X, START_Y + 2 * LINE_SPACING);
+  display.println(ldr == HIGH ? "Dark" : "Light");
+
+  /* row 3 ─ pH */
+  display.setCursor(0, START_Y + 3 * LINE_SPACING);
+  display.print("pH:");
+  display.setCursor(VALUE_X, START_Y + 3 * LINE_SPACING);
+  display.print(404);
+
+  /* row 4 ─ Depth */
+  display.setCursor(0, START_Y + 4 * LINE_SPACING);
+  display.print("Depth:");
+  display.setCursor(VALUE_X, START_Y + 4 * LINE_SPACING);
+  display.print(404);
+  display.print(" cm");
+
+  display.display();
+}
+
+void printHeader()
+{
+  const char *line1 = "Smart Aquarium";
+  const char *line2 = "SCMU - 24/25";
+
+  int16_t x1, y1;
+  uint16_t w1, h1, w2, h2;
+
+  // Measure text
+  display.getTextBounds(line1, 0, 0, &x1, &y1, &w1, &h1);
+  display.getTextBounds(line2, 0, 0, &x1, &y1, &w2, &h2);
+
+  display.setCursor((SCREEN_WIDTH - w1) / 2, 0);
+  display.println(line1);
+
+  display.setCursor((SCREEN_WIDTH - w2) / 2, 10);
+  display.println(line2);
 }
 
 int getMedianNum(int bArray[], int iFilterLen)

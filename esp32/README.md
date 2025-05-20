@@ -31,7 +31,20 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - [ ] pH Sensor
 - [x] Light Sensor
 - [ ] Depth Sensor (Ultrasonic)
-- [ ] OLED Display
+- [x] OLED Display
+
+## OLED Representation
+
+```markdown
+|   Smart Aquarium   |
+|    SCMU - 24/25    |
+|                    |
+|Temperature: 25.4 C |
+|TDS Value:   500 ppm|
+|LDR State:   Light  |
+|pH:          404    |
+|Depth:       404 cm |
+```
 
 ## Libraries Used
 
@@ -40,6 +53,9 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - WiFi
 - HTTPClient
 - ArduinoJson
+- Wire
+- Adafruit_GFX
+- Adafruit_SSD1306
 
 ## Bibliography
 
@@ -48,3 +64,4 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - <https://wiki.keyestudio.com/KS0429_keyestudio_TDS_Meter_V1.0#TDS_Meter>
 - <https://randomnerdtutorials.com/esp32-tds-water-quality-sensor>
 - <https://esp32io.com/tutorials/esp32-ldr-module>
+- <https://randomnerdtutorials.com/esp32-ssd1306-oled-display-arduino-ide/>
