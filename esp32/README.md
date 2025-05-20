@@ -70,3 +70,4 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - <https://randomnerdtutorials.com/esp32-tds-water-quality-sensor>
 - <https://esp32io.com/tutorials/esp32-ldr-module>
 - <https://randomnerdtutorials.com/esp32-ssd1306-oled-display-arduino-ide/>
+- <https://www.electroniclinic.com/waterproof-ultrasonic-sensor-jsn-sr04t-aj-sr04m-with-arduino-for-distance-measurement/>

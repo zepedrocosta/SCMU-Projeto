@@ -43,14 +43,38 @@ DallasTemperature sensors(&oneWire);
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+TaskHandle_t setupTaskHandle = NULL;
+TaskHandle_t initializationTaskHandle = NULL;
+
 int analogBuffer[SCOUNT];
 
+float angle = 0;
+
+volatile bool setupFinished = false;
 bool hasWiFi = false;
 bool hasDisplay = false;
 
 void setup()
 {
   Serial.begin(9600);
+
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) // Address 0x3D for 128x64
+  {
+    Serial.println("SSD1306 allocation failed");
+    Serial.println("Check if the display is connected correctly");
+  }
+  else
+  {
+    Serial.println("OLED display connected!\n");
+    hasDisplay = true;
+  }
+
+  xTaskCreatePinnedToCore(setupTask, "SetupTask", 10000, NULL, 1, &setupTaskHandle, 0);
+  xTaskCreatePinnedToCore(initializationTask, "InitializationScreen", 10000, NULL, 1, &initializationTaskHandle, 1);
+}
+
+void setupTask(void *parameter)
+{
   delay(2000); // Wait for serial monitor to open
   Serial.println("Initializing SCMU project!\n");
 
@@ -74,20 +98,34 @@ void setup()
     hasWiFi = true;
   }
 
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) // Address 0x3D for 128x64
+  setupFinished = true;
+  vTaskDelete(NULL); // Ends setup task
+}
+
+void initializationTask(void *parameter)
+{
+  while (true)
   {
-    Serial.println("SSD1306 allocation failed");
-    Serial.println("Check if the display is connected correctly");
-  }
-  else
-  {
-    Serial.println("OLED display connected!\n");
-    hasDisplay = true;
+    if (setupFinished)
+    {
+      Serial.println("Setup task ended. Exiting other task...");
+      vTaskDelete(NULL);
+    }
+
+    showInitialization();
+    
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
 
 void loop()
 {
+  if (!setupFinished)
+  {
+    delay(100); // Wait for setup to complete before doing work
+    return;
+  }
+
   float tempC = readTemperature();
   float tdsValue = readTDS(tempC);
   int hasLight = readLDR(); // 0 -> light / 1 -> no light
@@ -279,6 +317,35 @@ void printHeader()
 
   display.setCursor((SCREEN_WIDTH - w2) / 2, 10);
   display.println(line2);
+}
+
+void showInitialization()
+{
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+
+  printHeader();
+
+  int cx = SCREEN_WIDTH / 2;
+  int cy = (SCREEN_HEIGHT / 2) + 10;
+  int r = 10;
+
+  // Draw spinner base
+  display.drawCircle(cx, cy, r, SSD1306_WHITE);
+
+  // Draw rotating line
+  float x = cx + r * cos(angle);
+  float y = cy + r * sin(angle);
+  display.drawLine(cx, cy, (int)x, (int)y, SSD1306_WHITE);
+
+  display.display();
+
+  angle += 0.4; // adjust for speed
+  if (angle > 2 * PI)
+    angle = 0;
+
+  delay(50);
 }
 
 int getMedianNum(int bArray[], int iFilterLen)
