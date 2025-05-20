@@ -31,7 +31,7 @@
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 #define VALUE_X 75       // X position of the value
 #define START_Y 20       // first line below header
-#define LINE_SPACING 8   // line spacing
+#define LINE_SPACING 9   // line spacing
 #define OLED_RESET -1
 
 OneWire oneWire(TEMPERATURE_SENSOR);
@@ -41,14 +41,17 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 int analogBuffer[SCOUNT];
 
+bool hasWiFi = false;
+bool hasDisplay = false;
+
 void setup()
 {
   Serial.begin(9600);
   delay(2000);
-  Serial.println("Initializing SCMU project!");
+  Serial.println("Initializing SCMU project!\n");
   sensors.begin();            // Inicia o sensor de temperatura
   pinMode(TDS_SENSOR, INPUT); // TDS
-  pinMode(LDR_SENSOR, INPUT);
+  pinMode(LDR_SENSOR, INPUT); // LDR
 
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
@@ -57,13 +60,22 @@ void setup()
     delay(500);
     Serial.print(".");
   }
-  Serial.println("\nConnected to WiFi\n");
 
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
-  { // Address 0x3D for 128x64
-    Serial.println(F("SSD1306 allocation failed"));
-    for (;;)
-      ;
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    Serial.println("\nConnected to WiFi!\n");
+    hasWiFi = true;
+  }
+
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) // Address 0x3D for 128x64
+  {
+    Serial.println("SSD1306 allocation failed");
+    Serial.println("Check if the display is connected correctly");
+  }
+  else
+  {
+    Serial.println("OLED display connected!\n");
+    hasDisplay = true;
   }
 }
 
@@ -73,9 +85,13 @@ void loop()
   float tdsValue = readTDS(tempC);
   int hasLight = readLDR(); // 0 -> há luz / 1 -> não há luz
 
-  showData(tempC, tdsValue, hasLight);
+  if (hasDisplay)
+    showData(tempC, tdsValue, hasLight);
 
-  // sendData(tempC, tdsValue, hasLight);
+  // if (hasWiFi)
+  //   sendData(tempC, tdsValue, hasLight);
+
+  Serial.println();
 
   delay(2000); // espera 2 segundos entre leituras
 }

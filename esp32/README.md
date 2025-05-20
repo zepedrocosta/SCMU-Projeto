@@ -32,6 +32,7 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - [x] Light Sensor
 - [ ] Depth Sensor (Ultrasonic)
 - [x] OLED Display
+- [ ] RGB LED
 
 ## OLED Representation
 
