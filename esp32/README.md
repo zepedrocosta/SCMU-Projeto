@@ -30,7 +30,7 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - [x] TDS Sensor
 - [ ] pH Sensor
 - [x] Light Sensor
-- [ ] Depth Sensor (Ultrasonic)
+- [x] Depth Sensor (Ultrasonic)
 - [x] OLED Display
 - [ ] RGB LED
 
@@ -44,8 +44,12 @@ const char* serverUrl = "YOUR_SERVER_URL";
 |TDS Value:   500 ppm|
 |LDR State:   Light  |
 |pH:          404    |
-|Depth:       404 cm |
+|Depth:       16 cm  |
 ```
+
+## Notes
+
+3 liters in the bucket is 15.5 cm deep.
 
 ## Libraries Used
 

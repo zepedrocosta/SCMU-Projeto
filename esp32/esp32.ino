@@ -22,22 +22,26 @@
 #define TEMPERATURE_SENSOR 4 // DS18B20
 #define TDS_SENSOR 34        // TDS Sensor
 #define LDR_SENSOR 35        // LDR Sensor
+#define TRIG_PIN 12          // Ultrasonic Trigger Pin
+#define ECHO_PIN 14          // Ultrasonic Echo Pin
 
 #define VREF 3.3  // Reference voltage for the ADC
-#define SCOUNT 30 // sum of sample point
+#define SCOUNT 30 // Sum of sample point
 
 // OLED display settings
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 #define VALUE_X 75       // X position of the value
-#define START_Y 20       // first line below header
-#define LINE_SPACING 9   // line spacing
-#define OLED_RESET -1
+#define START_Y 20       // First line below header
+#define LINE_SPACING 9   // Line spacing
+#define OLED_RESET -1    // Reset pin # (or -1 if sharing Arduino reset pin)
+
+#define DIST_ULTRA_TO_GROUND 21 // Distance from the ultrasonic sensor to the ground in cm
 
 OneWire oneWire(TEMPERATURE_SENSOR);
 DallasTemperature sensors(&oneWire);
 
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 int analogBuffer[SCOUNT];
 
@@ -47,11 +51,14 @@ bool hasDisplay = false;
 void setup()
 {
   Serial.begin(9600);
-  delay(2000);
+  delay(2000); // Wait for serial monitor to open
   Serial.println("Initializing SCMU project!\n");
-  sensors.begin();            // Inicia o sensor de temperatura
+
+  sensors.begin();            // Start DS18B20
   pinMode(TDS_SENSOR, INPUT); // TDS
   pinMode(LDR_SENSOR, INPUT); // LDR
+  pinMode(TRIG_PIN, OUTPUT);  // Ultrasonic Trigger Pin
+  pinMode(ECHO_PIN, INPUT);   // Ultrasonic Echo Pin
 
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
@@ -83,13 +90,14 @@ void loop()
 {
   float tempC = readTemperature();
   float tdsValue = readTDS(tempC);
-  int hasLight = readLDR(); // 0 -> há luz / 1 -> não há luz
+  int hasLight = readLDR(); // 0 -> light / 1 -> no light
+  int depth = readDepth();
 
   if (hasDisplay)
-    showData(tempC, tdsValue, hasLight);
+    showData(tempC, tdsValue, hasLight, depth);
 
   // if (hasWiFi)
-  //   sendData(tempC, tdsValue, hasLight);
+  //   sendData(tempC, tdsValue, hasLight, depth);
 
   Serial.println();
 
@@ -149,7 +157,27 @@ int readLDR()
   return lightState;
 }
 
-void sendData(float temperature, float tds, int ldr)
+int readDepth()
+{
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(5);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  long duration = pulseIn(ECHO_PIN, HIGH);
+  long cm = microsecondsToCentimeters(duration); // Distance from the sensor to the water level
+
+  int waterDepth = DIST_ULTRA_TO_GROUND - cm; // Distance from the water level to the ground
+
+  Serial.print("Depth: ");
+  Serial.print(waterDepth);
+  Serial.println(" cm");
+
+  return waterDepth;
+}
+
+void sendData(float temperature, float tds, int ldr, int depth)
 {
   if (WiFi.status() == WL_CONNECTED)
   {
@@ -158,6 +186,7 @@ void sendData(float temperature, float tds, int ldr)
     jsonDoc["temperature"] = temperature;
     jsonDoc["tds"] = tds;
     jsonDoc["ldr"] = ldr;
+    jsonDoc["depth"] = depth;
 
     String jsonStr;
     serializeJson(jsonDoc, jsonStr);
@@ -189,7 +218,7 @@ void sendData(float temperature, float tds, int ldr)
   }
 }
 
-void showData(float temperature, float tds, int ldr)
+void showData(float temperature, float tds, int ldr, int depth)
 {
   display.clearDisplay();
   display.setTextSize(1);
@@ -197,37 +226,37 @@ void showData(float temperature, float tds, int ldr)
 
   printHeader();
 
-  /* row 0 ─ Temperature */
+  // row 0 ─ Temperature
   display.setCursor(0, START_Y + 0 * LINE_SPACING);
   display.print("Temperature:");
   display.setCursor(VALUE_X, START_Y + 0 * LINE_SPACING);
   display.print(temperature, 1); // 1 decimal
   display.print(" C");
 
-  /* row 1 ─ TDS */
+  // row 1 ─ TDS
   display.setCursor(0, START_Y + 1 * LINE_SPACING);
   display.print("TDS Value:");
   display.setCursor(VALUE_X, START_Y + 1 * LINE_SPACING);
   display.print(tds, 0);
   display.print(" ppm");
 
-  /* row 2 ─ LDR */
+  // row 2 ─ LDR
   display.setCursor(0, START_Y + 2 * LINE_SPACING);
   display.print("LDR State:");
   display.setCursor(VALUE_X, START_Y + 2 * LINE_SPACING);
   display.println(ldr == HIGH ? "Dark" : "Light");
 
-  /* row 3 ─ pH */
+  // row 3 ─ pH
   display.setCursor(0, START_Y + 3 * LINE_SPACING);
   display.print("pH:");
   display.setCursor(VALUE_X, START_Y + 3 * LINE_SPACING);
   display.print(404);
 
-  /* row 4 ─ Depth */
+  // row 4 ─ Depth
   display.setCursor(0, START_Y + 4 * LINE_SPACING);
   display.print("Depth:");
   display.setCursor(VALUE_X, START_Y + 4 * LINE_SPACING);
-  display.print(404);
+  display.print(depth);
   display.print(" cm");
 
   display.display();
@@ -275,4 +304,12 @@ int getMedianNum(int bArray[], int iFilterLen)
     return bTab[iFilterLen / 2];
   else
     return (bTab[iFilterLen / 2] + bTab[iFilterLen / 2 - 1]) / 2;
+}
+
+long microsecondsToCentimeters(long microseconds)
+{
+  // The speed of sound is 340 m/s or 29 microseconds per centimeter.
+  // The ping travels out and back, so to find the distance of the
+  // object we take half of the distance travelled.
+  return (microseconds / 29.1) / 2;
 }
