@@ -24,9 +24,11 @@
 #define LDR_SENSOR 35        // LDR Sensor
 #define TRIG_PIN 12          // Ultrasonic Trigger Pin
 #define ECHO_PIN 14          // Ultrasonic Echo Pin
+#define PH_SENSOR 25         // pH Sensor
 
-#define VREF 3.3  // Reference voltage for the ADC
-#define SCOUNT 30 // Sum of sample point
+#define VREF 3.3       // Reference voltage for the ADC
+#define SAMPLES_TDS 30 // Number of samples for TDS
+#define SAMPLES_PH 10  // Number of samples for pH
 
 // OLED display settings
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -46,7 +48,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 TaskHandle_t setupTaskHandle = NULL;
 TaskHandle_t initializationTaskHandle = NULL;
 
-int analogBuffer[SCOUNT];
+int tds_buf[SAMPLES_TDS];
+int pH_buf[SAMPLES_PH];
 
 float angle = 0;
 
@@ -113,8 +116,8 @@ void initializationTask(void *parameter)
     }
 
     showInitialization();
-    
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+    vTaskDelay(300 / portTICK_PERIOD_MS);
   }
 }
 
@@ -130,12 +133,13 @@ void loop()
   float tdsValue = readTDS(tempC);
   int hasLight = readLDR(); // 0 -> light / 1 -> no light
   int depth = readDepth();
+  float pHValue = readPh();
 
   if (hasDisplay)
-    showData(tempC, tdsValue, hasLight, depth);
+    showData(tempC, tdsValue, hasLight, depth, pHValue);
 
   // if (hasWiFi)
-  //   sendData(tempC, tdsValue, hasLight, depth);
+  //   sendData(tempC, tdsValue, hasLight, depth, pHValue);
 
   Serial.println();
 
@@ -162,13 +166,13 @@ float readTemperature()
 
 float readTDS(float temperature)
 {
-  for (int i = 0; i < SCOUNT; i++)
+  for (int i = 0; i < SAMPLES_TDS; i++)
   {
-    analogBuffer[i] = analogRead(TDS_SENSOR);
+    tds_buf[i] = analogRead(TDS_SENSOR);
     delay(2); // pequeno delay para estabilidade entre amostras (2 milissegundos)
   }
 
-  int medianValue = getMedianNum(analogBuffer, SCOUNT);
+  int medianValue = getMedianNum(tds_buf, SAMPLES_TDS);
   float averageVoltage = medianValue * (float)VREF / 4096.0;
 
   float compensationCoefficient = 1.0 + 0.02 * (temperature - 25.0);
@@ -215,7 +219,30 @@ int readDepth()
   return waterDepth;
 }
 
-void sendData(float temperature, float tds, int ldr, int depth)
+float readPh()
+{
+  // float calibration_value = 0;
+
+  // for (int i = 0; i < SAMPLES_PH; i++)
+  // {
+  //   pH_buf[i] = analogRead(PH_SENSOR);
+  //   delay(30);
+  // }
+
+  // int medianValue = getMedianNum(pH_buf, SAMPLES_PH);
+
+  // float volt = (float)medianValue * VREF / 4096.0 / 6;
+  // float pH = -5.70 * volt + calibration_value;
+
+  float pH = 7.0; // Placeholder value for pH
+
+  Serial.print("pH: ");
+  Serial.println(pH);
+
+  return pH;
+}
+
+void sendData(float temperature, float tds, int ldr, int depth, float pH)
 {
   if (WiFi.status() == WL_CONNECTED)
   {
@@ -225,6 +252,7 @@ void sendData(float temperature, float tds, int ldr, int depth)
     jsonDoc["tds"] = tds;
     jsonDoc["ldr"] = ldr;
     jsonDoc["depth"] = depth;
+    jsonDoc["ph"] = pH;
 
     String jsonStr;
     serializeJson(jsonDoc, jsonStr);
@@ -256,7 +284,7 @@ void sendData(float temperature, float tds, int ldr, int depth)
   }
 }
 
-void showData(float temperature, float tds, int ldr, int depth)
+void showData(float temperature, float tds, int ldr, int depth, float pH)
 {
   display.clearDisplay();
   display.setTextSize(1);
@@ -268,7 +296,7 @@ void showData(float temperature, float tds, int ldr, int depth)
   display.setCursor(0, START_Y + 0 * LINE_SPACING);
   display.print("Temperature:");
   display.setCursor(VALUE_X, START_Y + 0 * LINE_SPACING);
-  display.print(temperature, 1); // 1 decimal
+  display.print(temperature, 1);
   display.print(" C");
 
   // row 1 ─ TDS
@@ -288,7 +316,7 @@ void showData(float temperature, float tds, int ldr, int depth)
   display.setCursor(0, START_Y + 3 * LINE_SPACING);
   display.print("pH:");
   display.setCursor(VALUE_X, START_Y + 3 * LINE_SPACING);
-  display.print(404);
+  display.print(pH, 2);
 
   // row 4 ─ Depth
   display.setCursor(0, START_Y + 4 * LINE_SPACING);
@@ -298,6 +326,35 @@ void showData(float temperature, float tds, int ldr, int depth)
   display.print(" cm");
 
   display.display();
+}
+
+void showInitialization()
+{
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+
+  printHeader();
+
+  int cx = SCREEN_WIDTH / 2;
+  int cy = (SCREEN_HEIGHT / 2) + 10;
+  int r = 12;
+
+  // Draw spinner base
+  display.drawCircle(cx, cy, r, SSD1306_WHITE);
+
+  // Draw rotating line
+  float x = cx + r * cos(angle);
+  float y = cy + r * sin(angle);
+  display.drawLine(cx, cy, (int)x, (int)y, SSD1306_WHITE);
+
+  display.display();
+
+  angle += 0.2; // adjust for speed
+  if (angle > 2 * PI)
+    angle = 0;
+
+  delay(50);
 }
 
 void printHeader()
@@ -317,35 +374,6 @@ void printHeader()
 
   display.setCursor((SCREEN_WIDTH - w2) / 2, 10);
   display.println(line2);
-}
-
-void showInitialization()
-{
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-
-  printHeader();
-
-  int cx = SCREEN_WIDTH / 2;
-  int cy = (SCREEN_HEIGHT / 2) + 10;
-  int r = 10;
-
-  // Draw spinner base
-  display.drawCircle(cx, cy, r, SSD1306_WHITE);
-
-  // Draw rotating line
-  float x = cx + r * cos(angle);
-  float y = cy + r * sin(angle);
-  display.drawLine(cx, cy, (int)x, (int)y, SSD1306_WHITE);
-
-  display.display();
-
-  angle += 0.4; // adjust for speed
-  if (angle > 2 * PI)
-    angle = 0;
-
-  delay(50);
 }
 
 int getMedianNum(int bArray[], int iFilterLen)

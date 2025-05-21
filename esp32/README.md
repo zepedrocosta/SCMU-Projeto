@@ -28,7 +28,7 @@ const char* serverUrl = "YOUR_SERVER_URL";
 
 - [x] Temperature Sensor
 - [x] TDS Sensor
-- [ ] pH Sensor
+- [x] pH Sensor
 - [x] Light Sensor
 - [x] Depth Sensor (Ultrasonic)
 - [x] OLED Display
@@ -43,7 +43,7 @@ const char* serverUrl = "YOUR_SERVER_URL";
 |Temperature: 25.4 C |
 |TDS Value:   500 ppm|
 |LDR State:   Light  |
-|pH:          404    |
+|pH:          7.00   |
 |Depth:       16 cm  |
 ```
 
@@ -71,3 +71,6 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - <https://esp32io.com/tutorials/esp32-ldr-module>
 - <https://randomnerdtutorials.com/esp32-ssd1306-oled-display-arduino-ide/>
 - <https://www.electroniclinic.com/waterproof-ultrasonic-sensor-jsn-sr04t-aj-sr04m-with-arduino-for-distance-measurement/>
+- <https://www.electroniclinic.com/esp32-ph-sensor-iot-ph-sensor-code-and-circuit-diagram/#IoT_ESP32_pH_Sensor_Programming>
+- <https://waterqualitygroup.my.site.com/MyHachCustomerService/s/article/KA-en-US-TE5202-1006439?language=en_US>
+- <https://cdn.awsli.com.br/969/969921/arquivos/ph-sensor-ph-4502c.pdf>
