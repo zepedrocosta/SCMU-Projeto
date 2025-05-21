@@ -123,27 +123,24 @@ void initializationTask(void *parameter)
 
 void loop()
 {
-  if (!setupFinished)
+  if (setupFinished)
   {
-    delay(100); // Wait for setup to complete before doing work
-    return;
+    float tempC = readTemperature();
+    float tdsValue = readTDS(tempC);
+    int hasLight = readLDR(); // 0 -> light / 1 -> no light
+    int depth = readDepth();
+    float pHValue = readPh();
+
+    if (hasDisplay)
+      showData(tempC, tdsValue, hasLight, depth, pHValue);
+
+    // if (hasWiFi)
+    //   sendData(tempC, tdsValue, hasLight, depth, pHValue);
+
+    Serial.println();
+
+    delay(2000); // espera 2 segundos entre leituras
   }
-
-  float tempC = readTemperature();
-  float tdsValue = readTDS(tempC);
-  int hasLight = readLDR(); // 0 -> light / 1 -> no light
-  int depth = readDepth();
-  float pHValue = readPh();
-
-  if (hasDisplay)
-    showData(tempC, tdsValue, hasLight, depth, pHValue);
-
-  // if (hasWiFi)
-  //   sendData(tempC, tdsValue, hasLight, depth, pHValue);
-
-  Serial.println();
-
-  delay(2000); // espera 2 segundos entre leituras
 }
 
 float readTemperature()
