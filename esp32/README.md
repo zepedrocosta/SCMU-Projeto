@@ -74,3 +74,4 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - <https://www.electroniclinic.com/esp32-ph-sensor-iot-ph-sensor-code-and-circuit-diagram/#IoT_ESP32_pH_Sensor_Programming>
 - <https://waterqualitygroup.my.site.com/MyHachCustomerService/s/article/KA-en-US-TE5202-1006439?language=en_US>
 - <https://cdn.awsli.com.br/969/969921/arquivos/ph-sensor-ph-4502c.pdf>
+- <https://github.com/vshymanskyy/Preferences>

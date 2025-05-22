@@ -16,7 +16,9 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-#include <secrets.h>
+#include <Preferences.h>
+
+// #include <secrets.h>
 
 // GPIO Connections
 #define TEMPERATURE_SENSOR 4 // DS18B20
@@ -45,6 +47,8 @@ DallasTemperature sensors(&oneWire);
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+Preferences preferences;
+
 TaskHandle_t setupTaskHandle = NULL;
 TaskHandle_t initializationTaskHandle = NULL;
 
@@ -72,6 +76,8 @@ void setup()
     hasDisplay = true;
   }
 
+  SerialBT.begin("SMART_AQUARIUM_ESP32"); 
+  
   xTaskCreatePinnedToCore(setupTask, "SetupTask", 10000, NULL, 1, &setupTaskHandle, 0);
   xTaskCreatePinnedToCore(initializationTask, "InitializationScreen", 10000, NULL, 1, &initializationTaskHandle, 1);
 }
@@ -80,6 +86,20 @@ void setupTask(void *parameter)
 {
   delay(2000); // Wait for serial monitor to open
   Serial.println("Initializing SCMU project!\n");
+
+  preferences.begin("wifi", false); // namespace = "wifi"
+
+  // Check if SSID is already stored
+  String ssid = preferences.getString("ssid", "");
+  String password = preferences.getString("password", "");
+
+  if (ssid == "" && password == "")
+  {
+    preferences.putString("ssid", ssid);
+    preferences.putString("password", password);
+  }
+
+  preferences.end();
 
   sensors.begin();            // Start DS18B20
   pinMode(TDS_SENSOR, INPUT); // TDS
