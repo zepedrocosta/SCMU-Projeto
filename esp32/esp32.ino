@@ -17,8 +17,9 @@
 #include <Adafruit_SSD1306.h>
 
 #include <Preferences.h>
+// #include <BluetoothSerial.h>
 
-// #include <secrets.h>
+#include <secrets.h>
 
 // GPIO Connections
 #define TEMPERATURE_SENSOR 4 // DS18B20
@@ -41,6 +42,7 @@
 #define OLED_RESET -1    // Reset pin # (or -1 if sharing Arduino reset pin)
 
 #define DIST_ULTRA_TO_GROUND 21 // Distance from the ultrasonic sensor to the ground in cm
+#define WIFI_TIMEOUT 30000      // Wi-Fi connection timeout in milliseconds
 
 OneWire oneWire(TEMPERATURE_SENSOR);
 DallasTemperature sensors(&oneWire);
@@ -76,8 +78,6 @@ void setup()
     hasDisplay = true;
   }
 
-  SerialBT.begin("SMART_AQUARIUM_ESP32"); 
-  
   xTaskCreatePinnedToCore(setupTask, "SetupTask", 10000, NULL, 1, &setupTaskHandle, 0);
   xTaskCreatePinnedToCore(initializationTask, "InitializationScreen", 10000, NULL, 1, &initializationTaskHandle, 1);
 }
@@ -87,29 +87,62 @@ void setupTask(void *parameter)
   delay(2000); // Wait for serial monitor to open
   Serial.println("Initializing SCMU project!\n");
 
-  preferences.begin("wifi", false); // namespace = "wifi"
-
-  // Check if SSID is already stored
-  String ssid = preferences.getString("ssid", "");
-  String password = preferences.getString("password", "");
-
-  if (ssid == "" && password == "")
-  {
-    preferences.putString("ssid", ssid);
-    preferences.putString("password", password);
-  }
-
-  preferences.end();
-
   sensors.begin();            // Start DS18B20
   pinMode(TDS_SENSOR, INPUT); // TDS
   pinMode(LDR_SENSOR, INPUT); // LDR
   pinMode(TRIG_PIN, OUTPUT);  // Ultrasonic Trigger Pin
   pinMode(ECHO_PIN, INPUT);   // Ultrasonic Echo Pin
 
+  String ssid, password;
+
+  bool hasWiFiInfo = getWiFiInfo(ssid, password);
+
+  if (hasWiFiInfo)
+    connectToWiFi(ssid, password);
+
+  setupFinished = true;
+  vTaskDelete(NULL); // Ends setup task
+}
+
+bool getWiFiInfo(String &ssid, String &password)
+{
+  preferences.begin("wifi", false); // namespace = "wifi"
+
+  preferences.clear(); // Uncomment this line to clear all stored WiFi credentials
+
+  // Check if SSID is already stored
+  ssid = preferences.getString("ssid", "");
+  password = preferences.getString("pass", "");
+
+  if (ssid != "" && password != "")
+  {
+    Serial.println("Stored WiFi credentials found.");
+  }
+  else
+  {
+    Serial.println("No stored WiFi credentials found.");
+    // ADD BLUETOOTH CODE HERE TO GET THE SSID AND PASSWORD
+    ssid = ssidSecrets;
+    password = passwordSecrets;
+
+    // Save them to NVS
+    preferences.putString("ssid", ssid);
+    preferences.putString("pass", password);
+  }
+
+  preferences.end();
+
+  return ssid != "" && password != "";
+}
+
+void connectToWiFi(String &ssid, String &password)
+{
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
-  while (WiFi.status() != WL_CONNECTED)
+
+  unsigned long startAttemptTime = millis();
+
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < WIFI_TIMEOUT)
   {
     delay(500);
     Serial.print(".");
@@ -120,9 +153,10 @@ void setupTask(void *parameter)
     Serial.println("\nConnected to WiFi!\n");
     hasWiFi = true;
   }
-
-  setupFinished = true;
-  vTaskDelete(NULL); // Ends setup task
+  else
+  {
+    Serial.println("\nWi-Fi TIMEOUT!!!.\n");
+  }
 }
 
 void initializationTask(void *parameter)
