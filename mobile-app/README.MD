@@ -18,6 +18,7 @@
     -   npm install react-native-reanimated react-native-gesture-handler
     -   npm install axios
     -   npm install @react-native-async-storage/async-storage
+    -   npm install react-native-safe-area-context
 
 # How to run the app:
 
