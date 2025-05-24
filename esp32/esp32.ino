@@ -16,6 +16,9 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
+#include <Preferences.h>
+// #include <BluetoothSerial.h>
+
 #include <secrets.h>
 
 // GPIO Connections
@@ -39,11 +42,14 @@
 #define OLED_RESET -1    // Reset pin # (or -1 if sharing Arduino reset pin)
 
 #define DIST_ULTRA_TO_GROUND 21 // Distance from the ultrasonic sensor to the ground in cm
+#define WIFI_TIMEOUT 30000      // Wi-Fi connection timeout in milliseconds
 
 OneWire oneWire(TEMPERATURE_SENSOR);
 DallasTemperature sensors(&oneWire);
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+Preferences preferences;
 
 TaskHandle_t setupTaskHandle = NULL;
 TaskHandle_t initializationTaskHandle = NULL;
@@ -87,9 +93,56 @@ void setupTask(void *parameter)
   pinMode(TRIG_PIN, OUTPUT);  // Ultrasonic Trigger Pin
   pinMode(ECHO_PIN, INPUT);   // Ultrasonic Echo Pin
 
+  String ssid, password;
+
+  bool hasWiFiInfo = getWiFiInfo(ssid, password);
+
+  if (hasWiFiInfo)
+    connectToWiFi(ssid, password);
+
+  setupFinished = true;
+  vTaskDelete(NULL); // Ends setup task
+}
+
+bool getWiFiInfo(String &ssid, String &password)
+{
+  preferences.begin("wifi", false); // namespace = "wifi"
+
+  preferences.clear(); // Uncomment this line to clear all stored WiFi credentials
+
+  // Check if SSID is already stored
+  ssid = preferences.getString("ssid", "");
+  password = preferences.getString("pass", "");
+
+  if (ssid != "" && password != "")
+  {
+    Serial.println("Stored WiFi credentials found.");
+  }
+  else
+  {
+    Serial.println("No stored WiFi credentials found.");
+    // ADD BLUETOOTH CODE HERE TO GET THE SSID AND PASSWORD
+    ssid = ssidSecrets;
+    password = passwordSecrets;
+
+    // Save them to NVS
+    preferences.putString("ssid", ssid);
+    preferences.putString("pass", password);
+  }
+
+  preferences.end();
+
+  return ssid != "" && password != "";
+}
+
+void connectToWiFi(String &ssid, String &password)
+{
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
-  while (WiFi.status() != WL_CONNECTED)
+
+  unsigned long startAttemptTime = millis();
+
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < WIFI_TIMEOUT)
   {
     delay(500);
     Serial.print(".");
@@ -100,9 +153,10 @@ void setupTask(void *parameter)
     Serial.println("\nConnected to WiFi!\n");
     hasWiFi = true;
   }
-
-  setupFinished = true;
-  vTaskDelete(NULL); // Ends setup task
+  else
+  {
+    Serial.println("\nWi-Fi TIMEOUT!!!.\n");
+  }
 }
 
 void initializationTask(void *parameter)
