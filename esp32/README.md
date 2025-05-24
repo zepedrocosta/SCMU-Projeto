@@ -24,15 +24,20 @@ const char* serverUrl = "YOUR_SERVER_URL";
 #endif
 ```
 
-## Sensor/Actuators checklist
+## Sensors checklist
 
 - [x] Temperature Sensor
 - [x] TDS Sensor
 - [x] pH Sensor
 - [x] Light Sensor
 - [x] Depth Sensor (Ultrasonic)
+
+## Actuators checklist
+
 - [x] OLED Display
 - [ ] RGB LED
+- [x] Buzzer
+- [ ] Water Pump
 
 ## OLED Representation
 
@@ -75,3 +80,5 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - <https://waterqualitygroup.my.site.com/MyHachCustomerService/s/article/KA-en-US-TE5202-1006439?language=en_US>
 - <https://cdn.awsli.com.br/969/969921/arquivos/ph-sensor-ph-4502c.pdf>
 - <https://github.com/vshymanskyy/Preferences>
+- <https://esp32io.com/tutorials/esp32-button-piezo-buzzer>
+- <https://github.com/hibit-dev/buzzer>

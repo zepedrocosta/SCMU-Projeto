@@ -20,6 +20,7 @@
 // #include <BluetoothSerial.h>
 
 #include <secrets.h>
+#include <pitches.h>
 
 // GPIO Connections
 #define TEMPERATURE_SENSOR 4 // DS18B20
@@ -28,6 +29,7 @@
 #define TRIG_PIN 12          // Ultrasonic Trigger Pin
 #define ECHO_PIN 14          // Ultrasonic Echo Pin
 #define PH_SENSOR 25         // pH Sensor
+#define BUZZER_PIN 18        // Buzzer Pin
 
 #define VREF 3.3       // Reference voltage for the ADC
 #define SAMPLES_TDS 30 // Number of samples for TDS
@@ -63,6 +65,18 @@ volatile bool setupFinished = false;
 bool hasWiFi = false;
 bool hasDisplay = false;
 
+int melody[] = {
+    NOTE_E5, NOTE_D5, NOTE_FS4, NOTE_GS4,
+    NOTE_CS5, NOTE_B4, NOTE_D4, NOTE_E4,
+    NOTE_B4, NOTE_A4, NOTE_CS4, NOTE_E4,
+    NOTE_A4};
+
+int durations[] = {
+    8, 8, 4, 4,
+    8, 8, 4, 4,
+    8, 8, 4, 4,
+    2};
+
 void setup()
 {
   Serial.begin(9600);
@@ -87,11 +101,12 @@ void setupTask(void *parameter)
   delay(2000); // Wait for serial monitor to open
   Serial.println("Initializing SCMU project!\n");
 
-  sensors.begin();            // Start DS18B20
-  pinMode(TDS_SENSOR, INPUT); // TDS
-  pinMode(LDR_SENSOR, INPUT); // LDR
-  pinMode(TRIG_PIN, OUTPUT);  // Ultrasonic Trigger Pin
-  pinMode(ECHO_PIN, INPUT);   // Ultrasonic Echo Pin
+  sensors.begin();             // Start DS18B20
+  pinMode(TDS_SENSOR, INPUT);  // TDS
+  pinMode(LDR_SENSOR, INPUT);  // LDR
+  pinMode(ECHO_PIN, INPUT);    // Ultrasonic Echo Pin
+  pinMode(BUZZER_PIN, OUTPUT); // Buzzer Pin
+  pinMode(TRIG_PIN, OUTPUT);   // Ultrasonic Trigger Pin
 
   String ssid, password;
 
@@ -190,6 +205,9 @@ void loop()
 
     // if (hasWiFi)
     //   sendData(tempC, tdsValue, hasLight, depth, pHValue);
+
+    if (!idealValues(tempC, pHValue, tdsValue, hasLight))
+      singNokia();
 
     Serial.println();
 
@@ -299,6 +317,7 @@ void sendData(float temperature, float tds, int ldr, int depth, float pH)
   {
     // Create JSON
     StaticJsonDocument<200> jsonDoc;
+
     jsonDoc["temperature"] = temperature;
     jsonDoc["tds"] = tds;
     jsonDoc["ldr"] = ldr;
@@ -333,6 +352,14 @@ void sendData(float temperature, float tds, int ldr, int depth, float pH)
   {
     Serial.println("WiFi not connected");
   }
+}
+
+bool idealValues(float temperature, float pH, float tds, int ldr)
+{
+  return (temperature >= 24.0 && temperature <= 27.0) &&
+         (pH >= 6.5 && pH <= 7.5) &&
+         (tds >= 150 && tds <= 300) &&
+         (ldr == LOW);
 }
 
 void showData(float temperature, float tds, int ldr, int depth, float pH)
@@ -458,4 +485,25 @@ long microsecondsToCentimeters(long microseconds)
   // The ping travels out and back, so to find the distance of the
   // object we take half of the distance travelled.
   return (microseconds / 29.1) / 2;
+}
+
+void singNokia()
+{
+  int size = sizeof(durations) / sizeof(int);
+
+  for (int note = 0; note < size; note++)
+  {
+    // to calculate the note duration, take one second divided by the note type.
+    // e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+    int duration = 1000 / durations[note];
+    tone(BUZZER_PIN, melody[note], duration);
+
+    // to distinguish the notes, set a minimum time between them.
+    // the note's duration + 30% seems to work well:
+    int pauseBetweenNotes = duration * 1.30;
+    delay(pauseBetweenNotes);
+
+    // stop the tone playing:
+    noTone(BUZZER_PIN);
+  }
 }
