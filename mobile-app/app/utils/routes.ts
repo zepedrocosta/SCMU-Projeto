@@ -1,5 +1,4 @@
 import { useRouter } from "expo-router";
-import { replace } from "expo-router/build/global-state/routing";
 
 export const ROUTES = {
 	INDEX: "/",
@@ -37,6 +36,10 @@ export const useRoutes = () => {
 		router.push(ROUTES.NOTIFICATIONS);
 	};
 
+	const gotoNotification = (notificationId: string) => {
+		router.push(`${ROUTES.NOTIFICATIONS}/${notificationId}`);
+	};
+
 	const gotoRegister = () => {
 		router.push(ROUTES.REGISTER);
 	};
@@ -47,6 +50,7 @@ export const useRoutes = () => {
 		gotoAccount,
 		gotoAquarium,
 		gotoNotifications,
+		gotoNotification,
 		gotoRegister,
 	};
 };
