@@ -5,7 +5,6 @@ import { View, StyleSheet, Image } from "react-native";
 import { TextInput, Button, Text, Card } from "react-native-paper";
 import { useState } from "react";
 import { useLogin } from "../utils/services/AuthService";
-import { useRouter } from "expo-router";
 import { useRoutes } from "../utils/routes";
 
 const loginSchema = z.object({

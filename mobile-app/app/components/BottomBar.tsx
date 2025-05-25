@@ -3,6 +3,7 @@ import * as React from "react";
 import { StyleSheet, View } from "react-native";
 import { Appbar, Badge } from "react-native-paper";
 import { useRoutes } from "../utils/routes";
+import { Route } from "expo-router/build/Route";
 
 export default function BottomBar() {
 	const router = useRoutes();
@@ -25,7 +26,7 @@ export default function BottomBar() {
 			<Appbar.Action
 				icon="plus"
 				onPress={() => {
-					// router.push("/connect-to-aquarium");
+					router.gotoConnectToEsp();
 				}}
 			/>
 

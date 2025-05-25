@@ -7,6 +7,8 @@ export const ROUTES = {
 	AQUARIUM: "/pages/aquarium",
 	NOTIFICATIONS: "/pages/notifications",
 	REGISTER: "/pages/register",
+	CONNECT_TO_ESP: "/pages/connectToEsp",
+	CONNECTIING: "/pages/connectingScreen",
 };
 
 export const useRoutes = () => {
@@ -44,6 +46,14 @@ export const useRoutes = () => {
 		router.push(ROUTES.REGISTER);
 	};
 
+	const gotoConnectToEsp = () => {
+		router.push(ROUTES.CONNECT_TO_ESP);
+	};
+
+	const gotoConnectingScreen = () => {
+		router.push(ROUTES.CONNECTIING);
+	};
+
 	return {
 		gotoIndex,
 		gotoHome,
@@ -52,5 +62,7 @@ export const useRoutes = () => {
 		gotoNotifications,
 		gotoNotification,
 		gotoRegister,
+		gotoConnectToEsp,
+		gotoConnectingScreen,
 	};
 };

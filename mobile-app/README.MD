@@ -139,3 +139,13 @@ And scan the QR code to open in the APK
     ]
     }
     ```
+
+# Trying to integrate the code on BLE
+
+```bash
+npx expo install expo-device
+```
+
+```bash
+npx expo install react-native-base64
+```
