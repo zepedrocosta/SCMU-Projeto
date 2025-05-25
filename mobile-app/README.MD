@@ -51,3 +51,91 @@ set REACT_NATIVE_PACKAGER_HOSTNAME="your_ipv4_address"
 ## Now the app should run in your phone.
 
 ## Note - This fixes the error but if yout ip changes, you will need to run the command again with the new ip address.
+
+## How to build the APK:
+
+Install expo dev client
+
+```bash
+npx expo install expo-dev-client
+```
+
+```bash
+npx expo prebuild
+```
+
+```bash
+npm install -g eas-cli
+```
+
+```bash
+eas login
+```
+
+This will create the eas.json file
+
+```bash
+eas build:configure
+```
+
+Build the APk
+
+```bash
+eas build -p android --profile development
+```
+
+Then just use:
+
+```bash
+npx expo start
+```
+
+And scan the QR code to open in the APK
+
+## How configure Bluetooth in mobile app:
+
+1. ### Install the required libraries
+
+    Install the following libraries:
+
+    ```bash
+    npx expo install react-native-ble-plx
+    ```
+
+    This was done already in the project but run again just to be sure.
+
+    ```bash
+    npx expo install expo-dev-client
+    ```
+
+    ```bash
+    npx expo install expo-system-ui
+    ```
+
+    ```bash
+    npx expo prebuild
+    ```
+
+    Add BLE plugin to app.json:
+
+    ```json
+    "plugins": [
+    "react-native-ble-plx"
+    ]
+    ```
+
+2. ### Configure Android permissions
+
+    Add the following permissions to the `app.json` file:
+
+    ```json
+    "android": {
+    "permissions": [
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_SCAN",
+        "BLUETOOTH_CONNECT",
+        "ACCESS_FINE_LOCATION"
+    ]
+    }
+    ```
