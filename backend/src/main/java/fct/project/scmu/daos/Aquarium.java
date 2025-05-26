@@ -1,8 +1,6 @@
 package fct.project.scmu.daos;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
@@ -23,16 +21,23 @@ public class Aquarium extends DAO implements Serializable {
     @Column(nullable = false)
     private String location;
 
-    @Column
-    private double latitude;
-
-    @Column
-    private double longitude;
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @ManyToOne
+    private User owner;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "aquarium")
     private Set<SensorsSnapshot> values;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    private Set<User> managers;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @ManyToMany(mappedBy = "aquariums", cascade = CascadeType.MERGE)
+    private Set<Group> groups;
 }

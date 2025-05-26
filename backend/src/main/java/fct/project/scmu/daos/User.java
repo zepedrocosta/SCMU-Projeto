@@ -8,8 +8,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
-import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.Set;
 
@@ -46,6 +44,21 @@ public class User extends DAO implements UserDetails, Serializable {
     @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "user")
     private Set<Session> sessions;
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
+    private Set<Aquarium> owns;
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @ManyToMany(mappedBy = "managers", cascade = CascadeType.MERGE)
+    private Set<Aquarium> manages;
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
+    private Set<Group> groups;
 
 
     @Override
