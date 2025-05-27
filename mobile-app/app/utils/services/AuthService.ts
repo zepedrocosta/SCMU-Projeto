@@ -7,97 +7,95 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useStateContext } from "../../context/StateContext";
 import { EVENTS } from "../../context/reducer";
 import { useRoutes } from "../routes";
+import { jwtDecode } from "jwt-decode";
 
 export function useLogin() {
-	const router = useRoutes();
+  const router = useRoutes();
 
-	const { dispatch } = useStateContext();
+  const { dispatch } = useStateContext();
 
-	return useMutation({
-		mutationFn: (data: LoginRequest) => authenticateUser(data),
-		onError: (error) => {
-			console.error("Login error:", error);
-		},
-		onSuccess: async (response) => {
-			const data = response;
+  return useMutation({
+    mutationFn: (data: LoginRequest) => authenticateUser(data),
+    onError: (error) => {
+      console.error("Login error:", error);
+    },
+    onSuccess: async (response) => {
+      await AsyncStorage.setItem("accessToken", response);
+      let t: any = jwtDecode(response); //TODO: Maybe create a type for this... Maybe not...
 
-			console.log("Login successful:", data);
+      try {
+        // Fetch user aquarium data
+        const [userInfo, userAquariums] = await Promise.all([
+          getUserInfo(t.nickname),
+          getUserAquariums(t.nickname),
+        ]);
 
-			await AsyncStorage.setItem("accessToken", data.accessToken);
+        if (userInfo) {
+          dispatch({ type: EVENTS.SET_USER, payload: userInfo });
+          dispatch({ type: EVENTS.SET_DEFAULTS, payload: userInfo.defaults });
+        } else {
+          console.error("User not found");
+        }
 
-			try {
-				// Fetch user aquarium data
-				const [userInfo, userAquariums] = await Promise.all([
-					getUserInfo(data.userId),
-					getUserAquariums(data.userId),
-				]);
+        if (userAquariums) {
+          dispatch({ type: EVENTS.SET_AQUARIUMS, payload: userAquariums });
+          console.log("User aquariums:", userAquariums);
+        } else {
+          dispatch({ type: EVENTS.SET_AQUARIUMS, payload: [] });
+          console.log("No aquariums found for user");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
 
-				if (userInfo) {
-					dispatch({ type: EVENTS.SET_USER, payload: userInfo });
-					dispatch({ type: EVENTS.SET_DEFAULTS, payload: userInfo.defaults });
-				} else {
-					console.error("User not found");
-				}
-
-				if (userAquariums) {
-					dispatch({ type: EVENTS.SET_AQUARIUMS, payload: userAquariums });
-					console.log("User aquariums:", userAquariums);
-				} else {
-					dispatch({ type: EVENTS.SET_AQUARIUMS, payload: [] });
-					console.log("No aquariums found for user");
-				}
-			} catch (error) {
-				console.error("Error fetching user data:", error);
-			}
-
-			router.gotoHome(true);
-		},
-	});
+      router.gotoHome(true);
+    },
+  });
 }
 
 export function useRegister() {
-	const router = useRoutes();
+  const router = useRoutes();
 
-	const { dispatch } = useStateContext();
+  const { dispatch } = useStateContext();
 
-	return useMutation({
-		mutationFn: (data: RegisterRequest) => registerUser(data),
-		onError: (error) => {
-			console.error("Register error:", error);
-		},
-		onSuccess: async (response) => {
-			const data = response;
+  return useMutation({
+    mutationFn: (data: RegisterRequest) => registerUser(data),
+    onError: (error) => {
+      console.error("Register error:", error);
+    },
+    onSuccess: async (response) => {
+      const data = response;
 
-			console.log("Register successful:", data);
+      console.log("Register successful:", data);
 
-			await AsyncStorage.setItem("accessToken", data.accessToken);
+      await AsyncStorage.setItem("accessToken", data.accessToken);
 
-			try {
-				// Fetch user aquarium data
-				const [userInfo, userAquariums] = await Promise.all([
-					getUserInfo(data.userId),
-					getUserAquariums(data.userId),
-				]);
+      try {
+        // Fetch user aquarium data
+        const [userInfo, userAquariums] = await Promise.all([
+          getUserInfo(data.userId),
+          getUserAquariums(data.userId),
+        ]);
 
-				if (userInfo) {
-					dispatch({ type: EVENTS.SET_USER, payload: userInfo });
-					dispatch({ type: EVENTS.SET_DEFAULTS, payload: userInfo.defaults });
-				} else {
-					console.error("User not found");
-				}
+        if (userInfo) {
+          dispatch({ type: EVENTS.SET_USER, payload: userInfo });
+          dispatch({ type: EVENTS.SET_DEFAULTS, payload: userInfo.defaults });
+        } else {
+          console.error("User not found");
+        }
 
-				if (userAquariums) {
-					dispatch({ type: EVENTS.SET_AQUARIUMS, payload: userAquariums });
-					console.log("User aquariums:", userAquariums);
-				} else {
-					dispatch({ type: EVENTS.SET_AQUARIUMS, payload: [] });
-					console.log("No aquariums found for user");
-				}
-			} catch (error) {
-				console.error("Error fetching user data:", error);
-			}
+        if (userAquariums) {
+          dispatch({ type: EVENTS.SET_AQUARIUMS, payload: userAquariums });
+          console.log("User aquariums:", userAquariums);
+        } else {
+          dispatch({ type: EVENTS.SET_AQUARIUMS, payload: [] });
+          console.log("No aquariums found for user");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
 
-			router.gotoHome(true);
-		},
-	});
+      router.gotoHome(true);
+    },
+  });
 }

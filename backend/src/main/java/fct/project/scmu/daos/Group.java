@@ -11,7 +11,7 @@ import java.util.Set;
 @AllArgsConstructor
 @ToString(doNotUseGetters = true, callSuper = true)
 @EqualsAndHashCode(doNotUseGetters = true, callSuper = true)
-@Entity(name = "groups")
+@Entity(name = "AqGroups")
 public class Group extends DAO{
 
     @Column(nullable = false)
@@ -24,6 +24,6 @@ public class Group extends DAO{
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private User owner;
 }

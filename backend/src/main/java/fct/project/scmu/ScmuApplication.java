@@ -40,7 +40,8 @@ public class ScmuApplication implements CommandLineRunner {
             Role role = new Role("ADMIN", "Role used by App's administrators and devs", new HashSet<>());
             roleRepository.save(role);
             userRepository.save(new User("admin", passwordEncoder.encode(adminPassword), "Admin",
-                    "admin@aqsmart.pt", UserStatus.ACTIVE, Set.of(role), new HashSet<>(), new HashSet<>(), new HashSet<>()));
+                    "admin@aqsmart.pt", UserStatus.ACTIVE, Set.of(role), new HashSet<>(), new HashSet<>(),
+                    new HashSet<>(), new HashSet<>()));
         }
 
         if (!roleRepository.existsByRole("USER")) {
