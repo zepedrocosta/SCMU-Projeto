@@ -12,44 +12,207 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#include <Preferences.h>
+// #include <BluetoothSerial.h>
+
 #include <secrets.h>
+#include <pitches.h>
 
 // GPIO Connections
 #define TEMPERATURE_SENSOR 4 // DS18B20
-#define TdsSensorPin 34      // TDS Sensor
+#define TDS_SENSOR 34        // TDS Sensor
+#define LDR_SENSOR 35        // LDR Sensor
+#define TRIG_PIN 12          // Ultrasonic Trigger Pin
+#define ECHO_PIN 14          // Ultrasonic Echo Pin
+#define PH_SENSOR 25         // pH Sensor
+#define BUZZER_PIN 18        // Buzzer Pin
 
-#define VREF 3.3  // Reference voltage for the ADC
-#define SCOUNT 30 // sum of sample point
+#define VREF 3.3       // Reference voltage for the ADC
+#define SAMPLES_TDS 30 // Number of samples for TDS
+#define SAMPLES_PH 10  // Number of samples for pH
+
+// OLED display settings
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+#define VALUE_X 75       // X position of the value
+#define START_Y 20       // First line below header
+#define LINE_SPACING 9   // Line spacing
+#define OLED_RESET -1    // Reset pin # (or -1 if sharing Arduino reset pin)
+
+#define DIST_ULTRA_TO_GROUND 21 // Distance from the ultrasonic sensor to the ground in cm
+#define WIFI_TIMEOUT 30000      // Wi-Fi connection timeout in milliseconds
 
 OneWire oneWire(TEMPERATURE_SENSOR);
 DallasTemperature sensors(&oneWire);
 
-int analogBuffer[SCOUNT];
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+Preferences preferences;
+
+TaskHandle_t setupTaskHandle = NULL;
+TaskHandle_t initializationTaskHandle = NULL;
+
+int tds_buf[SAMPLES_TDS];
+int pH_buf[SAMPLES_PH];
+
+float angle = 0;
+
+volatile bool setupFinished = false;
+bool hasWiFi = false;
+bool hasDisplay = false;
+
+int melody[] = {
+    NOTE_E5, NOTE_D5, NOTE_FS4, NOTE_GS4,
+    NOTE_CS5, NOTE_B4, NOTE_D4, NOTE_E4,
+    NOTE_B4, NOTE_A4, NOTE_CS4, NOTE_E4,
+    NOTE_A4};
+
+int durations[] = {
+    8, 8, 4, 4,
+    8, 8, 4, 4,
+    8, 8, 4, 4,
+    2};
 
 void setup()
 {
   Serial.begin(9600);
-  delay(2000);
-  Serial.println("Initializing SCMU project!");
-  sensors.begin();              // Inicia o sensor de temperatura
-  pinMode(TdsSensorPin, INPUT); // TDS
 
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) // Address 0x3D for 128x64
+  {
+    Serial.println("SSD1306 allocation failed");
+    Serial.println("Check if the display is connected correctly");
+  }
+  else
+  {
+    Serial.println("OLED display connected!\n");
+    hasDisplay = true;
+  }
+
+  xTaskCreatePinnedToCore(setupTask, "SetupTask", 10000, NULL, 1, &setupTaskHandle, 0);
+  xTaskCreatePinnedToCore(initializationTask, "InitializationScreen", 10000, NULL, 1, &initializationTaskHandle, 1);
+}
+
+void setupTask(void *parameter)
+{
+  delay(2000); // Wait for serial monitor to open
+  Serial.println("Initializing SCMU project!\n");
+
+  sensors.begin();             // Start DS18B20
+  pinMode(TDS_SENSOR, INPUT);  // TDS
+  pinMode(LDR_SENSOR, INPUT);  // LDR
+  pinMode(ECHO_PIN, INPUT);    // Ultrasonic Echo Pin
+  pinMode(BUZZER_PIN, OUTPUT); // Buzzer Pin
+  pinMode(TRIG_PIN, OUTPUT);   // Ultrasonic Trigger Pin
+
+  String ssid, password;
+
+  bool hasWiFiInfo = getWiFiInfo(ssid, password);
+
+  if (hasWiFiInfo)
+    connectToWiFi(ssid, password);
+
+  setupFinished = true;
+  vTaskDelete(NULL); // Ends setup task
+}
+
+bool getWiFiInfo(String &ssid, String &password)
+{
+  preferences.begin("wifi", false); // namespace = "wifi"
+
+  preferences.clear(); // Uncomment this line to clear all stored WiFi credentials
+
+  // Check if SSID is already stored
+  ssid = preferences.getString("ssid", "");
+  password = preferences.getString("pass", "");
+
+  if (ssid != "" && password != "")
+  {
+    Serial.println("Stored WiFi credentials found.");
+  }
+  else
+  {
+    Serial.println("No stored WiFi credentials found.");
+    // ADD BLUETOOTH CODE HERE TO GET THE SSID AND PASSWORD
+    ssid = ssidSecrets;
+    password = passwordSecrets;
+
+    // Save them to NVS
+    preferences.putString("ssid", ssid);
+    preferences.putString("pass", password);
+  }
+
+  preferences.end();
+
+  return ssid != "" && password != "";
+}
+
+void connectToWiFi(String &ssid, String &password)
+{
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
-  while (WiFi.status() != WL_CONNECTED)
+
+  unsigned long startAttemptTime = millis();
+
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < WIFI_TIMEOUT)
   {
     delay(500);
     Serial.print(".");
   }
-  Serial.println("\nConnected to WiFi\n");
+
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    Serial.println("\nConnected to WiFi!\n");
+    hasWiFi = true;
+  }
+  else
+  {
+    Serial.println("\nWi-Fi TIMEOUT!!!.\n");
+  }
+}
+
+void initializationTask(void *parameter)
+{
+  while (true)
+  {
+    if (setupFinished)
+    {
+      Serial.println("Setup task ended. Exiting other task...");
+      vTaskDelete(NULL);
+    }
+
+    showInitialization();
+
+    vTaskDelay(300 / portTICK_PERIOD_MS);
+  }
 }
 
 void loop()
 {
-  float tempC = readTemperature();
-  float tdsValue = readTDS(tempC);
+  if (setupFinished)
+  {
+    float tempC = readTemperature();
+    float tdsValue = readTDS(tempC);
+    int hasLight = readLDR(); // 0 -> light / 1 -> no light
+    int depth = readDepth();
+    float pHValue = readPh();
 
-  delay(2000); // espera 2 segundos entre leituras
+    if (hasDisplay)
+      showData(tempC, tdsValue, hasLight, depth, pHValue);
+
+    // if (hasWiFi)
+    //   sendData(tempC, tdsValue, hasLight, depth, pHValue);
+
+    if (!idealValues(tempC, pHValue, tdsValue, hasLight))
+      singNokia();
+
+    Serial.println();
+
+    delay(2000); // espera 2 segundos entre leituras
+  }
 }
 
 float readTemperature()
@@ -72,13 +235,13 @@ float readTemperature()
 
 float readTDS(float temperature)
 {
-  for (int i = 0; i < SCOUNT; i++)
+  for (int i = 0; i < SAMPLES_TDS; i++)
   {
-    analogBuffer[i] = analogRead(TdsSensorPin);
+    tds_buf[i] = analogRead(TDS_SENSOR);
     delay(2); // pequeno delay para estabilidade entre amostras (2 milissegundos)
   }
 
-  int medianValue = getMedianNum(analogBuffer, SCOUNT);
+  int medianValue = getMedianNum(tds_buf, SAMPLES_TDS);
   float averageVoltage = medianValue * (float)VREF / 4096.0;
 
   float compensationCoefficient = 1.0 + 0.02 * (temperature - 25.0);
@@ -93,21 +256,82 @@ float readTDS(float temperature)
   return tds;
 }
 
-void sendData(float temperature, float tds)
+int readLDR()
+{
+  int lightState = digitalRead(LDR_SENSOR);
+
+  if (lightState == HIGH)
+    Serial.println("It is dark");
+  else
+    Serial.println("It is light");
+
+  return lightState;
+}
+
+int readDepth()
+{
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(5);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  long duration = pulseIn(ECHO_PIN, HIGH);
+  long cm = microsecondsToCentimeters(duration); // Distance from the sensor to the water level
+
+  int waterDepth = DIST_ULTRA_TO_GROUND - cm; // Distance from the water level to the ground
+
+  Serial.print("Depth: ");
+  Serial.print(waterDepth);
+  Serial.println(" cm");
+
+  return waterDepth;
+}
+
+float readPh()
+{
+  // float calibration_value = 0;
+
+  // for (int i = 0; i < SAMPLES_PH; i++)
+  // {
+  //   pH_buf[i] = analogRead(PH_SENSOR);
+  //   delay(30);
+  // }
+
+  // int medianValue = getMedianNum(pH_buf, SAMPLES_PH);
+
+  // float volt = (float)medianValue * VREF / 4096.0 / 6;
+  // float pH = -5.70 * volt + calibration_value;
+
+  float pH = 7.0; // Placeholder value for pH
+
+  Serial.print("pH: ");
+  Serial.println(pH);
+
+  return pH;
+}
+
+void sendData(float temperature, float tds, int ldr, int depth, float pH)
 {
   if (WiFi.status() == WL_CONNECTED)
   {
+    // Create JSON
+    StaticJsonDocument<200> jsonDoc;
+
+    jsonDoc["temperature"] = temperature;
+    jsonDoc["tds"] = tds;
+    jsonDoc["ldr"] = ldr;
+    jsonDoc["depth"] = depth;
+    jsonDoc["ph"] = pH;
+
+    String jsonStr;
+    serializeJson(jsonDoc, jsonStr);
+
+    Serial.println(jsonStr);
+
     HTTPClient http;
     http.begin(serverUrl);
     http.addHeader("Content-Type", "application/json");
-
-    // Create JSON
-    StaticJsonDocument<200> jsonDoc;
-    jsonDoc["temperature"] = temperature;
-    jsonDoc["tds"] = tds;
-
-    String jsonStr;
-    serializeJson(jsonDoc, jsonStr);   
 
     int httpResponseCode = http.POST(jsonStr);
 
@@ -128,6 +352,106 @@ void sendData(float temperature, float tds)
   {
     Serial.println("WiFi not connected");
   }
+}
+
+bool idealValues(float temperature, float pH, float tds, int ldr)
+{
+  return (temperature >= 24.0 && temperature <= 27.0) &&
+         (pH >= 6.5 && pH <= 7.5) &&
+         (tds >= 150 && tds <= 300) &&
+         (ldr == LOW);
+}
+
+void showData(float temperature, float tds, int ldr, int depth, float pH)
+{
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+
+  printHeader();
+
+  // row 0 ─ Temperature
+  display.setCursor(0, START_Y + 0 * LINE_SPACING);
+  display.print("Temperature:");
+  display.setCursor(VALUE_X, START_Y + 0 * LINE_SPACING);
+  display.print(temperature, 1);
+  display.print(" C");
+
+  // row 1 ─ TDS
+  display.setCursor(0, START_Y + 1 * LINE_SPACING);
+  display.print("TDS Value:");
+  display.setCursor(VALUE_X, START_Y + 1 * LINE_SPACING);
+  display.print(tds, 0);
+  display.print(" ppm");
+
+  // row 2 ─ LDR
+  display.setCursor(0, START_Y + 2 * LINE_SPACING);
+  display.print("LDR State:");
+  display.setCursor(VALUE_X, START_Y + 2 * LINE_SPACING);
+  display.println(ldr == HIGH ? "Dark" : "Light");
+
+  // row 3 ─ pH
+  display.setCursor(0, START_Y + 3 * LINE_SPACING);
+  display.print("pH:");
+  display.setCursor(VALUE_X, START_Y + 3 * LINE_SPACING);
+  display.print(pH, 2);
+
+  // row 4 ─ Depth
+  display.setCursor(0, START_Y + 4 * LINE_SPACING);
+  display.print("Depth:");
+  display.setCursor(VALUE_X, START_Y + 4 * LINE_SPACING);
+  display.print(depth);
+  display.print(" cm");
+
+  display.display();
+}
+
+void showInitialization()
+{
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+
+  printHeader();
+
+  int cx = SCREEN_WIDTH / 2;
+  int cy = (SCREEN_HEIGHT / 2) + 10;
+  int r = 12;
+
+  // Draw spinner base
+  display.drawCircle(cx, cy, r, SSD1306_WHITE);
+
+  // Draw rotating line
+  float x = cx + r * cos(angle);
+  float y = cy + r * sin(angle);
+  display.drawLine(cx, cy, (int)x, (int)y, SSD1306_WHITE);
+
+  display.display();
+
+  angle += 0.2; // adjust for speed
+  if (angle > 2 * PI)
+    angle = 0;
+
+  delay(50);
+}
+
+void printHeader()
+{
+  const char *line1 = "Smart Aquarium";
+  const char *line2 = "SCMU - 24/25";
+
+  int16_t x1, y1;
+  uint16_t w1, h1, w2, h2;
+
+  // Measure text
+  display.getTextBounds(line1, 0, 0, &x1, &y1, &w1, &h1);
+  display.getTextBounds(line2, 0, 0, &x1, &y1, &w2, &h2);
+
+  display.setCursor((SCREEN_WIDTH - w1) / 2, 0);
+  display.println(line1);
+
+  display.setCursor((SCREEN_WIDTH - w2) / 2, 10);
+  display.println(line2);
 }
 
 int getMedianNum(int bArray[], int iFilterLen)
@@ -153,4 +477,33 @@ int getMedianNum(int bArray[], int iFilterLen)
     return bTab[iFilterLen / 2];
   else
     return (bTab[iFilterLen / 2] + bTab[iFilterLen / 2 - 1]) / 2;
+}
+
+long microsecondsToCentimeters(long microseconds)
+{
+  // The speed of sound is 340 m/s or 29 microseconds per centimeter.
+  // The ping travels out and back, so to find the distance of the
+  // object we take half of the distance travelled.
+  return (microseconds / 29.1) / 2;
+}
+
+void singNokia()
+{
+  int size = sizeof(durations) / sizeof(int);
+
+  for (int note = 0; note < size; note++)
+  {
+    // to calculate the note duration, take one second divided by the note type.
+    // e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+    int duration = 1000 / durations[note];
+    tone(BUZZER_PIN, melody[note], duration);
+
+    // to distinguish the notes, set a minimum time between them.
+    // the note's duration + 30% seems to work well:
+    int pauseBetweenNotes = duration * 1.30;
+    delay(pauseBetweenNotes);
+
+    // stop the tone playing:
+    noTone(BUZZER_PIN);
+  }
 }

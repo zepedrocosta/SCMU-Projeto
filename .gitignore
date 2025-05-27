@@ -408,3 +408,4 @@ gradle-app.setting
 esp32/secrets.h
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,intellij,maven,reactnative
+/test
