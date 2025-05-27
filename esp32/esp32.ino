@@ -8,7 +8,9 @@
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
+
 #include <WiFi.h>
+#include <BluetoothSerial.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
@@ -17,7 +19,6 @@
 #include <Adafruit_SSD1306.h>
 
 #include <Preferences.h>
-#include <BluetoothSerial.h>
 
 #include <secrets.h>
 #include <pitches.h>
@@ -25,7 +26,7 @@
 // GPIO Connections
 #define TEMPERATURE_SENSOR 4 // DS18B20
 #define TDS_SENSOR 34        // TDS Sensor
-#define LDR_SENSOR 35        // LDR Sensor 
+#define LDR_SENSOR 35        // LDR Sensor
 #define TRIG_PIN 12          // Ultrasonic Trigger Pin
 #define ECHO_PIN 14          // Ultrasonic Echo Pin
 #define PH_SENSOR 25         // pH Sensor
@@ -80,6 +81,9 @@ int durations[] = {
 void setup()
 {
   Serial.begin(9600);
+  delay(2000); // Wait for serial monitor to open
+
+  Serial.println("Initializing SCMU project!\n");
 
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) // Address 0x3D for 128x64
   {
@@ -98,9 +102,6 @@ void setup()
 
 void setupTask(void *parameter)
 {
-  delay(2000); // Wait for serial monitor to open
-  Serial.println("Initializing SCMU project!\n");
-
   sensors.begin();             // Start DS18B20
   pinMode(TDS_SENSOR, INPUT);  // TDS
   pinMode(LDR_SENSOR, INPUT);  // LDR
@@ -227,8 +228,9 @@ void btConnect(String &ssid, String &password)
       }
     }
 
-    delay(10); // Prevent CPU hogging
+    delay(10);
   }
+
   SerialBT.end(); // Close Bluetooth connection
   Serial.println("Bluetooth connection closed.");
 }
@@ -265,7 +267,7 @@ void loop()
     // if (hasWiFi)
     //   sendData(tempC, tdsValue, hasLight, depth, pHValue);
 
-    if (!idealValues(tempC, pHValue, tdsValue, hasLight))
+    if (!idealValues(tempC, tdsValue, hasLight, depth, pHValue))
       singNokia();
 
     Serial.println();
@@ -306,8 +308,7 @@ float readTDS(float temperature)
   float compensationCoefficient = 1.0 + 0.02 * (temperature - 25.0);
   float compensationVoltage = averageVoltage / compensationCoefficient;
 
-  float tds = (133.42 * pow(compensationVoltage, 3) - 255.86 * pow(compensationVoltage, 2) 
-    + 857.39 * compensationVoltage) * 0.5;
+  float tds = (133.42 * pow(compensationVoltage, 3) - 255.86 * pow(compensationVoltage, 2) + 857.39 * compensationVoltage) * 0.5;
 
   Serial.print("TDS Value: ");
   Serial.print(tds, 0);
@@ -414,12 +415,13 @@ void sendData(float temperature, float tds, int ldr, int depth, float pH)
   }
 }
 
-bool idealValues(float temperature, float pH, float tds, int ldr)
+bool idealValues(float temperature, float tds, int ldr, int depth, float pH)
 {
   return (temperature >= 24.0 && temperature <= 27.0) &&
-         (pH >= 6.5 && pH <= 7.5) &&
          (tds >= 150 && tds <= 300) &&
-         (ldr == LOW);
+         (ldr == LOW) &&
+         (depth >= 10 && depth <= 30) &&
+         (pH >= 6.5 && pH <= 7.5);
 }
 
 void showData(float temperature, float tds, int ldr, int depth, float pH)
@@ -430,36 +432,46 @@ void showData(float temperature, float tds, int ldr, int depth, float pH)
 
   printHeader();
 
+  int row = 0;
+
   // row 0 ─ Temperature
-  display.setCursor(0, START_Y + 0 * LINE_SPACING);
+  display.setCursor(0, START_Y + row * LINE_SPACING);
   display.print("Temperature:");
-  display.setCursor(VALUE_X, START_Y + 0 * LINE_SPACING);
+  display.setCursor(VALUE_X, START_Y + row * LINE_SPACING);
   display.print(temperature, 1);
   display.print(" C");
 
+  row++;
+
   // row 1 ─ TDS
-  display.setCursor(0, START_Y + 1 * LINE_SPACING);
+  display.setCursor(0, START_Y + row * LINE_SPACING);
   display.print("TDS Value:");
-  display.setCursor(VALUE_X, START_Y + 1 * LINE_SPACING);
+  display.setCursor(VALUE_X, START_Y + row * LINE_SPACING);
   display.print(tds, 0);
   display.print(" ppm");
 
+  row++;
+
   // row 2 ─ LDR
-  display.setCursor(0, START_Y + 2 * LINE_SPACING);
+  display.setCursor(0, START_Y + row * LINE_SPACING);
   display.print("LDR State:");
-  display.setCursor(VALUE_X, START_Y + 2 * LINE_SPACING);
+  display.setCursor(VALUE_X, START_Y + row * LINE_SPACING);
   display.println(ldr == HIGH ? "Dark" : "Light");
 
+  row++;
+
   // row 3 ─ pH
-  display.setCursor(0, START_Y + 3 * LINE_SPACING);
+  display.setCursor(0, START_Y + row * LINE_SPACING);
   display.print("pH:");
-  display.setCursor(VALUE_X, START_Y + 3 * LINE_SPACING);
+  display.setCursor(VALUE_X, START_Y + row * LINE_SPACING);
   display.print(pH, 2);
 
+  row++;
+
   // row 4 ─ Depth
-  display.setCursor(0, START_Y + 4 * LINE_SPACING);
+  display.setCursor(0, START_Y + row * LINE_SPACING);
   display.print("Depth:");
-  display.setCursor(VALUE_X, START_Y + 4 * LINE_SPACING);
+  display.setCursor(VALUE_X, START_Y + row * LINE_SPACING);
   display.print(depth);
   display.print(" cm");
 
