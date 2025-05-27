@@ -8,6 +8,20 @@
 
 - Baud Rate: 9600
 
+## Pins
+
+- Temperature Sensor: GPIO 4 - **5V**
+- TDS Sensor: GPIO 34 - **3.3V**
+- LDR Sensor: GPIO 35 - **3.3V**
+- Ultrasonic Sensor: - **5V**
+  - Trigger Pin: GPIO 12
+  - Echo Pin: GPIO 14
+- pH Sensor: GPIO 25 - **3.3V**
+- Buzzer: GPIO 18
+- OLED Display: - **3.3V**
+  - SDA: GPIO 21
+  - SCL: GPIO 22
+
 ## Secrets
 
 All sensitive information is stored in a separate file called `secrets.h`. You can create this file by copying the template provided below.
@@ -28,7 +42,7 @@ const char* serverUrl = "YOUR_SERVER_URL";
 
 - [x] Temperature Sensor
 - [x] TDS Sensor
-- [x] pH Sensor
+- [x] pH Sensor (needs calibration)
 - [x] Light Sensor
 - [x] Depth Sensor (Ultrasonic)
 
@@ -66,6 +80,8 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - Wire
 - Adafruit_GFX
 - Adafruit_SSD1306
+- Preferences
+- BluetoothSerial
 
 ## Bibliography
 

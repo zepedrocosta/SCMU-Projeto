@@ -17,7 +17,7 @@
 #include <Adafruit_SSD1306.h>
 
 #include <Preferences.h>
-// #include <BluetoothSerial.h>
+#include <BluetoothSerial.h>
 
 #include <secrets.h>
 #include <pitches.h>
@@ -25,7 +25,7 @@
 // GPIO Connections
 #define TEMPERATURE_SENSOR 4 // DS18B20
 #define TDS_SENSOR 34        // TDS Sensor
-#define LDR_SENSOR 35        // LDR Sensor
+#define LDR_SENSOR 35        // LDR Sensor 
 #define TRIG_PIN 12          // Ultrasonic Trigger Pin
 #define ECHO_PIN 14          // Ultrasonic Echo Pin
 #define PH_SENSOR 25         // pH Sensor
@@ -44,7 +44,7 @@
 #define OLED_RESET -1    // Reset pin # (or -1 if sharing Arduino reset pin)
 
 #define DIST_ULTRA_TO_GROUND 21 // Distance from the ultrasonic sensor to the ground in cm
-#define WIFI_TIMEOUT 30000      // Wi-Fi connection timeout in milliseconds
+#define WIFI_BT_TIMEOUT 30000   // Bluetooth and Wi-Fi connection timeout in milliseconds (30 seconds)
 
 OneWire oneWire(TEMPERATURE_SENSOR);
 DallasTemperature sensors(&oneWire);
@@ -136,10 +136,14 @@ bool getWiFiInfo(String &ssid, String &password)
   else
   {
     Serial.println("No stored WiFi credentials found.");
-    // ADD BLUETOOTH CODE HERE TO GET THE SSID AND PASSWORD
-    ssid = ssidSecrets;
-    password = passwordSecrets;
 
+    btConnect(ssid, password);
+
+    if (ssid == "" || password == "")
+    {
+      Serial.println("No WiFi credentials received via Bluetooth.");
+      return false; // No credentials received
+    }
     // Save them to NVS
     preferences.putString("ssid", ssid);
     preferences.putString("pass", password);
@@ -157,7 +161,7 @@ void connectToWiFi(String &ssid, String &password)
 
   unsigned long startAttemptTime = millis();
 
-  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < WIFI_TIMEOUT)
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < WIFI_BT_TIMEOUT)
   {
     delay(500);
     Serial.print(".");
@@ -170,8 +174,63 @@ void connectToWiFi(String &ssid, String &password)
   }
   else
   {
-    Serial.println("\nWi-Fi TIMEOUT!!!.\n");
+    Serial.println("\nWi-Fi TIMEOUT!!!\n");
   }
+}
+
+void btConnect(String &ssid, String &password)
+{
+  BluetoothSerial SerialBT;
+
+  SerialBT.begin("Smart_Aquarium_SCMU"); // Bluetooth name
+  Serial.println("Waiting for Bluetooth connection...");
+
+  while (!SerialBT.connected(WIFI_BT_TIMEOUT)) // Wait for connection for 10 seconds
+  {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("\nBluetooth connected!");
+
+  String jsonBuffer = "";
+
+  while (true)
+  {
+    if (SerialBT.available())
+    {
+      char c = SerialBT.read();
+      jsonBuffer += c;
+
+      if (c == '\n')
+      {
+        Serial.print("Received JSON: ");
+        Serial.println(jsonBuffer);
+
+        StaticJsonDocument<200> doc;
+        DeserializationError error = deserializeJson(doc, jsonBuffer);
+
+        if (error)
+        {
+          Serial.print("Failed to parse JSON: ");
+          Serial.println(error.c_str());
+          jsonBuffer = ""; // Clear buffer and keep waiting
+        }
+        else
+        {
+          ssid = doc["ssid"].as<String>();
+          password = doc["password"].as<String>();
+          Serial.print("Received SSID: ");
+          Serial.println(ssid);
+          break;
+        }
+      }
+    }
+
+    delay(10); // Prevent CPU hogging
+  }
+  SerialBT.end(); // Close Bluetooth connection
+  Serial.println("Bluetooth connection closed.");
 }
 
 void initializationTask(void *parameter)
@@ -247,7 +306,8 @@ float readTDS(float temperature)
   float compensationCoefficient = 1.0 + 0.02 * (temperature - 25.0);
   float compensationVoltage = averageVoltage / compensationCoefficient;
 
-  float tds = (133.42 * pow(compensationVoltage, 3) - 255.86 * pow(compensationVoltage, 2) + 857.39 * compensationVoltage) * 0.5;
+  float tds = (133.42 * pow(compensationVoltage, 3) - 255.86 * pow(compensationVoltage, 2) 
+    + 857.39 * compensationVoltage) * 0.5;
 
   Serial.print("TDS Value: ");
   Serial.print(tds, 0);
