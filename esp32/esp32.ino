@@ -185,7 +185,7 @@ void btConnect(String &ssid, String &password)
   SerialBT.begin("Smart_Aquarium_SCMU"); // Bluetooth name
   Serial.println("Waiting for Bluetooth connection...");
 
-  while (!SerialBT.connected(WIFI_BT_TIMEOUT)) // Wait for connection for 10 seconds
+  while (!SerialBT.connected(WIFI_BT_TIMEOUT))
   {
     delay(500);
     Serial.print(".");
