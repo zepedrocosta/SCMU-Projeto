@@ -31,6 +31,7 @@
 #define ECHO_PIN 14          // Ultrasonic Echo Pin
 #define PH_SENSOR 25         // pH Sensor
 #define BUZZER_PIN 18        // Buzzer Pin
+#define WATER_PUMP_PIN 19    // Water Pump Pin
 
 #define VREF 3.3       // Reference voltage for the ADC
 #define SAMPLES_TDS 30 // Number of samples for TDS
@@ -108,6 +109,8 @@ void setupTask(void *parameter)
   pinMode(ECHO_PIN, INPUT);    // Ultrasonic Echo Pin
   pinMode(BUZZER_PIN, OUTPUT); // Buzzer Pin
   pinMode(TRIG_PIN, OUTPUT);   // Ultrasonic Trigger Pin
+  pinMode(WATER_PUMP_PIN, OUTPUT);
+  digitalWrite(WATER_PUMP_PIN, LOW); // Start with pump off
 
   String ssid, password;
 

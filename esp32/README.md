@@ -21,6 +21,7 @@
 - OLED Display: - **3.3V**
   - SDA: GPIO 21
   - SCL: GPIO 22
+- Water Pump: GPIO 19 - **3.3V**
 
 ## Secrets
 
