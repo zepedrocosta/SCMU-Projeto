@@ -36,9 +36,6 @@ public class CreateUserValidator implements Validator {
         if (!user.getPassword().equals(user.getConfirmPassword()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
-        if (!user.getPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&.#/-])[A-Za-z\\d@$!%*?&.#/-]{8,}$")) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE);
-
-        }
+        
     }
 }

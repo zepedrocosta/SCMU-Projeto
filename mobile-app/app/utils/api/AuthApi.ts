@@ -12,15 +12,6 @@ const ENDPOINTS = {
 };
 
 export async function authenticateUser(body: LoginRequest): Promise<string> {
-  /*const mockResponse: LoginResponse = {
-		userId: "mockUserId",
-		accessToken: "mockAccessToken",
-		refreshToken: "mockRefreshToken",
-	};
-
-	return mockResponse;*/
-
-  //TODO - Uncomment the following code when the backend is ready
   return axiosInstance
     .put(ENDPOINTS.AUTH, body)
     .then((response) => {
@@ -35,22 +26,18 @@ export async function authenticateUser(body: LoginRequest): Promise<string> {
 export async function registerUser(
   body: RegisterRequest
 ): Promise<RegisterResponse> {
-  const mockResponse: RegisterResponse = {
-    userId: "mockUserId",
-    accessToken: "mockAccessToken",
-    refreshToken: "mockRefreshToken",
-  };
-
-  return mockResponse;
-
-  //TODO - Uncomment the following code when the backend is ready
-  // return axiosInstance
-  // 	.post<RegisterResponse>(ENDPOINTS.REGISTER, body)
-  // 	.then((response) => {
-  // 		return response.data;
-  // 	})
-  // 	.catch((error) => {
-  // 		console.error("Error during registration:", error);
-  // 		throw error;
-  // 	});
+  return axiosInstance
+    .post(ENDPOINTS.REGISTER, body)
+    .then(async (response) => {
+      const data = response.data as RegisterResponse;
+      data.token = await authenticateUser({
+        email: body.email,
+        password: body.password,
+      });
+      return data;
+    })
+    .catch((error) => {
+      console.error("Error during registration:", error);
+      throw error;
+    });
 }

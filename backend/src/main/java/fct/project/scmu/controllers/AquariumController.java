@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -31,6 +32,7 @@ public class AquariumController extends AbstractController{
     @SneakyThrows
     @GetMapping("/snapshot")
     public ResponseEntity<Page<SensorsSnapshot>> getSnapshots(@RequestParam String aquariumId,
+                                                              @RequestParam(required = false) LocalDateTime date,
                                                               @RequestParam(defaultValue = "0") Integer page,
                                                               @RequestParam(defaultValue = "288") Integer size) {
         return ok(aquariumService.getSnapshots(aquariumId, page, size).get());

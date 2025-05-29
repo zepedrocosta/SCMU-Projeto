@@ -1,5 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
-import { LoginRequest, RegisterRequest } from "../../types/Auth";
+import {
+  LoginRequest,
+  RegisterRequest,
+  RegisterResponse,
+} from "../../types/Auth";
 import { authenticateUser, registerUser } from "../api/AuthApi";
 import { getUserAquariums } from "../api/AquariumApi";
 import { getUserInfo } from "../api/UserApi";
@@ -66,15 +70,13 @@ export function useRegister() {
     onSuccess: async (response) => {
       const data = response;
 
-      console.log("Register successful:", data);
-
-      await AsyncStorage.setItem("accessToken", data.accessToken);
+      await AsyncStorage.setItem("accessToken", data.token);
 
       try {
         // Fetch user aquarium data
         const [userInfo, userAquariums] = await Promise.all([
-          getUserInfo(data.userId),
-          getUserAquariums(data.userId),
+          getUserInfo(data.nickname),
+          getUserAquariums(data.nickname),
         ]);
 
         if (userInfo) {

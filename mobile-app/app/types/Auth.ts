@@ -4,15 +4,17 @@ export type LoginRequest = {
 };
 
 export type RegisterRequest = {
-  firstName: string;
-  lastName: string;
+  nickname: string;
+  name: string;
   email: string;
   password: string;
   confirmPassword: string;
 };
 
 export type RegisterResponse = {
-  userId: string;
-  accessToken: string;
-  refreshToken: string;
+  nickname: string;
+  name: string;
+  email: string;
+  role: string;
+  token: string;
 };
