@@ -10,7 +10,12 @@
 #include <DallasTemperature.h>
 
 #include <WiFi.h>
-#include <BluetoothSerial.h>
+//#include <BluetoothSerial.h>
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
@@ -184,58 +189,16 @@ void connectToWiFi(String &ssid, String &password)
 
 void btConnect(String &ssid, String &password)
 {
-  BluetoothSerial SerialBT;
+  // Initialize BLE and set the device name
+  BLEDevice::init("SmartAquarium");
 
-  SerialBT.begin("Smart_Aquarium_SCMU"); // Bluetooth name
-  Serial.println("Waiting for Bluetooth connection...");
+  // Get BLE advertiser and start advertising
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->setScanResponse(false);
 
-  while (!SerialBT.connected(WIFI_BT_TIMEOUT))
-  {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("\nBluetooth connected!");
-
-  String jsonBuffer = "";
-
-  while (true)
-  {
-    if (SerialBT.available())
-    {
-      char c = SerialBT.read();
-      jsonBuffer += c;
-
-      if (c == '\n')
-      {
-        Serial.print("Received JSON: ");
-        Serial.println(jsonBuffer);
-
-        StaticJsonDocument<200> doc;
-        DeserializationError error = deserializeJson(doc, jsonBuffer);
-
-        if (error)
-        {
-          Serial.print("Failed to parse JSON: ");
-          Serial.println(error.c_str());
-          jsonBuffer = ""; // Clear buffer and keep waiting
-        }
-        else
-        {
-          ssid = doc["ssid"].as<String>();
-          password = doc["password"].as<String>();
-          Serial.print("Received SSID: ");
-          Serial.println(ssid);
-          break;
-        }
-      }
-    }
-
-    delay(10);
-  }
-
-  SerialBT.end(); // Close Bluetooth connection
-  Serial.println("Bluetooth connection closed.");
+  // Start advertising
+  pAdvertising->start();
+  Serial.println("ESP32 is now advertising...");
 }
 
 void initializationTask(void *parameter)
