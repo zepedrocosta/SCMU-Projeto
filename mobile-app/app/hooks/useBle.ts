@@ -68,12 +68,20 @@ export default function useBLE(): BluetoothLowEnergyApi {
 	const isDuplicteDevice = (devices: Device[], nextDevice: Device) =>
 		devices.findIndex((device) => nextDevice.id === device.id) > -1;
 
+	const isEsp32Device = (device: Device) => {
+		return (
+			device.name?.toLowerCase().includes("smart") ||
+			device.localName?.toLowerCase().includes("smartaquarium") ||
+			device.name?.toLowerCase().startsWith("smartaquarium")
+		);
+	};
+
 	const scanForDevices = () => {
 		bleManager.startDeviceScan(null, null, (error, device) => {
 			if (error) {
 				console.log(error);
 			}
-			if (device) {
+			if (device && isEsp32Device(device)) {
 				setAllDevices((prevState: Device[]) => {
 					if (!isDuplicteDevice(prevState, device)) {
 						return [...prevState, device];
