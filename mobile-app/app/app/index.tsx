@@ -1,7 +1,14 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { View, StyleSheet, Image } from "react-native";
+import {
+	View,
+	StyleSheet,
+	Image,
+	ScrollView,
+	KeyboardAvoidingView,
+	Platform,
+} from "react-native";
 import { TextInput, Button, Text, Card } from "react-native-paper";
 import { useState } from "react";
 import { useLogin } from "../utils/services/AuthService";
@@ -36,56 +43,68 @@ export default function LoginPage() {
 	};
 
 	return (
-		<View style={styles.container}>
-			<Image source={require("../assets/favicon.png")} style={styles.logo} />
+		<KeyboardAvoidingView
+			style={{ flex: 1 }}
+			behavior={Platform.OS === "ios" ? "padding" : "height"}
+		>
+			<ScrollView
+				contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+				keyboardShouldPersistTaps="handled"
+			>
+				<View style={styles.container}>
+					<Image source={require("../assets/favicon.png")} style={styles.logo} />
 
-			<Card>
-				<Card.Title title="Login" />
-				<Card.Content>
-					<TextInput
-						label="Email"
-						mode="outlined"
-						onChangeText={(text) => setValue("email", text)}
-						error={!!errors.email}
-					/>
-					{errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
-
-					<TextInput
-						label="Password"
-						mode="outlined"
-						secureTextEntry={!showPassword}
-						onChangeText={(text) => setValue("password", text)}
-						error={!!errors.password}
-						style={{ marginTop: 16 }}
-						right={
-							<TextInput.Icon
-								icon={showPassword ? "eye-off" : "eye"}
-								onPress={() => setShowPassword(!showPassword)}
+					<Card>
+						<Card.Title title="Login" />
+						<Card.Content>
+							<TextInput
+								label="Email"
+								mode="outlined"
+								onChangeText={(text) => setValue("email", text)}
+								error={!!errors.email}
 							/>
-						}
-					/>
-					{errors.password && (
-						<Text style={styles.error}>{errors.password.message}</Text>
-					)}
+							{errors.email && (
+								<Text style={styles.error}>{errors.email.message}</Text>
+							)}
 
-					<Button
-						mode="contained"
-						onPress={handleSubmit(onSubmit)}
-						style={{ marginTop: 24 }}
-					>
-						Login
-					</Button>
+							<TextInput
+								label="Password"
+								mode="outlined"
+								secureTextEntry={!showPassword}
+								onChangeText={(text) => setValue("password", text)}
+								error={!!errors.password}
+								style={{ marginTop: 16 }}
+								right={
+									<TextInput.Icon
+										icon={showPassword ? "eye-off" : "eye"}
+										onPress={() => setShowPassword(!showPassword)}
+									/>
+								}
+							/>
+							{errors.password && (
+								<Text style={styles.error}>{errors.password.message}</Text>
+							)}
 
-					<Button
-						mode="text"
-						onPress={() => router.gotoRegister()}
-						style={{ marginTop: 8 }}
-					>
-						Don't have an account? Register here
-					</Button>
-				</Card.Content>
-			</Card>
-		</View>
+							<Button
+								mode="contained"
+								onPress={handleSubmit(onSubmit)}
+								style={{ marginTop: 24 }}
+							>
+								Login
+							</Button>
+
+							<Button
+								mode="text"
+								onPress={() => router.gotoRegister()}
+								style={{ marginTop: 8 }}
+							>
+								Don't have an account? Register here
+							</Button>
+						</Card.Content>
+					</Card>
+				</View>
+			</ScrollView>
+		</KeyboardAvoidingView>
 	);
 }
 
