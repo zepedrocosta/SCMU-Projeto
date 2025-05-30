@@ -9,6 +9,7 @@ export const ROUTES = {
 	REGISTER: "/pages/register",
 	CONNECT_TO_ESP: "/pages/connectToEsp",
 	CONNECTIING: "/pages/connectingScreen",
+	GROUPS: "/pages/groups",
 };
 
 export const useRoutes = () => {
@@ -54,6 +55,14 @@ export const useRoutes = () => {
 		router.push(ROUTES.CONNECTIING);
 	};
 
+	const gotoGroups = () => {
+		router.push(ROUTES.GROUPS);
+	};
+
+	const gotoGroup = (groupId: string) => {
+		router.push(`${ROUTES.GROUPS}/${groupId}`);
+	};
+
 	return {
 		gotoIndex,
 		gotoHome,
@@ -64,5 +73,7 @@ export const useRoutes = () => {
 		gotoRegister,
 		gotoConnectToEsp,
 		gotoConnectingScreen,
+		gotoGroups,
+		gotoGroup,
 	};
 };

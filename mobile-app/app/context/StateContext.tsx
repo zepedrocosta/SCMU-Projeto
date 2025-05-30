@@ -18,6 +18,7 @@ import { getUserAquariums } from "../utils/api/AquariumApi";
 const StateContext = createContext<{
 	user: State["user"];
 	aquariums: State["aquariums"];
+	groups: State["groups"];
 	defaults: State["defaults"];
 	dispatch: Dispatch<Action>;
 	isLoggedIn: boolean;
@@ -25,6 +26,7 @@ const StateContext = createContext<{
 }>({
 	user: initialState.user,
 	aquariums: initialState.aquariums,
+	groups: initialState.groups,
 	defaults: initialState.defaults,
 	dispatch: () => undefined,
 	isLoggedIn: false,
@@ -73,7 +75,7 @@ export const StateProvider: FC<{ children: ReactNode }> = ({ children }) => {
 		AsyncStorage.setItem("appState", JSON.stringify(state));
 	}, [state]);
 
-	const { user, aquariums, defaults } = state;
+	const { user, aquariums, groups, defaults } = state;
 	const isLoggedIn = typeof user.id === "string" && user.id.length > 0 && user.id !== "0";
 
 	if (loading) {
@@ -89,7 +91,7 @@ export const StateProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
 	return (
 		<StateContext.Provider
-			value={{ user, aquariums, defaults, dispatch, isLoggedIn, loading }}
+			value={{ user, aquariums, groups, defaults, dispatch, isLoggedIn, loading }}
 		>
 			{children}
 		</StateContext.Provider>

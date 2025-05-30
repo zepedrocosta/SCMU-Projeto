@@ -7,6 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useStateContext } from "../../context/StateContext";
 import { EVENTS } from "../../context/reducer";
 import { useRoutes } from "../routes";
+import { getUserGroups } from "../api/GroupApi";
 
 export function useLogin() {
 	const router = useRoutes();
@@ -27,9 +28,10 @@ export function useLogin() {
 
 			try {
 				// Fetch user aquarium data
-				const [userInfo, userAquariums] = await Promise.all([
+				const [userInfo, userAquariums, userGroups] = await Promise.all([
 					getUserInfo(data.userId),
 					getUserAquariums(data.userId),
+					getUserGroups(),
 				]);
 
 				if (userInfo) {
@@ -45,6 +47,14 @@ export function useLogin() {
 				} else {
 					dispatch({ type: EVENTS.SET_AQUARIUMS, payload: [] });
 					console.log("No aquariums found for user");
+				}
+
+				if (userGroups) {
+					dispatch({ type: EVENTS.SET_GROUPS, payload: userGroups });
+					console.log("User groups:", userGroups);
+				} else {
+					dispatch({ type: EVENTS.SET_GROUPS, payload: [] });
+					console.log("No groups found for user");
 				}
 			} catch (error) {
 				console.error("Error fetching user data:", error);
