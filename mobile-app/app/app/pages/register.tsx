@@ -8,8 +8,8 @@ import { useRouter } from "expo-router";
 import { useRegister } from "../../utils/services/AuthService";
 
 const registerSchema = z.object({
-	firstName: z.string().min(1, { message: "First name is required" }),
-	lastName: z.string().min(1, { message: "Last name is required" }),
+	name: z.string().min(1, { message: "Name is required" }),
+	nickname: z.string().min(1, { message: "Nickname is required" }),
 	email: z.string().email({ message: "Invalid email" }),
 	password: z.string().min(6, { message: "Min 6 characters" }),
 	confirmPassword: z.string().min(6, { message: "Min 6 characters" }),
@@ -58,25 +58,25 @@ export default function RegisterPage() {
 						<Card.Title title="Register" />
 						<Card.Content>
 							<TextInput
-								label="First name"
+								label="Name"
 								mode="outlined"
-								onChangeText={(text) => setValue("firstName", text)}
-								onBlur={() => trigger("firstName")}
-								error={!!errors.firstName}
+								onChangeText={(text) => setValue("name", text)}
+								onBlur={() => trigger("name")}
+								error={!!errors.name}
 							/>
-							{errors.firstName && (
-								<Text style={styles.error}>{errors.firstName.message}</Text>
+							{errors.name && (
+								<Text style={styles.error}>{errors.name.message}</Text>
 							)}
 
 							<TextInput
-								label="Last name"
+								label="Nickname"
 								mode="outlined"
-								onChangeText={(text) => setValue("lastName", text)}
-								onBlur={() => trigger("lastName")}
-								error={!!errors.lastName}
+								onChangeText={(text) => setValue("nickname", text)}
+								onBlur={() => trigger("nickname")}
+								error={!!errors.nickname}
 							/>
-							{errors.lastName && (
-								<Text style={styles.error}>{errors.lastName.message}</Text>
+							{errors.nickname && (
+								<Text style={styles.error}>{errors.nickname.message}</Text>
 							)}
 
 							<TextInput

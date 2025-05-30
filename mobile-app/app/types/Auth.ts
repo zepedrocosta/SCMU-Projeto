@@ -10,8 +10,8 @@ export type LoginResponse = {
 };
 
 export type RegisterRequest = {
-	firstName: string;
-	lastName: string;
+	name: string;
+	nickname: string;
 	email: string;
 	password: string;
 	confirmPassword: string;
