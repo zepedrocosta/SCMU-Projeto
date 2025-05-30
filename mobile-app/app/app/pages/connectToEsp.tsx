@@ -43,7 +43,9 @@ export default function ConnectToDevicePage() {
 				) : connectedDevice ? (
 					<ConnectingScreen />
 				) : (
-					<Text style={styles.titleText}>Please Connect to a Aquarium</Text>
+					<Text style={styles.titleText}>
+						Stay close to connect to your Aquarium!
+					</Text>
 				)}
 			</View>
 			<TouchableOpacity
@@ -90,7 +92,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		height: 50,
 		marginHorizontal: 20,
-		marginBottom: 5,
+		marginBottom: 120,
 		borderRadius: 8,
 	},
 	ctaButtonText: {
