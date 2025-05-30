@@ -1,8 +1,7 @@
 import { View, StyleSheet, FlatList } from "react-native";
-import { Text, List } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { Text, List, Button } from "react-native-paper";
 import { Searchbar } from "react-native-paper";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useStateContext } from "../../context/StateContext";
 import { useRoutes } from "../../utils/routes";
 
@@ -30,30 +29,49 @@ export default function HomePage() {
 		}
 	};
 
+	const handleAddAquarium = () => {
+		router.gotoConnectToEsp();
+	};
+
 	return (
 		<View style={styles.container}>
-			<Searchbar
-				placeholder="Search aquarium"
-				onChangeText={handleSearch}
-				value={searchQuery}
-				style={{ width: "95%", marginBottom: 25 }}
-			/>
-
-			<FlatList
-				data={visibleItems}
-				keyExtractor={(item) => item.id}
-				renderItem={({ item }) => (
-					<List.Item
-						title={item.name}
-						description={item.description}
-						onPress={() => handlePress(item.id)}
-						style={styles.listItem}
+			{visibleItems.length === 0 ? (
+				<View>
+					<Button
+						mode="contained"
+						onPress={handleAddAquarium}
+						style={styles.addButton}
+						labelStyle={{ fontSize: 20, fontWeight: "bold" }}
+					>
+						Add Aquarium
+					</Button>
+				</View>
+			) : (
+				<>
+					<Searchbar
+						placeholder="Search aquarium"
+						onChangeText={handleSearch}
+						value={searchQuery}
+						style={{ width: "95%", marginBottom: 25 }}
 					/>
-				)}
-				style={{ width: "100%" }}
-				contentContainerStyle={{ paddingHorizontal: 16 }}
-				showsVerticalScrollIndicator={false}
-			/>
+
+					<FlatList
+						data={visibleItems}
+						keyExtractor={(item) => item.id}
+						renderItem={({ item }) => (
+							<List.Item
+								title={item.name}
+								description={item.description}
+								onPress={() => handlePress(item.id)}
+								style={styles.listItem}
+							/>
+						)}
+						style={{ width: "100%" }}
+						contentContainerStyle={{ paddingHorizontal: 16 }}
+						showsVerticalScrollIndicator={false}
+					/>
+				</>
+			)}
 		</View>
 	);
 }
@@ -70,5 +88,13 @@ const styles = StyleSheet.create({
 		marginBottom: 8,
 		borderRadius: 8,
 		elevation: 1,
+	},
+	addButton: {
+		marginTop: 16,
+		backgroundColor: "#1976D2",
+		borderRadius: 25,
+		paddingVertical: 16,
+		paddingHorizontal: 40,
+		alignSelf: "center",
 	},
 });

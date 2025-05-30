@@ -12,6 +12,8 @@ import { Action, EVENTS, reducer } from "./reducer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { initialState, State } from "./state";
 import { ActivityIndicator } from "react-native-paper";
+import { getUserInfo } from "../utils/api/UserApi";
+import { getUserAquariums } from "../utils/api/AquariumApi";
 
 const StateContext = createContext<{
 	user: State["user"];
@@ -39,6 +41,28 @@ export const StateProvider: FC<{ children: ReactNode }> = ({ children }) => {
 			const persistedState = await AsyncStorage.getItem("appState");
 			if (persistedState) {
 				dispatch({ type: EVENTS.LOAD_STATE, payload: JSON.parse(persistedState) });
+			} else {
+				// Try to restore session from token
+				const token = await AsyncStorage.getItem("accessToken");
+				if (token) {
+					const userId = "userId";
+					if (userId) {
+						try {
+							const [userInfo, userAquariums] = await Promise.all([
+								getUserInfo(userId),
+								getUserAquariums(userId),
+							]);
+							dispatch({ type: EVENTS.SET_USER, payload: userInfo });
+							dispatch({
+								type: EVENTS.SET_DEFAULTS,
+								payload: userInfo.defaults,
+							});
+							dispatch({ type: EVENTS.SET_AQUARIUMS, payload: userAquariums });
+						} catch (e) {
+							console.error("Failed to restore session", e);
+						}
+					}
+				}
 			}
 			setLoading(false);
 		})();
@@ -50,7 +74,7 @@ export const StateProvider: FC<{ children: ReactNode }> = ({ children }) => {
 	}, [state]);
 
 	const { user, aquariums, defaults } = state;
-	const isLoggedIn = Boolean(user.id !== "");
+	const isLoggedIn = typeof user.id === "string" && user.id.length > 0 && user.id !== "0";
 
 	if (loading) {
 		return (

@@ -10,9 +10,10 @@ import {
 	Platform,
 } from "react-native";
 import { TextInput, Button, Text, Card } from "react-native-paper";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLogin } from "../utils/services/AuthService";
 import { useRoutes } from "../utils/routes";
+import { useStateContext } from "../context/StateContext";
 
 const loginSchema = z.object({
 	email: z.string().email({ message: "Invalid email" }),
@@ -23,6 +24,8 @@ type LoginInput = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
 	const router = useRoutes();
+
+	const { isLoggedIn, loading } = useStateContext();
 
 	const { mutate } = useLogin();
 
@@ -37,10 +40,18 @@ export default function LoginPage() {
 
 	const [showPassword, setShowPassword] = useState(false);
 
+	useEffect(() => {
+		if (!loading && isLoggedIn) {
+			router.gotoHome(true);
+		}
+	}, [loading, isLoggedIn]);
+
 	const onSubmit = (data: LoginInput) => {
 		console.log("Login data:", data);
 		mutate(data, {});
 	};
+
+	if (loading) return null;
 
 	return (
 		<KeyboardAvoidingView

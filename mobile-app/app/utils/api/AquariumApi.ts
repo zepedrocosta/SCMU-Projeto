@@ -9,6 +9,28 @@ const ENDPOINTS = {
 
 //region GET
 export async function getAquariumById(aquariumId: string): Promise<AquariumResponse> {
+	const mockResponse: AquariumResponse[] = [
+		{
+			id: "1",
+			name: "My Aquarium",
+			description: "A beautiful aquarium",
+		},
+		{
+			id: "2",
+			name: "My Second Aquarium",
+			description: "Another beautiful aquarium",
+		},
+		{
+			id: "3",
+			name: "Mock Aquarium",
+			description: "This is a mock aquarium for testing purposes.",
+		},
+	];
+
+	const foundAquarium = mockResponse.find((aquarium) => aquarium.id === aquariumId);
+	return foundAquarium || mockResponse[0];
+
+	// TODO uncomment when backend is ready
 	return await axiosInstance
 		.get<AquariumResponse>(
 			ENDPOINTS.AQUARIUM_BY_ID.replace(URL_PLACEHOLDER.AQUARIUM_ID, aquariumId)
