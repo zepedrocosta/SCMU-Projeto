@@ -2,13 +2,22 @@ import React from "react";
 import { View, StyleSheet, StatusBar } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Text, Avatar, Badge } from "react-native-paper";
+import { useStateContext } from "../../../context/StateContext";
+import { useRoutes } from "../../../utils/routes";
+import ListAquariums from "../../../components/ListAquariums";
 
 export default function GroupDetail() {
-	const { name, description, numberOfAquariums, color } = useLocalSearchParams();
+	const router = useRoutes();
+
+	const { name, description, numberOfAquariums, color, aquariumsIds } =
+		useLocalSearchParams();
 	const groupColor = Array.isArray(color) ? color[0] : color;
 	const aquariumCount = Array.isArray(numberOfAquariums)
 		? numberOfAquariums[0]
 		: numberOfAquariums;
+	const { aquariums } = useStateContext();
+
+	const groupAquariums = aquariums.filter((aquarium) => aquariumsIds.includes(aquarium.id));
 
 	return (
 		<View style={styles.container}>
@@ -29,6 +38,9 @@ export default function GroupDetail() {
 					<Text style={styles.aquariumLabel}>Aquariums</Text>
 				</View>
 			</View>
+
+			{/* Aquariums Section */}
+			<ListAquariums aquariums={groupAquariums} />
 		</View>
 	);
 }
@@ -83,5 +95,61 @@ const styles = StyleSheet.create({
 	aquariumLabel: {
 		color: "#888",
 		fontSize: 15,
+	},
+
+	headerSection: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "#1976d2",
+		padding: 20,
+		borderBottomLeftRadius: 24,
+		borderBottomRightRadius: 24,
+		marginBottom: 16,
+	},
+	headerIcon: {
+		backgroundColor: "#1565c0",
+		marginRight: 16,
+	},
+	greeting: {
+		color: "#fff",
+		fontWeight: "bold",
+	},
+	subGreeting: {
+		color: "#e3f2fd",
+	},
+	section: {
+		paddingHorizontal: 20,
+		marginBottom: 8,
+	},
+	sectionTitle: {
+		fontWeight: "bold",
+		marginBottom: 8,
+	},
+	searchBar: {
+		marginBottom: 8,
+	},
+	listItem: {
+		backgroundColor: "#fff",
+		marginBottom: 8,
+		borderRadius: 8,
+		elevation: 1,
+	},
+	listAvatar: {
+		backgroundColor: "#1976d2",
+	},
+	emptyText: {
+		color: "#888",
+		textAlign: "center",
+		marginTop: 16,
+	},
+	addButtonContainer: {
+		padding: 20,
+	},
+	addButton: {
+		backgroundColor: "#1976D2",
+		borderRadius: 25,
+		paddingVertical: 12,
+		alignSelf: "center",
+		width: "100%",
 	},
 });

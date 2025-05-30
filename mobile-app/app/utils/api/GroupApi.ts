@@ -17,6 +17,7 @@ export async function getUserGroups(): Promise<GroupResponse[]> {
 			numberOfAquariums: 5,
 			color: "#4CAF50",
 			createdAt: "2023-01-01T12:00:00Z",
+			aquariumsIds: ["1", "2", "3"],
 		},
 		{
 			id: "2",
@@ -25,6 +26,7 @@ export async function getUserGroups(): Promise<GroupResponse[]> {
 			numberOfAquariums: 3,
 			color: "#2196F3",
 			createdAt: "2023-02-01T12:00:00Z",
+			aquariumsIds: ["4", "5"],
 		},
 		{
 			id: "3",
@@ -33,6 +35,7 @@ export async function getUserGroups(): Promise<GroupResponse[]> {
 			numberOfAquariums: 7,
 			color: "#FF9800",
 			createdAt: "2023-03-01T12:00:00Z",
+			aquariumsIds: ["6", "7", "8"],
 		},
 		{
 			id: "4",
@@ -41,6 +44,7 @@ export async function getUserGroups(): Promise<GroupResponse[]> {
 			numberOfAquariums: 2,
 			color: "#9C27B0",
 			createdAt: "2023-04-01T12:00:00Z",
+			aquariumsIds: ["2", "5"],
 		},
 		{
 			id: "5",
@@ -49,6 +53,7 @@ export async function getUserGroups(): Promise<GroupResponse[]> {
 			numberOfAquariums: 4,
 			color: "#E91E63",
 			createdAt: "2023-05-01T12:00:00Z",
+			aquariumsIds: ["3", "4", "6"],
 		},
 		{
 			id: "6",
@@ -57,6 +62,7 @@ export async function getUserGroups(): Promise<GroupResponse[]> {
 			numberOfAquariums: 6,
 			color: "#FF5722",
 			createdAt: "2023-06-01T12:00:00Z",
+			aquariumsIds: ["1", "2", "3", "4"],
 		},
 		{
 			id: "7",
@@ -65,6 +71,7 @@ export async function getUserGroups(): Promise<GroupResponse[]> {
 			numberOfAquariums: 8,
 			color: "#3F51B5",
 			createdAt: "2023-07-01T12:00:00Z",
+			aquariumsIds: ["1", "5"],
 		},
 		{
 			id: "8",
@@ -73,6 +80,7 @@ export async function getUserGroups(): Promise<GroupResponse[]> {
 			numberOfAquariums: 9,
 			color: "#009688",
 			createdAt: "2023-08-01T12:00:00Z",
+			aquariumsIds: ["3", "6"],
 		},
 	];
 

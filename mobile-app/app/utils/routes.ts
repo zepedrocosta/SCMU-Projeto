@@ -68,6 +68,7 @@ export const useRoutes = () => {
 				description: group.description,
 				numberOfAquariums: group.numberOfAquariums,
 				color: group.color,
+				aquariumsIds: group.aquariums.map((a) => a.id),
 			},
 		});
 	};

@@ -56,6 +56,46 @@ export async function getUserAquariums(userId: string): Promise<AquariumResponse
 			name: "My Second Aquarium",
 			description: "Another beautiful aquarium",
 		},
+		{
+			id: "3",
+			name: "Mock Aquarium",
+			description: "This is a mock aquarium for testing purposes.",
+		},
+		{
+			id: "4",
+			name: "User Aquarium 1",
+			description: "Aquarium owned by user 1",
+		},
+		{
+			id: "5",
+			name: "User Aquarium 2",
+			description: "Another aquarium owned by user 1",
+		},
+		{
+			id: "6",
+			name: "User Aquarium 3",
+			description: "Yet another aquarium owned by user 1",
+		},
+		{
+			id: "7",
+			name: "User Aquarium 4",
+			description: "Fourth aquarium owned by user 1",
+		},
+		{
+			id: "8",
+			name: "User Aquarium 5",
+			description: "Fifth aquarium owned by user 1",
+		},
+		{
+			id: "9",
+			name: "User Aquarium 6",
+			description: "Sixth aquarium owned by user 1",
+		},
+		{
+			id: "10",
+			name: "User Aquarium 7",
+			description: "Seventh aquarium owned by user 1",
+		},
 	];
 
 	return mockResponse;

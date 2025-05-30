@@ -8,6 +8,8 @@ import { useStateContext } from "../../context/StateContext";
 import { EVENTS } from "../../context/reducer";
 import { useRoutes } from "../routes";
 import { getUserGroups } from "../api/GroupApi";
+import { Aquarium, AquariumResponse } from "../../types/Aquarium";
+import { Group, GroupResponse } from "../../types/Group";
 
 export function useLogin() {
 	const router = useRoutes();
@@ -50,7 +52,8 @@ export function useLogin() {
 				}
 
 				if (userGroups) {
-					dispatch({ type: EVENTS.SET_GROUPS, payload: userGroups });
+					const mappedGroups = mapAquariumsToGroups(userAquariums, userGroups);
+					dispatch({ type: EVENTS.SET_GROUPS, payload: mappedGroups });
 					console.log("User groups:", userGroups);
 				} else {
 					dispatch({ type: EVENTS.SET_GROUPS, payload: [] });
@@ -62,6 +65,21 @@ export function useLogin() {
 
 			router.gotoHome(true);
 		},
+	});
+}
+
+function mapAquariumsToGroups(
+	aquariums: AquariumResponse[],
+	groups: GroupResponse[]
+): Group[] {
+	return groups.map((group) => {
+		const groupAquariums = aquariums.filter((aquarium) =>
+			group.aquariumsIds.includes(aquarium.id)
+		);
+		return {
+			...group,
+			aquariums: groupAquariums,
+		};
 	});
 }
 

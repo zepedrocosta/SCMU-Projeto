@@ -1,3 +1,5 @@
+import { Aquarium } from "./Aquarium";
+
 export type Group = {
 	id: string;
 	name: string;
@@ -5,6 +7,7 @@ export type Group = {
 	numberOfAquariums: number;
 	color: string;
 	createdAt: string;
+	aquariums: Aquarium[];
 };
 
 export type GroupResponse = {
@@ -14,4 +17,5 @@ export type GroupResponse = {
 	numberOfAquariums: number;
 	color: string;
 	createdAt: string;
+	aquariumsIds: string[];
 };

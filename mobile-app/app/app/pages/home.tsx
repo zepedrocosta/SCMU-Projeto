@@ -4,6 +4,7 @@ import { Searchbar } from "react-native-paper";
 import { useState } from "react";
 import { useStateContext } from "../../context/StateContext";
 import { useRoutes } from "../../utils/routes";
+import ListAquariums from "../../components/ListAquariums";
 
 export default function HomePage() {
 	const { aquariums } = useStateContext();
@@ -58,39 +59,7 @@ export default function HomePage() {
 			<Divider style={{ marginVertical: 12 }} />
 
 			{/* Aquariums Section */}
-			<View style={styles.section}>
-				<Text variant="titleMedium" style={styles.sectionTitle}>
-					Your Aquariums
-				</Text>
-				{visibleItems.length === 0 ? (
-					<Text style={styles.emptyText}>No aquariums found.</Text>
-				) : (
-					<FlatList
-						data={visibleItems}
-						keyExtractor={(item) => item.id}
-						renderItem={({ item }) => (
-							<List.Item
-								title={item.name}
-								description={item.description}
-								onPress={() => handlePress(item.id)}
-								style={styles.listItem}
-								left={(props) => (
-									<Avatar.Icon
-										{...props}
-										icon="fishbowl"
-										size={36}
-										style={styles.listAvatar}
-										color="#fff"
-									/>
-								)}
-							/>
-						)}
-						style={{ width: "100%" }}
-						contentContainerStyle={{ paddingHorizontal: 0 }}
-						showsVerticalScrollIndicator={false}
-					/>
-				)}
-			</View>
+			<ListAquariums aquariums={visibleItems} />
 
 			{/* Add Aquarium Button */}
 			<View style={styles.addButtonContainer}>
