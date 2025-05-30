@@ -50,6 +50,30 @@ export async function getUserGroups(): Promise<GroupResponse[]> {
 			color: "#E91E63",
 			createdAt: "2023-05-01T12:00:00Z",
 		},
+		{
+			id: "6",
+			name: "Aquarium Maintenance Crew",
+			description: "A group for those who specialize in aquarium maintenance.",
+			numberOfAquariums: 6,
+			color: "#FF5722",
+			createdAt: "2023-06-01T12:00:00Z",
+		},
+		{
+			id: "7",
+			name: "Aquarium Photography",
+			description: "For photographers who love capturing aquarium life.",
+			numberOfAquariums: 8,
+			color: "#3F51B5",
+			createdAt: "2023-07-01T12:00:00Z",
+		},
+		{
+			id: "8",
+			name: "Aquarium DIY Projects",
+			description: "Share your DIY aquarium projects and ideas.",
+			numberOfAquariums: 9,
+			color: "#009688",
+			createdAt: "2023-08-01T12:00:00Z",
+		},
 	];
 
 	return mockResponse;

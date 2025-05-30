@@ -1,5 +1,5 @@
 import { View, StyleSheet, FlatList } from "react-native";
-import { Text, List, Button } from "react-native-paper";
+import { Text, List, Button, Avatar, Divider } from "react-native-paper";
 import { Searchbar } from "react-native-paper";
 import { useState } from "react";
 import { useStateContext } from "../../context/StateContext";
@@ -10,7 +10,6 @@ export default function HomePage() {
 	const router = useRoutes();
 
 	const [visibleItems, setVisibleItems] = useState(aquariums);
-
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const handlePress = (itemId: string) => {
@@ -35,26 +34,37 @@ export default function HomePage() {
 
 	return (
 		<View style={styles.container}>
-			{visibleItems.length === 0 ? (
+			{/* Header Section */}
+			<View style={styles.headerSection}>
+				<Avatar.Icon icon="fish" size={48} style={styles.headerIcon} color="#fff" />
 				<View>
-					<Button
-						mode="contained"
-						onPress={handleAddAquarium}
-						style={styles.addButton}
-						labelStyle={{ fontSize: 20, fontWeight: "bold" }}
-					>
-						Add Aquarium
-					</Button>
+					<Text variant="headlineSmall" style={styles.greeting}>
+						Aquarium Manager
+					</Text>
+					<Text style={styles.subGreeting}>Manage your aquariums</Text>
 				</View>
-			) : (
-				<>
-					<Searchbar
-						placeholder="Search aquarium"
-						onChangeText={handleSearch}
-						value={searchQuery}
-						style={{ width: "95%", marginBottom: 25 }}
-					/>
+			</View>
 
+			{/* Search Section */}
+			<View style={styles.section}>
+				<Searchbar
+					placeholder="Search aquarium"
+					onChangeText={handleSearch}
+					value={searchQuery}
+					style={styles.searchBar}
+				/>
+			</View>
+
+			<Divider style={{ marginVertical: 12 }} />
+
+			{/* Aquariums Section */}
+			<View style={styles.section}>
+				<Text variant="titleMedium" style={styles.sectionTitle}>
+					Your Aquariums
+				</Text>
+				{visibleItems.length === 0 ? (
+					<Text style={styles.emptyText}>No aquariums found.</Text>
+				) : (
 					<FlatList
 						data={visibleItems}
 						keyExtractor={(item) => item.id}
@@ -64,14 +74,36 @@ export default function HomePage() {
 								description={item.description}
 								onPress={() => handlePress(item.id)}
 								style={styles.listItem}
+								left={(props) => (
+									<Avatar.Icon
+										{...props}
+										icon="fishbowl"
+										size={36}
+										style={styles.listAvatar}
+										color="#fff"
+									/>
+								)}
 							/>
 						)}
 						style={{ width: "100%" }}
-						contentContainerStyle={{ paddingHorizontal: 16 }}
+						contentContainerStyle={{ paddingHorizontal: 0 }}
 						showsVerticalScrollIndicator={false}
 					/>
-				</>
-			)}
+				)}
+			</View>
+
+			{/* Add Aquarium Button */}
+			<View style={styles.addButtonContainer}>
+				<Button
+					mode="contained"
+					onPress={handleAddAquarium}
+					style={styles.addButton}
+					labelStyle={{ fontSize: 18, fontWeight: "bold" }}
+					icon="plus"
+				>
+					Add Aquarium
+				</Button>
+			</View>
 		</View>
 	);
 }
@@ -79,9 +111,40 @@ export default function HomePage() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		justifyContent: "center",
+		backgroundColor: "#f5f7fa",
+		paddingTop: 32,
+		paddingHorizontal: 0,
+	},
+	headerSection: {
+		flexDirection: "row",
 		alignItems: "center",
-		paddingTop: 40,
+		backgroundColor: "#1976d2",
+		padding: 20,
+		borderBottomLeftRadius: 24,
+		borderBottomRightRadius: 24,
+		marginBottom: 16,
+	},
+	headerIcon: {
+		backgroundColor: "#1565c0",
+		marginRight: 16,
+	},
+	greeting: {
+		color: "#fff",
+		fontWeight: "bold",
+	},
+	subGreeting: {
+		color: "#e3f2fd",
+	},
+	section: {
+		paddingHorizontal: 20,
+		marginBottom: 8,
+	},
+	sectionTitle: {
+		fontWeight: "bold",
+		marginBottom: 8,
+	},
+	searchBar: {
+		marginBottom: 8,
 	},
 	listItem: {
 		backgroundColor: "#fff",
@@ -89,12 +152,22 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		elevation: 1,
 	},
-	addButton: {
+	listAvatar: {
+		backgroundColor: "#1976d2",
+	},
+	emptyText: {
+		color: "#888",
+		textAlign: "center",
 		marginTop: 16,
+	},
+	addButtonContainer: {
+		padding: 20,
+	},
+	addButton: {
 		backgroundColor: "#1976D2",
 		borderRadius: 25,
-		paddingVertical: 16,
-		paddingHorizontal: 40,
+		paddingVertical: 12,
 		alignSelf: "center",
+		width: "100%",
 	},
 });
