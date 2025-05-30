@@ -64,7 +64,6 @@ export const useRoutes = () => {
 		router.push({
 			pathname: `${ROUTES.GROUPS}/${group.id}`,
 			params: {
-				id: group.id,
 				name: group.name,
 				description: group.description,
 				numberOfAquariums: group.numberOfAquariums,
