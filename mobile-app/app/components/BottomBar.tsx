@@ -1,9 +1,7 @@
-import { useRouter } from "expo-router";
 import * as React from "react";
 import { StyleSheet, View } from "react-native";
 import { Appbar, Badge } from "react-native-paper";
 import { useRoutes } from "../utils/routes";
-import { Route } from "expo-router/build/Route";
 
 export default function BottomBar() {
 	const router = useRoutes();
@@ -12,7 +10,7 @@ export default function BottomBar() {
 
 	return (
 		<Appbar style={styles.bottomBar}>
-			<Appbar.Action icon="magnify" onPress={() => {}} />
+			<Appbar.Action icon="apps" onPress={() => router.gotoGroups()} />
 
 			<Appbar.Action
 				icon="account"
