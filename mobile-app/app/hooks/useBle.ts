@@ -69,11 +69,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
 		devices.findIndex((device) => nextDevice.id === device.id) > -1;
 
 	const isEsp32Device = (device: Device) => {
-		// return (
-		// 	device.name?.toLowerCase().includes("smart") ||
-		// 	device.localName?.toLowerCase().includes("smartaquarium")
-		// );
-		return device.serviceUUIDs?.includes("bd8db997-757f-44b7-ad11-b81515927ca8");
+		return (
+			device.solicitedServiceUUIDs?.includes("bd8db997-757f-44b7-ad11-b81515927ca8") ||
+			device.serviceUUIDs?.includes("bd8db997-757f-44b7-ad11-b81515927ca8")
+		);
 	};
 
 	const scanForDevices = () => {
