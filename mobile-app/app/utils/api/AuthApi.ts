@@ -6,10 +6,11 @@ import {
 } from "../../types/Auth";
 import { axiosInstance } from "./axiosConfig";
 
+const basePath = "/security";
+
 const ENDPOINTS = {
-	AUTH: "/auth",
-	REGISTER: "/users",
-	REFRESH_TOKEN: "/auth/refresh-token",
+	LOGIN: basePath,
+	LOGOUT: basePath,
 };
 
 export async function authenticateUser(body: LoginRequest): Promise<LoginResponse> {
@@ -23,7 +24,7 @@ export async function authenticateUser(body: LoginRequest): Promise<LoginRespons
 
 	//TODO - Uncomment the following code when the backend is ready
 	// return axiosInstance
-	// 	.post<LoginResponse>(ENDPOINTS.AUTH, body)
+	// 	.put<LoginResponse>(ENDPOINTS.LOGIN, body)
 	// 	.then((response) => {
 	// 		return response.data;
 	// 	})
@@ -31,6 +32,21 @@ export async function authenticateUser(body: LoginRequest): Promise<LoginRespons
 	// 		console.error("Error during authentication:", error);
 	// 		throw error;
 	// 	});
+}
+
+export async function logoutUser(): Promise<void> {
+	//TODO - Uncomment the following code when the backend is ready
+	// return axiosInstance
+	// 	.delete(ENDPOINTS.LOGOUT)
+	// 	.then(() => {
+	// 		console.log("User logged out successfully");
+	// 	})
+	// 	.catch((error) => {
+	// 		console.error("Error during logout:", error);
+	// 		throw error;
+	// 	});
+
+	console.log("Mock logout successful");
 }
 
 export async function registerUser(body: RegisterRequest): Promise<RegisterResponse> {

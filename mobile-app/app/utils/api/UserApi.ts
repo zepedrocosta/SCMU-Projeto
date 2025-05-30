@@ -1,8 +1,10 @@
-import { UserWithDefaults } from "../../types/User";
+import { User, UserResponse, UserUpdateRequest, UserWithDefaults } from "../../types/User";
 import { axiosInstance, URL_PLACEHOLDER } from "./axiosConfig";
 
+const basepath = "/users";
+
 const ENDPOINTS = {
-	USER: `/users/${URL_PLACEHOLDER.USER_ID}`,
+	USER: `${basepath}/${URL_PLACEHOLDER.USER_ID}`,
 };
 
 //region GET
@@ -16,6 +18,30 @@ export async function getUserInfo(userId: string): Promise<UserWithDefaults> {
 		},
 	};
 	return mockResponse;
+}
+
+export async function updateUserInfo(
+	userId: string,
+	body: UserUpdateRequest
+): Promise<UserResponse> {
+	const mockResponse: UserResponse = {
+		id: userId,
+		name: body.name,
+		email: "some@gmail.com",
+	};
+
+	return mockResponse;
+
+	// TODO uncomment when backend is ready
+	return axiosInstance
+		.put<UserResponse>(ENDPOINTS.USER.replace(URL_PLACEHOLDER.USER_ID, userId), body)
+		.then((response) => {
+			return response.data;
+		})
+		.catch((error) => {
+			console.error("Error updating user info:", error);
+			throw error;
+		});
 }
 
 // TODO uncomment when backend is ready

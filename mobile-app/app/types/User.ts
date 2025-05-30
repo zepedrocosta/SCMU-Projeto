@@ -17,3 +17,7 @@ export interface UserDefaults {
 export interface UserWithDefaults extends User {
 	defaults: UserDefaults;
 }
+
+export type UserUpdateRequest = {
+	name: string;
+};
