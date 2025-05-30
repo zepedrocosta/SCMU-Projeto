@@ -78,6 +78,7 @@ function mapAquariumsToGroups(
 		);
 		return {
 			...group,
+			numberOfAquariums: groupAquariums.length,
 			aquariums: groupAquariums,
 		};
 	});

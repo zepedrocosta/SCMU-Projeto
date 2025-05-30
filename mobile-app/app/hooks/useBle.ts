@@ -18,6 +18,7 @@ interface BluetoothLowEnergyApi {
 		value: string
 	) => Promise<void>;
 	resetDevices: () => void;
+	refreshBluetoothState: () => void;
 }
 
 export default function useBLE(): BluetoothLowEnergyApi {
@@ -27,7 +28,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
 
 	const [allDevices, setAllDevices] = useState<Device[]>([]);
 	const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
-	const [isBluetoothOn, setBluetoothOn] = useState(true);
+	const [isBluetoothOn, setBluetoothOn] = useState(false);
 
 	useEffect(() => {
 		const subscription = bleManager.onStateChange((state) => {
@@ -54,6 +55,12 @@ export default function useBLE(): BluetoothLowEnergyApi {
 			bluetoothConnectPermissions === PermissionsAndroid.RESULTS.GRANTED &&
 			bluetoothFineLocationPermissions === PermissionsAndroid.RESULTS.GRANTED
 		);
+	};
+
+	const refreshBluetoothState = () => {
+		bleManager.state().then((state) => {
+			setBluetoothOn(state === "PoweredOn");
+		});
 	};
 
 	const requestPermissions = async (): Promise<boolean> => {
@@ -142,5 +149,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
 		isBluetoothOn,
 		writeToDevice,
 		resetDevices,
+		refreshBluetoothState,
 	};
 }

@@ -17,7 +17,7 @@ export default function GroupsPage() {
 			<FlatList
 				data={groups}
 				keyExtractor={(item) => item.id}
-				renderItem={({ item, index }) => (
+				renderItem={({ item }) => (
 					<Card
 						style={styles.card}
 						mode="elevated"
