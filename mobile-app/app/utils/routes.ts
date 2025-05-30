@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { Group } from "../types/Group";
 
 export const ROUTES = {
 	INDEX: "/",
@@ -59,8 +60,17 @@ export const useRoutes = () => {
 		router.push(ROUTES.GROUPS);
 	};
 
-	const gotoGroup = (groupId: string) => {
-		router.push(`${ROUTES.GROUPS}/${groupId}`);
+	const gotoGroup = (group: Group) => {
+		router.push({
+			pathname: `${ROUTES.GROUPS}/${group.id}`,
+			params: {
+				id: group.id,
+				name: group.name,
+				description: group.description,
+				numberOfAquariums: group.numberOfAquariums,
+				color: group.color,
+			},
+		});
 	};
 
 	return {

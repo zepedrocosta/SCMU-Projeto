@@ -22,7 +22,7 @@ export default function GroupsPage() {
 						style={styles.card}
 						mode="elevated"
 						onPress={() => {
-							router.gotoGroup(item.id);
+							router.gotoGroup(item);
 						}}
 					>
 						<View style={styles.cardContent}>
