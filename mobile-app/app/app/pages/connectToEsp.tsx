@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
-import { Text } from "react-native-paper";
+import { View, StyleSheet, TouchableOpacity, ViewBase } from "react-native";
+import { Button, Text } from "react-native-paper";
 import { useRoutes } from "../../utils/routes";
 import useBLE from "../../hooks/useBle";
 import DeviceModal from "../../components/DeviceConnectionModal";
 import ConnectingScreen from "./connectingScreen";
 
+const SERVICE_UUID = "0x180D";
+const CHARACTERISTIC_UUID = "0x2A39";
 export default function ConnectToDevicePage() {
 	const router = useRoutes();
 
@@ -16,6 +18,8 @@ export default function ConnectToDevicePage() {
 		connectToDevice,
 		connectedDevice,
 		isBluetoothOn,
+		writeToDevice,
+		resetDevices,
 	} = useBLE();
 	const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
@@ -28,11 +32,16 @@ export default function ConnectToDevicePage() {
 
 	const hideModal = () => {
 		setIsModalVisible(false);
+		resetDevices();
 	};
 
 	const openModal = async () => {
 		await scanForDevices_intern();
 		setIsModalVisible(true);
+	};
+
+	const handleSendData = () => {
+		//writeToDevice(SERVICE_UUID, CHARACTERISTIC_UUID, "Hello from app!");
 	};
 
 	return (
@@ -41,7 +50,16 @@ export default function ConnectToDevicePage() {
 				{!isBluetoothOn ? (
 					<Text style={styles.text}>Please turn on Bluetooth </Text>
 				) : connectedDevice ? (
-					<ConnectingScreen />
+					// This is when the device is connected
+					<View style={styles.titleWrapper}>
+						<Button
+							mode="contained"
+							onPress={handleSendData}
+							style={{ margin: 20 }}
+						>
+							Send Test Data
+						</Button>
+					</View>
 				) : (
 					<Text style={styles.titleText}>
 						Stay close to connect to your Aquarium!
