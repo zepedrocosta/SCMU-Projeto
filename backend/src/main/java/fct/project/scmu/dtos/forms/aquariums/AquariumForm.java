@@ -1,4 +1,4 @@
-package fct.project.scmu.dtos.responses.users;
+package fct.project.scmu.dtos.forms.aquariums;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,14 +11,9 @@ import java.io.Serializable;
 @Getter
 @NoArgsConstructor
 @ToString(doNotUseGetters = true)
-public class UserResponse implements Serializable {
-
-    private String nickname;
+public class AquariumForm implements Serializable {
 
     private String name;
 
-    private String email;
-
-    private String role;
-
+    private String location;
 }

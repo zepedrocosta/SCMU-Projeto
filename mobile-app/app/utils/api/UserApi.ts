@@ -1,21 +1,19 @@
-import { UserWithDefaults } from "../../types/User";
+import { User, UserWithDefaults } from "../../types/User";
 import { axiosInstance, URL_PLACEHOLDER } from "./axiosConfig";
 
 const ENDPOINTS = {
-	USER: `/users/${URL_PLACEHOLDER.USER_ID}`,
+  USER: `/users/${URL_PLACEHOLDER.USER_ID}`,
 };
 
 //region GET
-export async function getUserInfo(userId: string): Promise<UserWithDefaults> {
-	const mockResponse: UserWithDefaults = {
-		id: userId,
-		name: "John Doe",
-		email: "some@gmail.com",
-		defaults: {
-			darkMode: false,
-		},
-	};
-	return mockResponse;
+export async function getUserInfo(userId: string): Promise<User> {
+  const mockResponse: User = {
+    nickname: userId,
+    name: "John Doe",
+    email: "some@gmail.com",
+    role: "USER",
+  };
+  return mockResponse;
 }
 
 // TODO uncomment when backend is ready
