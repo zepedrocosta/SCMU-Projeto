@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { LoginRequest, RegisterRequest } from "../../types/Auth";
-import { authenticateUser, registerUser } from "../api/AuthApi";
+import { authenticateUser, logoutUser, registerUser } from "../api/AuthApi";
 import { getUserAquariums } from "../api/AquariumApi";
 import { getUserInfo } from "../api/UserApi";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -98,6 +98,24 @@ export function useRegister() {
 			}
 
 			router.gotoHome(true);
+		},
+	});
+}
+
+export function useLogout() {
+	const router = useRoutes();
+
+	const { dispatch } = useStateContext();
+
+	return useMutation({
+		mutationFn: () => logoutUser(),
+		onError: (error) => {
+			console.error("Register error:", error);
+		},
+		onSuccess: async (response) => {
+			dispatch({ type: EVENTS.CLEAR_USER });
+			router.gotoIndex();
+			console.log("Logout successful");
 		},
 	});
 }

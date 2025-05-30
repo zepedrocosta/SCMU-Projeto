@@ -2,19 +2,18 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Avatar, Text, List, Divider, Button } from "react-native-paper";
 import { useStateContext } from "../../context/StateContext";
-import { EVENTS } from "../../context/reducer";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRoutes } from "../../utils/routes";
+import { useLogout } from "../../utils/services/AuthService";
 
 export default function AccountPage() {
-	const { user, dispatch } = useStateContext();
+	const { user } = useStateContext();
 
 	const router = useRoutes();
 
+	const { mutate } = useLogout();
+
 	const handleLogout = () => {
-		AsyncStorage.removeItem("appState");
-		dispatch({ type: EVENTS.CLEAR_USER });
-		router.gotoIndex();
+		mutate();
 	};
 
 	return (

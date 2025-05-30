@@ -29,13 +29,16 @@ export function reducer(state: State, action: Action): State {
 			return { ...state, defaults: action.payload };
 		case EVENTS.ADD_AQUARIUM:
 			return { ...state, aquariums: [...state.aquariums, action.payload] };
-		case EVENTS.CLEAR_USER:
+		case EVENTS.CLEAR_USER: {
+			//TODO REMVOVE FROM async storage the TOKEN
 			return {
 				...state,
 				user: defaultUser,
 				aquariums: [],
 				defaults: { darkMode: false },
 			};
+		}
+
 		case EVENTS.LOAD_STATE:
 			return { ...action.payload };
 		default:
