@@ -1,5 +1,6 @@
 package fct.project.scmu.daos;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,11 +25,12 @@ public class Aquarium extends DAO implements Serializable {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToOne
+    @JsonBackReference
     private User owner;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "aquarium")
+    @OneToMany(mappedBy = "aquarium", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private Set<SensorsSnapshot> values;
 
     @ToString.Exclude
@@ -38,6 +40,6 @@ public class Aquarium extends DAO implements Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToMany(mappedBy = "aquariums", cascade = CascadeType.MERGE)
+    @ManyToMany(mappedBy = "aquariums", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private Set<Group> groups;
 }

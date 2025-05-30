@@ -13,6 +13,7 @@ export default function AccountPage() {
 
   const handleLogout = () => {
     AsyncStorage.removeItem("appState");
+    AsyncStorage.removeItem("accessToken"); // TODO: Check why this was not here
     dispatch({ type: EVENTS.CLEAR_USER });
     router.gotoIndex();
   };

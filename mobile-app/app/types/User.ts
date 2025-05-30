@@ -1,19 +1,19 @@
 export type User = {
-	id: string;
-	name: string;
-	email: string;
+  nickname: string;
+  name: string;
+  email: string;
+  role: string;
 };
 
 export type UserResponse = {
-	id: string;
-	name: string;
-	email: string;
+  nickname: string;
+  name: string;
+  email: string;
+  role: string;
 };
 
-export interface UserDefaults {
-	darkMode: boolean;
-}
+export interface UserDefaults {}
 
 export interface UserWithDefaults extends User {
-	defaults: UserDefaults;
+  defaults: UserDefaults;
 }

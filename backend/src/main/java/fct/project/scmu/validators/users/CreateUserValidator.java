@@ -36,6 +36,6 @@ public class CreateUserValidator implements Validator {
         if (!user.getPassword().equals(user.getConfirmPassword()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
-        
+
     }
 }

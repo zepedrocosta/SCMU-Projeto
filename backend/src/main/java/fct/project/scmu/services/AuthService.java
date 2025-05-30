@@ -60,6 +60,7 @@ public class AuthService implements UserDetailsService {
         var claims = new HashMap<String, Object>();
         claims.put("email", user.getEmail());
         claims.put("nickname", user.getNickname());
+        claims.put("name", user.getName());
         claims.put("role", roles);
         claims.put("agent", request.getHeader(HttpHeaders.USER_AGENT));
         claims.put("jti", session.getId().toString());

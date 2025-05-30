@@ -29,25 +29,23 @@ export function useLogin() {
 
       try {
         // Fetch user aquarium data
-        const [userInfo, userAquariums] = await Promise.all([
-          getUserInfo(t.nickname),
-          getUserAquariums(t.nickname),
-        ]);
+        const userAquariums = await getUserAquariums();
 
-        if (userInfo) {
-          dispatch({ type: EVENTS.SET_USER, payload: userInfo });
-          dispatch({ type: EVENTS.SET_DEFAULTS, payload: userInfo.defaults });
-        } else {
-          console.error("User not found");
-        }
+        dispatch({
+          type: EVENTS.SET_USER,
+          payload: {
+            nickname: t.nickname,
+            name: t.name,
+            email: t.email,
+            role: t.role,
+          },
+        });
 
-        if (userAquariums) {
+        if (userAquariums)
           dispatch({ type: EVENTS.SET_AQUARIUMS, payload: userAquariums });
-          console.log("User aquariums:", userAquariums);
-        } else {
-          dispatch({ type: EVENTS.SET_AQUARIUMS, payload: [] });
-          console.log("No aquariums found for user");
-        }
+        else dispatch({ type: EVENTS.SET_AQUARIUMS, payload: [] });
+
+        router.gotoHome(true);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -74,25 +72,23 @@ export function useRegister() {
 
       try {
         // Fetch user aquarium data
-        const [userInfo, userAquariums] = await Promise.all([
-          getUserInfo(data.nickname),
-          getUserAquariums(data.nickname),
-        ]);
+        const userAquariums = await getUserAquariums();
 
-        if (userInfo) {
-          dispatch({ type: EVENTS.SET_USER, payload: userInfo });
-          dispatch({ type: EVENTS.SET_DEFAULTS, payload: userInfo.defaults });
-        } else {
-          console.error("User not found");
-        }
+        dispatch({
+          type: EVENTS.SET_USER,
+          payload: {
+            nickname: response.nickname,
+            name: response.name,
+            email: response.email,
+            role: response.role,
+          },
+        });
 
-        if (userAquariums) {
+        if (userAquariums)
           dispatch({ type: EVENTS.SET_AQUARIUMS, payload: userAquariums });
-          console.log("User aquariums:", userAquariums);
-        } else {
-          dispatch({ type: EVENTS.SET_AQUARIUMS, payload: [] });
-          console.log("No aquariums found for user");
-        }
+        else dispatch({ type: EVENTS.SET_AQUARIUMS, payload: [] });
+
+        router.gotoHome(true);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }

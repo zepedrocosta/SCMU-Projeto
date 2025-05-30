@@ -1,10 +1,13 @@
 package fct.project.scmu;
 
+import fct.project.scmu.daos.Aquarium;
 import fct.project.scmu.daos.Role;
 import fct.project.scmu.daos.User;
 import fct.project.scmu.daos.enums.UserStatus;
+import fct.project.scmu.repositories.AquariumRepository;
 import fct.project.scmu.repositories.RoleRepository;
 import fct.project.scmu.repositories.UserRepository;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -29,6 +32,9 @@ public class ScmuApplication implements CommandLineRunner {
     private UserRepository userRepository;
 
     @Autowired
+    private AquariumRepository aquariumRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Value("${scmu.admin.password}")
@@ -47,5 +53,8 @@ public class ScmuApplication implements CommandLineRunner {
         if (!roleRepository.existsByRole("USER")) {
             roleRepository.save(new Role("USER", "Role used by App's users", new HashSet<>()));
         }
+
+        //var user = userRepository.findByNickname("rs.albuquerque").get();
+        //aquariumRepository.save(new Aquarium("Aq1", "Covilha", user, new HashSet<>(), new HashSet<>(), new HashSet<>()));
     }
 }

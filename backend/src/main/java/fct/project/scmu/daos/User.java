@@ -1,5 +1,6 @@
 package fct.project.scmu.daos;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fct.project.scmu.daos.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -42,22 +43,23 @@ public class User extends DAO implements UserDetails, Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "user")
+    @JsonIgnore
+    @OneToMany(mappedBy = "user",  fetch = FetchType.LAZY)
     private Set<Session> sessions;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private Set<Aquarium> owns;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToMany(mappedBy = "managers", cascade = CascadeType.MERGE)
+    @ManyToMany(mappedBy = "managers", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private Set<Aquarium> manages;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private Set<Group> groups;
 
 
