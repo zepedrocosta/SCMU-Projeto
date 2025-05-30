@@ -1,19 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Avatar, Text, List, Divider, Button } from "react-native-paper";
 import { useStateContext } from "../../context/StateContext";
 import { useRoutes } from "../../utils/routes";
 import { useLogout } from "../../utils/services/AuthService";
-
+import EditProfileModal from "../../components/EditProfileModal";
 export default function AccountPage() {
 	const { user } = useStateContext();
-
 	const router = useRoutes();
-
 	const { mutate } = useLogout();
+
+	const [editVisible, setEditVisible] = useState(false);
+	const [name, setName] = useState(user.name || "");
 
 	const handleLogout = () => {
 		mutate();
+	};
+
+	const openEdit = () => {
+		setName(user.name || "");
+		setEditVisible(true);
+	};
+
+	const closeEdit = () => setEditVisible(false);
+
+	const handleSave = () => {
+		closeEdit();
 	};
 
 	return (
@@ -32,9 +44,8 @@ export default function AccountPage() {
 				<List.Item
 					title="Edit Profile"
 					left={(props) => <List.Icon {...props} icon="account-edit" />}
-					onPress={() => {}}
+					onPress={openEdit}
 				/>
-
 				<List.Item
 					title="Notifications"
 					left={(props) => <List.Icon {...props} icon="bell" />}
@@ -47,13 +58,18 @@ export default function AccountPage() {
 			<Button
 				mode="contained-tonal"
 				icon="logout"
-				onPress={() => {
-					handleLogout();
-				}}
+				onPress={handleLogout}
 				style={styles.logout}
 			>
 				Logout
 			</Button>
+			<EditProfileModal
+				visible={editVisible}
+				onClose={closeEdit}
+				name={name}
+				setName={setName}
+				onSave={handleSave}
+			/>
 		</View>
 	);
 }
