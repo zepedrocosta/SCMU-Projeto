@@ -98,7 +98,7 @@ export default function BottomBar() {
 const styles = StyleSheet.create({
 	bottomBar: {
 		height: 56,
-		backgroundColor: "#7bdfec",
+		backgroundColor: "#ffffff",
 		elevation: 6,
 		flexDirection: "row",
 		justifyContent: "space-around",

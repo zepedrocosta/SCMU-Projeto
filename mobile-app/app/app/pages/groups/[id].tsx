@@ -1,15 +1,16 @@
-import React from "react";
-import { View, StyleSheet, StatusBar } from "react-native";
+import React, { useState } from "react";
+import { View, StyleSheet, StatusBar, Modal, ScrollView } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { Text, Avatar, Badge } from "react-native-paper";
+import { Text, Avatar, Badge, Button, Checkbox } from "react-native-paper";
 import { useStateContext } from "../../../context/StateContext";
 import { useRoutes } from "../../../utils/routes";
 import ListAquariums from "../../../components/ListAquariums";
+import { useAddAquariumsToGroup } from "../../../utils/services/GroupService";
 
 export default function GroupDetail() {
 	const router = useRoutes();
 
-	const { name, description, numberOfAquariums, color, aquariumsIds } =
+	const { id, name, description, numberOfAquariums, color, aquariumsIds } =
 		useLocalSearchParams();
 	const groupColor = Array.isArray(color) ? color[0] : color;
 	const aquariumCount = Array.isArray(numberOfAquariums)
@@ -17,7 +18,53 @@ export default function GroupDetail() {
 		: numberOfAquariums;
 	const { aquariums } = useStateContext();
 
-	const groupAquariums = aquariums.filter((aquarium) => aquariumsIds.includes(aquarium.id));
+	const { mutate } = useAddAquariumsToGroup();
+
+	let groupAquariums = aquariums.filter((aquarium) => aquariumsIds.includes(aquarium.id));
+
+	// Modal state
+	const [modalVisible, setModalVisible] = useState(false);
+	const [selectedAquariumsIds, setSelectedAquariumsIds] = useState<string[]>(
+		groupAquariums.map((aq) => aq.id)
+	);
+
+	const handleToggleAquarium = (id: string) => {
+		setSelectedAquariumsIds((prev) =>
+			prev.includes(id) ? prev.filter((aqId) => aqId !== id) : [...prev, id]
+		);
+	};
+
+	const handleCancel = () => {
+		setSelectedAquariumsIds(groupAquariums.map((aq) => aq.id));
+		setModalVisible(false);
+	};
+
+	const handleSave = () => {
+		const originalIds = groupAquariums.map((aq) => aq.id);
+		const newAquariumIds = selectedAquariumsIds.filter((id) => !originalIds.includes(id));
+		onSubmit(newAquariumIds);
+		setModalVisible(false);
+	};
+
+	const onSubmit = (selectedIds: string[]) => {
+		if (selectedIds.length === 0) {
+			console.log("No new aquariums to add.");
+			return;
+		}
+		console.log("New aquariums to add:", selectedIds);
+		mutate(
+			{
+				groupId: id as string,
+				aquariumIds: selectedIds,
+			},
+			{
+				onSuccess: () => {
+					// Update the number of aquariums in the group
+					// Update the local state from useStateContext
+				},
+			}
+		);
+	};
 
 	return (
 		<View style={styles.container}>
@@ -39,8 +86,69 @@ export default function GroupDetail() {
 				</View>
 			</View>
 
+			<Button
+				mode="contained"
+				style={{
+					marginTop: 16,
+					marginBottom: 20,
+					borderRadius: 8,
+					alignSelf: "center",
+				}}
+				onPress={() => {
+					setSelectedAquariumsIds(groupAquariums.map((aq) => aq.id));
+					setModalVisible(true);
+				}}
+			>
+				Add/Remove Aquariums
+			</Button>
+
 			{/* Aquariums Section */}
 			<ListAquariums aquariums={groupAquariums} />
+
+			{/* Modal for selecting aquariums */}
+			<Modal
+				visible={modalVisible}
+				animationType="slide"
+				transparent={true}
+				onRequestClose={handleCancel}
+			>
+				<View style={styles.modalOverlay}>
+					<View style={styles.modalContent}>
+						<Text style={styles.modalTitle}>Select Aquariums</Text>
+						<ScrollView style={{ maxHeight: 300 }}>
+							{aquariums.map((aq) => (
+								<View key={aq.id} style={styles.checkboxRow}>
+									<Checkbox
+										status={
+											selectedAquariumsIds.includes(aq.id)
+												? "checked"
+												: "unchecked"
+										}
+										onPress={() => handleToggleAquarium(aq.id)}
+									/>
+									<Text style={styles.checkboxLabel}>{aq.name}</Text>
+								</View>
+							))}
+						</ScrollView>
+						<View style={styles.modalButtonRow}>
+							<Button
+								mode="outlined"
+								onPress={handleCancel}
+								style={styles.modalButton}
+							>
+								Cancel
+							</Button>
+							<Button
+								mode="contained"
+								onPress={handleSave}
+								style={styles.modalButton}
+							>
+								Save
+							</Button>
+						</View>
+					</View>
+				</View>
+			</Modal>
 		</View>
 	);
 }
@@ -96,60 +204,41 @@ const styles = StyleSheet.create({
 		color: "#888",
 		fontSize: 15,
 	},
-
-	headerSection: {
-		flexDirection: "row",
+	modalOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0,0,0,0.3)",
+		justifyContent: "center",
 		alignItems: "center",
-		backgroundColor: "#1976d2",
-		padding: 20,
-		borderBottomLeftRadius: 24,
-		borderBottomRightRadius: 24,
+	},
+	modalContent: {
+		backgroundColor: "#fff",
+		borderRadius: 16,
+		padding: 24,
+		width: "85%",
+		maxWidth: 400,
+		alignItems: "center",
+	},
+	modalTitle: {
+		fontSize: 20,
+		fontWeight: "bold",
 		marginBottom: 16,
 	},
-	headerIcon: {
-		backgroundColor: "#1565c0",
-		marginRight: 16,
-	},
-	greeting: {
-		color: "#fff",
-		fontWeight: "bold",
-	},
-	subGreeting: {
-		color: "#e3f2fd",
-	},
-	section: {
-		paddingHorizontal: 20,
+	checkboxRow: {
+		flexDirection: "row",
+		alignItems: "center",
 		marginBottom: 8,
 	},
-	sectionTitle: {
-		fontWeight: "bold",
-		marginBottom: 8,
+	checkboxLabel: {
+		fontSize: 16,
 	},
-	searchBar: {
-		marginBottom: 8,
-	},
-	listItem: {
-		backgroundColor: "#fff",
-		marginBottom: 8,
-		borderRadius: 8,
-		elevation: 1,
-	},
-	listAvatar: {
-		backgroundColor: "#1976d2",
-	},
-	emptyText: {
-		color: "#888",
-		textAlign: "center",
-		marginTop: 16,
-	},
-	addButtonContainer: {
-		padding: 20,
-	},
-	addButton: {
-		backgroundColor: "#1976D2",
-		borderRadius: 25,
-		paddingVertical: 12,
-		alignSelf: "center",
+	modalButtonRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		marginTop: 24,
 		width: "100%",
+	},
+	modalButton: {
+		flex: 1,
+		marginHorizontal: 8,
 	},
 });

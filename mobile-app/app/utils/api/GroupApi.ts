@@ -5,6 +5,7 @@ const basepath = "/aquariums/groups";
 
 const ENDPOINTS = {
 	GET_USER_GROUPS: basepath,
+	ADD_AQUARIUMS_TO_GROUP: `${basepath}/aquariums`,
 };
 
 //region GET
@@ -96,4 +97,27 @@ export async function getUserGroups(): Promise<GroupResponse[]> {
 	// 		console.error("Error fetching gourps by user ID:", error);
 	// 		throw error;
 	// 	});
+}
+//endregion
+
+//region POST
+export async function addAquariumsToGroup(
+	groupId: string,
+	aquariumIds: string[]
+): Promise<{ groupId: string; aquariumIds: string[] }> {
+	// TODO remove this when backend is ready
+	return { groupId, aquariumIds };
+
+	for (const aquariumId of aquariumIds) {
+		console.log(`Adding aquarium ${aquariumId} to group ${groupId}`);
+		await axiosInstance
+			.post(`${basepath}?groupId=${groupId}&aquariumId=${aquariumId}`)
+			.then((response) => {
+				return response.data;
+			})
+			.catch((error) => {
+				console.error("Error adding aquarium to group:", error);
+				throw error;
+			});
+	}
 }
