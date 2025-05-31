@@ -10,7 +10,6 @@
 #include <DallasTemperature.h>
 
 #include <WiFi.h>
-//#include <BluetoothSerial.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
@@ -27,6 +26,7 @@
 
 #include <secrets.h>
 #include <pitches.h>
+#include "CredentialsCallback.h"
 
 // GPIO Connections
 #define TEMPERATURE_SENSOR 4 // DS18B20
@@ -53,6 +53,9 @@
 #define DIST_ULTRA_TO_GROUND 21 // Distance from the ultrasonic sensor to the ground in cm
 #define WIFI_BT_TIMEOUT 30000   // Bluetooth and Wi-Fi connection timeout in milliseconds (30 seconds)
 
+#define SERVICE_UUID "bd8db997-757f-44b7-ad11-b81515927ca8"        // UUID for the BLE service
+#define CHARACTERISTIC_UUID "6e4fe646-a8f0-4892-8ef4-9ac94142da48" // UUID for the BLE characteristic
+
 OneWire oneWire(TEMPERATURE_SENSOR);
 DallasTemperature sensors(&oneWire);
 
@@ -71,6 +74,7 @@ float angle = 0;
 volatile bool setupFinished = false;
 bool hasWiFi = false;
 bool hasDisplay = false;
+bool credentialsReceivedBT = false;
 
 int melody[] = {
     NOTE_E5, NOTE_D5, NOTE_FS4, NOTE_GS4,
@@ -108,13 +112,13 @@ void setup()
 
 void setupTask(void *parameter)
 {
-  sensors.begin();             // Start DS18B20
-  pinMode(TDS_SENSOR, INPUT);  // TDS
-  pinMode(LDR_SENSOR, INPUT);  // LDR
-  pinMode(ECHO_PIN, INPUT);    // Ultrasonic Echo Pin
-  pinMode(BUZZER_PIN, OUTPUT); // Buzzer Pin
-  pinMode(TRIG_PIN, OUTPUT);   // Ultrasonic Trigger Pin
-  pinMode(WATER_PUMP_PIN, OUTPUT);
+  sensors.begin();                   // Start DS18B20
+  pinMode(TDS_SENSOR, INPUT);        // TDS
+  pinMode(LDR_SENSOR, INPUT);        // LDR
+  pinMode(ECHO_PIN, INPUT);          // Ultrasonic Echo Pin
+  pinMode(BUZZER_PIN, OUTPUT);       // Buzzer Pin
+  pinMode(TRIG_PIN, OUTPUT);         // Ultrasonic Trigger Pin
+  pinMode(WATER_PUMP_PIN, OUTPUT);   // Water Pump Pin
   digitalWrite(WATER_PUMP_PIN, LOW); // Start with pump off
 
   String ssid, password;
@@ -146,7 +150,10 @@ bool getWiFiInfo(String &ssid, String &password)
   {
     Serial.println("No stored WiFi credentials found.");
 
-    btConnect(ssid, password);
+    btConnect();
+
+    ssid = preferences.getString("ssid", "");
+    password = preferences.getString("pass", "");
 
     if (ssid == "" || password == "")
     {
@@ -187,18 +194,42 @@ void connectToWiFi(String &ssid, String &password)
   }
 }
 
-void btConnect(String &ssid, String &password)
+void btConnect()
 {
-  // Initialize BLE and set the device name
+  // Initialize BLE
   BLEDevice::init("SmartAquarium");
+  BLEServer *pServer = BLEDevice::createServer();
+  BLEService *pService = pServer->createService(SERVICE_UUID);
 
-  // Get BLE advertiser and start advertising
+  BLECharacteristic *pCharacteristic = pService->createCharacteristic(
+      CHARACTERISTIC_UUID,
+      BLECharacteristic::PROPERTY_WRITE);
+
+  pCharacteristic->setCallbacks(new CredentialsCallback());
+
+  pService->start();
+
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-  pAdvertising->setScanResponse(false);
-
-  // Start advertising
+  pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->start();
+
   Serial.println("ESP32 is now advertising...");
+
+  unsigned long startAttemptTime = millis();
+
+  while (!credentialsReceivedBT && millis() - startAttemptTime < WIFI_BT_TIMEOUT)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+
+  // Stop BLE once credentials are received
+  Serial.println("Credentials received, stopping BLE...");
+  pAdvertising->stop();
+  pServer->removeService(pService);
+  BLEDevice::deinit(true);
+
+  Serial.println("BLE shut down!");
 }
 
 void initializationTask(void *parameter)

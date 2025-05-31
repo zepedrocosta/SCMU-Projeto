@@ -12,7 +12,7 @@
     <groupId>fct.project</groupId>
     <artifactId>scmu</artifactId>
     <version>0.1</version>
-    <name>SCMU Aquarium Projetc</name>
+    <name>SCMU Aquarium Project</name>
     <description>Spring Backend</description>
     <properties>
         <java.version>21</java.version>

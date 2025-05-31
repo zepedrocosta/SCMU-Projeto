@@ -82,7 +82,10 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - Adafruit_GFX
 - Adafruit_SSD1306
 - Preferences
-- BluetoothSerial
+- BLEDevice
+- BLEUtils
+- BLEServer
+- BLE2902
 
 ## Bibliography
 
