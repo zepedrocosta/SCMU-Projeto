@@ -121,3 +121,26 @@ export async function addAquariumsToGroup(
 			});
 	}
 }
+//endregion
+
+//region DELETE
+export async function removeAquariumFromGroup(
+	groupId: string,
+	aquariumIds: string[]
+): Promise<{ groupId: string; aquariumIds: string[] }> {
+	// TODO remove this when backend is ready
+	return { groupId, aquariumIds };
+
+	for (const aquariumId of aquariumIds) {
+		console.log(`Removing aquarium ${aquariumId} from group ${groupId}`);
+		await axiosInstance
+			.delete(`${basepath}?groupId=${groupId}&aquariumId=${aquariumId}`)
+			.then((response) => {
+				return response.data;
+			})
+			.catch((error) => {
+				console.error("Error removing aquarium from group:", error);
+				throw error;
+			});
+	}
+}

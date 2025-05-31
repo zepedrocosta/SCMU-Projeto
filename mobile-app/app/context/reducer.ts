@@ -11,6 +11,7 @@ export const EVENTS = {
 	// ADD_AQUARIUM: "ADD_AQUARIUM",
 	// ADD_GROUP: "ADD_GROUP",
 	ADD_AQUARIUMS_TO_GROUP: "ADD_AQUARIUMS_TO_GROUP",
+	REMOVE_AQUARIUMS_FROM_GROUP: "REMOVE_AQUARIUMS_FROM_GROUP",
 	CLEAR_USER: "CLEAR_USER",
 	LOAD_STATE: "LOAD_STATE",
 } as const;
@@ -24,6 +25,13 @@ export type Action =
 	// | { type: typeof EVENTS.ADD_GROUP; payload: Group }
 	| {
 			type: typeof EVENTS.ADD_AQUARIUMS_TO_GROUP;
+			payload: {
+				groupId: string;
+				aquariumIds: string[];
+			};
+	  }
+	| {
+			type: typeof EVENTS.REMOVE_AQUARIUMS_FROM_GROUP;
 			payload: {
 				groupId: string;
 				aquariumIds: string[];
@@ -56,6 +64,24 @@ export function reducer(state: State, action: Action): State {
 					return {
 						...group,
 						aquariums: [...(group.aquariums || []), ...aquariumsToAdd],
+					};
+				}
+				return group;
+			});
+			return {
+				...state,
+				groups: updatedGroups,
+			};
+		}
+		case EVENTS.REMOVE_AQUARIUMS_FROM_GROUP: {
+			const { groupId, aquariumIds } = action.payload;
+			const updatedGroups = state.groups.map((group) => {
+				if (group.id === groupId) {
+					return {
+						...group,
+						aquariums: (group.aquariums || []).filter(
+							(aq) => !aquariumIds.includes(aq.id)
+						),
 					};
 				}
 				return group;

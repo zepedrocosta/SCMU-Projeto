@@ -35,3 +35,25 @@ export function useAddAquariumsToGroup() {
 		},
 	});
 }
+
+export function useRemoveAquariumFromGroup() {
+	const { dispatch } = useStateContext();
+
+	return useMutation({
+		mutationFn: (data: { groupId: string; aquariumIds: string[] }) =>
+			addAquariumsToGroup(data.groupId, data.aquariumIds),
+		onError: (error) => {
+			console.error("Error removing aquariums from group:", error);
+		},
+		onSuccess: (variables) => {
+			dispatch({
+				type: EVENTS.REMOVE_AQUARIUMS_FROM_GROUP,
+				payload: {
+					groupId: variables.groupId,
+					aquariumIds: variables.aquariumIds,
+				},
+			});
+			console.log("Aquariums removed from group successfully:", variables);
+		},
+	});
+}

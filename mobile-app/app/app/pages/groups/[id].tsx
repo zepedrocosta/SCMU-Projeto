@@ -5,7 +5,10 @@ import { Text, Avatar, Badge, Button, Checkbox } from "react-native-paper";
 import { useStateContext } from "../../../context/StateContext";
 import { useRoutes } from "../../../utils/routes";
 import ListAquariums from "../../../components/ListAquariums";
-import { useAddAquariumsToGroup } from "../../../utils/services/GroupService";
+import {
+	useAddAquariumsToGroup,
+	useRemoveAquariumFromGroup,
+} from "../../../utils/services/GroupService";
 
 export default function GroupDetail() {
 	const router = useRoutes();
@@ -18,7 +21,8 @@ export default function GroupDetail() {
 		: numberOfAquariums;
 	const { aquariums } = useStateContext();
 
-	const { mutate } = useAddAquariumsToGroup();
+	const { mutate: addAquariumsToGroup } = useAddAquariumsToGroup();
+	const { mutate: removeAquariumFromGroup } = useRemoveAquariumFromGroup();
 
 	let groupAquariums = aquariums.filter((aquarium) => aquariumsIds.includes(aquarium.id));
 
@@ -41,29 +45,60 @@ export default function GroupDetail() {
 
 	const handleSave = () => {
 		const originalIds = groupAquariums.map((aq) => aq.id);
-		const newAquariumIds = selectedAquariumsIds.filter((id) => !originalIds.includes(id));
-		onSubmit(newAquariumIds);
+		const addedIds = selectedAquariumsIds.filter((id) => !originalIds.includes(id));
+		const removedIds = originalIds.filter((id) => !selectedAquariumsIds.includes(id));
+		onSubmit(addedIds, removedIds);
 		setModalVisible(false);
 	};
 
-	const onSubmit = (selectedIds: string[]) => {
-		if (selectedIds.length === 0) {
-			console.log("No new aquariums to add.");
+	const onSubmit = (addedIds: string[], removedIds: string[]) => {
+		// If nothing changed, do nothing
+		if (addedIds.length === 0 && removedIds.length === 0) {
+			console.log("No changes to save.");
 			return;
 		}
-		console.log("New aquariums to add:", selectedIds);
-		mutate(
-			{
-				groupId: id as string,
-				aquariumIds: selectedIds,
-			},
-			{
-				onSuccess: () => {
-					// Update the number of aquariums in the group
-					// Update the local state from useStateContext
-				},
+
+		let completed = 0;
+		const total = (addedIds.length > 0 ? 1 : 0) + (removedIds.length > 0 ? 1 : 0);
+
+		const checkDone = () => {
+			completed++;
+			if (completed === total) {
+				// Optionally refetch or update local state here
 			}
-		);
+		};
+
+		if (addedIds.length > 0) {
+			addAquariumsToGroup(
+				{
+					groupId: id as string,
+					aquariumIds: addedIds,
+				},
+				{
+					onSuccess: () => {
+						console.log("Added aquariums:", addedIds);
+						checkDone();
+					},
+					onError: checkDone,
+				}
+			);
+		}
+
+		if (removedIds.length > 0) {
+			removeAquariumFromGroup(
+				{
+					groupId: id as string,
+					aquariumIds: removedIds,
+				},
+				{
+					onSuccess: () => {
+						console.log("Removed aquariums:", removedIds);
+						checkDone();
+					},
+					onError: checkDone,
+				}
+			);
+		}
 	};
 
 	return (
