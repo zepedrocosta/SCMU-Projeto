@@ -6,7 +6,9 @@ import fct.project.scmu.daos.SensorsSnapshot;
 import fct.project.scmu.dtos.forms.aquariums.AquariumForm;
 import fct.project.scmu.dtos.forms.aquariums.EditAquariumForm;
 import fct.project.scmu.dtos.forms.aquariums.SensorSnapshotForm;
+import fct.project.scmu.dtos.forms.aquariums.ThresholdForm;
 import fct.project.scmu.dtos.responses.aquariums.AquariumResponse;
+import fct.project.scmu.dtos.responses.aquariums.ThresholdResponse;
 import fct.project.scmu.services.AquariumService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -88,6 +90,11 @@ public class AquariumController extends AbstractController{
     @GetMapping("/groups/aquariums")
     public ResponseEntity<List<AquariumResponse>> getAquariumsInGroup(@RequestParam String groupId) {
         return ok(aquariumService.getAquariumsInGroup(groupId));
+    }
+
+    @PutMapping("/threshold")
+    public ResponseEntity<ThresholdResponse> editThreshold(@RequestBody ThresholdForm form) {
+        return ok(aquariumService.editThreshold(form));
     }
 
 }

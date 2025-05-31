@@ -6,11 +6,10 @@ import fct.project.scmu.daos.Group;
 import fct.project.scmu.daos.SensorsSnapshot;
 import fct.project.scmu.daos.User;
 import fct.project.scmu.dtos.forms.aquariums.EditAquariumForm;
+import fct.project.scmu.dtos.forms.aquariums.ThresholdForm;
 import fct.project.scmu.dtos.responses.aquariums.AquariumResponse;
-import fct.project.scmu.repositories.AquariumRepository;
-import fct.project.scmu.repositories.GroupsRepository;
-import fct.project.scmu.repositories.SensorsSnapshotRepository;
-import fct.project.scmu.repositories.UserRepository;
+import fct.project.scmu.dtos.responses.aquariums.ThresholdResponse;
+import fct.project.scmu.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +35,7 @@ public class AquariumService {
     private final SensorsSnapshotRepository snapshotRepository;
     private final UserRepository userRepository;
     private final GroupsRepository groupsRepository;
+    private final ThresholdRepository thresholdRepository;
     private final ObjectMapper objectMapper;
 
     public Optional<Void> storeSnapshot(SensorsSnapshot snapshot, String aquariumId) {
@@ -184,6 +184,32 @@ public class AquariumService {
 
         return group.getAquariums().stream()
                 .map(aquarium -> objectMapper.convertValue(aquarium, AquariumResponse.class)).toList();
+    }
+
+    public ThresholdResponse editThreshold(ThresholdForm form) {
+        var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var aquarium = aquariumRepository.findById(UUID.fromString(form.getAquariumId()));
+
+        if (aquarium.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        if (!aquarium.get().getOwner().getId().equals(principal.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        var threshold = aquarium.get().getThreshold();
+        threshold.setMinTemperature(form.getMinTemperature());
+        threshold.setMaxTemperature(form.getMaxTemperature());
+        threshold.setMinPH(form.getMinPH());
+        threshold.setMaxPH(form.getMaxPH());
+        threshold.setMinTds(form.getMinTds());
+        threshold.setMaxTds(form.getMaxTds());
+        threshold.setMinHeight(form.getMinHeight());
+        threshold.setMaxHeight(form.getMaxHeight());
+
+        thresholdRepository.save(threshold);
+        return objectMapper.convertValue(threshold, ThresholdResponse.class);
     }
 
     private Aquarium checkPermission(Optional<Aquarium> res) {

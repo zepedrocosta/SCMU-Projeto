@@ -42,4 +42,9 @@ public class Aquarium extends DAO implements Serializable {
     @EqualsAndHashCode.Exclude
     @ManyToMany(mappedBy = "aquariums", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private Set<Group> groups;
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToOne
+    private Threshold threshold;
 }
