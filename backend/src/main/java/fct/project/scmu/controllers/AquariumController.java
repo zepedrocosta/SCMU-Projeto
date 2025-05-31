@@ -8,6 +8,7 @@ import fct.project.scmu.dtos.forms.aquariums.EditAquariumForm;
 import fct.project.scmu.dtos.forms.aquariums.SensorSnapshotForm;
 import fct.project.scmu.dtos.forms.aquariums.ThresholdForm;
 import fct.project.scmu.dtos.responses.aquariums.AquariumResponse;
+import fct.project.scmu.dtos.responses.aquariums.SnapshotResponse;
 import fct.project.scmu.dtos.responses.aquariums.ThresholdResponse;
 import fct.project.scmu.services.AquariumService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class AquariumController extends AbstractController{
     private final AquariumService aquariumService;
 
     @PostMapping("/snapshot")
-    public ResponseEntity<Void> storeSnapshot(@RequestBody SensorSnapshotForm form) {
+    public ResponseEntity<SnapshotResponse> storeSnapshot(@RequestBody SensorSnapshotForm form) {
         return ok(aquariumService.storeSnapshot(convert(form, SensorsSnapshot.class), form.getAquariumId()));
     }
 

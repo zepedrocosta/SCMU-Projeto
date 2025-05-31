@@ -8,6 +8,7 @@ import fct.project.scmu.daos.User;
 import fct.project.scmu.dtos.forms.aquariums.EditAquariumForm;
 import fct.project.scmu.dtos.forms.aquariums.ThresholdForm;
 import fct.project.scmu.dtos.responses.aquariums.AquariumResponse;
+import fct.project.scmu.dtos.responses.aquariums.SnapshotResponse;
 import fct.project.scmu.dtos.responses.aquariums.ThresholdResponse;
 import fct.project.scmu.repositories.*;
 import lombok.RequiredArgsConstructor;
@@ -38,15 +39,35 @@ public class AquariumService {
     private final ThresholdRepository thresholdRepository;
     private final ObjectMapper objectMapper;
 
-    public Optional<Void> storeSnapshot(SensorsSnapshot snapshot, String aquariumId) {
-        var aquarium = aquariumRepository.findByName(aquariumId);
-        if (aquarium.isEmpty()) {
+    public SnapshotResponse storeSnapshot(SensorsSnapshot snapshot, String aquariumId) {
+        var response = aquariumRepository.findByName(aquariumId);
+        if (response.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        var aquarium = response.get();
+        snapshot.setAquarium(aquarium);
+        snapshotRepository.save(snapshot);
+
+        var threshold = aquarium.getThreshold();
+        var exceedsThreshold = false;
+        if (snapshot.getTemperature() < threshold.getMinTemperature() || snapshot.getTemperature() > threshold.getMaxTemperature()) {
+            exceedsThreshold = true;
         }
 
-        snapshot.setAquarium(aquarium.get());
-        snapshotRepository.save(snapshot);
-        return Optional.empty();
+        if (snapshot.getPh() < threshold.getMinPH() || snapshot.getPh() > threshold.getMaxPH()) {
+            exceedsThreshold = true;
+        }
+
+        if (snapshot.getTds() < threshold.getMinTds() || snapshot.getTds() > threshold.getMaxTds()) {
+            aquarium.setBombWorking(true);
+            exceedsThreshold = true;
+            aquariumRepository.save(aquarium);
+        }
+
+        if (snapshot.getHeight() < threshold.getMinHeight() || snapshot.getHeight() > threshold.getMaxHeight()) {
+            exceedsThreshold = true;
+        }
+
+        return new SnapshotResponse(aquarium.isBombWorking(), exceedsThreshold);
     }
 
     @Async

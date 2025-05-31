@@ -22,6 +22,9 @@ public class Aquarium extends DAO implements Serializable {
     @Column(nullable = false)
     private String location;
 
+    @Column
+    private boolean isBombWorking = false;
+
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToOne
