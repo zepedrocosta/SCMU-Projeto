@@ -8,6 +8,7 @@ import fct.project.scmu.daos.User;
 import fct.project.scmu.dtos.forms.aquariums.EditAquariumForm;
 import fct.project.scmu.dtos.forms.aquariums.ThresholdForm;
 import fct.project.scmu.dtos.responses.aquariums.AquariumResponse;
+import fct.project.scmu.dtos.responses.aquariums.GroupsResponse;
 import fct.project.scmu.dtos.responses.aquariums.SnapshotResponse;
 import fct.project.scmu.dtos.responses.aquariums.ThresholdResponse;
 import fct.project.scmu.repositories.*;
@@ -20,10 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
@@ -114,15 +112,16 @@ public class AquariumService {
         return Optional.empty();
     }
 
-    public List<AquariumResponse> listAquariums() {
+    @Async
+    public Future<List<AquariumResponse>> listAquariums() {
         var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         var ownedAq = principal.getOwns();
 
         var managedAq = principal.getManages();
 
-        return Stream.concat(ownedAq.stream(), managedAq.stream()).distinct()
-                .map(aquarium -> objectMapper.convertValue(aquarium, AquariumResponse.class)).toList();
+        return CompletableFuture.completedFuture(Stream.concat(ownedAq.stream(), managedAq.stream()).distinct()
+                .map(aquarium -> objectMapper.convertValue(aquarium, AquariumResponse.class)).toList());
     }
 
     public String createGroup(String groupName) {
@@ -134,9 +133,40 @@ public class AquariumService {
         return groupName;
     }
 
-    public List<String> listGroups() {
+    public List<GroupsResponse> listGroups() {
         var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return principal.getGroups().stream().map(Group::getName).toList();
+        var groups = principal.getGroups();
+        List<GroupsResponse> response = new ArrayList<>();
+        for (Group group : groups) {
+            List<String> aquariums = group.getAquariums().stream().map(Aquarium::getName).toList();
+            response.add(new GroupsResponse(group.getId().toString(), group.getName(), aquariums));
+        }
+        return response;
+    }
+
+    @Async
+    public Future<Page<AquariumResponse>> searchAquariums(String query, int page, int size) {
+        var pageable = PageRequest.of(page, size);
+        Page<Aquarium> aquariums = aquariumRepository.search(query, pageable);
+        return CompletableFuture.completedFuture(aquariums.map(aquarium -> objectMapper.convertValue(aquarium, AquariumResponse.class)));
+    }
+
+    public boolean bombAquarium(String aquariumId) {
+        var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var aquariumRes = aquariumRepository.findByName(aquariumId);
+        if (aquariumRes.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        var aquarium = aquariumRes.get();
+
+        if (!aquarium.getOwner().getId().equals(principal.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        var state = aquarium.isBombWorking();
+        aquarium.setBombWorking(!state);
+        aquariumRepository.save(aquarium);
+        return !state;
     }
 
     public Optional<AquariumResponse> addAquariumToGroup(String groupId, String aquariumId) {
