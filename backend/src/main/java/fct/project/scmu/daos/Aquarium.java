@@ -49,7 +49,7 @@ public class Aquarium extends DAO implements Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToOne(mappedBy = "aquarium", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "aquarium", cascade = CascadeType.MERGE, fetch = FetchType.EAGER, orphanRemoval = true)
     @JsonManagedReference
     private Threshold threshold;
 }

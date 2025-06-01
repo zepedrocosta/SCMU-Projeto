@@ -9,6 +9,7 @@ import fct.project.scmu.dtos.forms.aquariums.EditAquariumForm;
 import fct.project.scmu.dtos.forms.aquariums.ThresholdForm;
 import fct.project.scmu.dtos.responses.aquariums.*;
 import fct.project.scmu.repositories.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -106,11 +107,13 @@ public class AquariumService {
         return Optional.of(objectMapper.convertValue(aquarium, AquariumResponse.class));
     }
 
+
     public Optional<Void> deleteAquarium(String aquariumId) {
         var res = aquariumRepository.findById(UUID.fromString(aquariumId));
         var aquarium = checkPermission(res);
 
         aquariumRepository.delete(aquarium);
+
         return Optional.empty();
     }
 
