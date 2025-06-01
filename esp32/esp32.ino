@@ -26,7 +26,7 @@
 
 #include <secrets.h>
 #include <pitches.h>
-#include "CredentialsCallback.h"
+#include <CredentialsCallback.h>
 
 // GPIO Connections
 #define TEMPERATURE_SENSOR 4 // DS18B20
@@ -71,10 +71,12 @@ int pH_buf[SAMPLES_PH];
 
 float angle = 0;
 
-volatile bool setupFinished = false;
-bool hasWiFi = false;
-bool hasDisplay = false;
-bool credentialsReceivedBT = false;
+volatile bool setupFinished = false; // Flag to indicate if setup is finished
+bool hasWiFi = false;                // Flag to indicate if Wi-Fi is connected
+bool hasDisplay = false;             // Flag to indicate if OLED display is connected
+bool credentialsReceivedBT = false;  // Flag to indicate if credentials were received via Bluetooth
+bool isBombWorking = false;          // Flag to indicate if the bomb is working
+bool areValuesNormal = false;        // Flag to indicate if the values are normal
 
 int melody[] = {
     NOTE_E5, NOTE_D5, NOTE_FS4, NOTE_GS4,
@@ -261,10 +263,12 @@ void loop()
     if (hasDisplay)
       showData(tempC, tdsValue, hasLight, depth, pHValue);
 
-    // if (hasWiFi)
-    //   sendData(tempC, tdsValue, hasLight, depth, pHValue);
+    if (hasWiFi)
+      sendData(tempC, tdsValue, hasLight, depth, pHValue);
 
-    if (!idealValues(tempC, tdsValue, hasLight, depth, pHValue))
+    controlWaterPump();
+
+    if (!areValuesNormal)
       singNokia();
 
     Serial.println();
@@ -397,7 +401,7 @@ void sendData(float temperature, float tds, int ldr, int depth, float pH)
     {
       Serial.printf("POST... code: %d\n", httpResponseCode);
       String response = http.getString();
-      Serial.println(response);
+      analyseResponse(response);
     }
     else
     {
@@ -412,13 +416,27 @@ void sendData(float temperature, float tds, int ldr, int depth, float pH)
   }
 }
 
-bool idealValues(float temperature, float tds, int ldr, int depth, float pH)
+void analyseResponse(String response)
 {
-  return (temperature >= 24.0 && temperature <= 27.0) &&
-         (tds >= 150 && tds <= 300) &&
-         (ldr == LOW) &&
-         (depth >= 10 && depth <= 30) &&
-         (pH >= 6.5 && pH <= 7.5);
+  StaticJsonDocument<200> jsonDoc;
+  DeserializationError error = deserializeJson(jsonDoc, response);
+
+  if (error)
+  {
+    Serial.print("deserializeJson() failed: ");
+    Serial.println(error.f_str());
+    return;
+  }
+
+  if (jsonDoc.containsKey("isBombWorking"))
+  {
+    isBombWorking = jsonDoc["isBombWorking"];
+  }
+
+  if (jsonDoc.containsKey("areValuesNormal"))
+  {
+    areValuesNormal = jsonDoc["areValuesNormal"];
+  }
 }
 
 void showData(float temperature, float tds, int ldr, int depth, float pH)
@@ -554,6 +572,20 @@ long microsecondsToCentimeters(long microseconds)
   // The ping travels out and back, so to find the distance of the
   // object we take half of the distance travelled.
   return (microseconds / 29.1) / 2;
+}
+
+void controlWaterPump()
+{
+  if (isBombWorking)
+  {
+    Serial.println("Bomb is working, turning on water pump...");
+    digitalWrite(WATER_PUMP_PIN, HIGH);
+  }
+  else
+  {
+    Serial.println("Bomb is not working, turning off water pump...");
+    digitalWrite(WATER_PUMP_PIN, LOW);
+  }
 }
 
 void singNokia()
