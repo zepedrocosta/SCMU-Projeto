@@ -9,6 +9,7 @@ import {
 	useAddAquariumsToGroup,
 	useRemoveAquariumFromGroup,
 } from "../../../utils/services/GroupService";
+import { Aquarium } from "../../../types/Aquarium";
 
 export default function GroupDetail() {
 	const router = useRoutes();
@@ -16,15 +17,19 @@ export default function GroupDetail() {
 	const { id, name, description, numberOfAquariums, color, aquariumsIds } =
 		useLocalSearchParams();
 	const groupColor = Array.isArray(color) ? color[0] : color;
-	const aquariumCount = Array.isArray(numberOfAquariums)
-		? numberOfAquariums[0]
-		: numberOfAquariums;
+
+	const [aquariumCount, setAquariumCount] = useState<number>(
+		Number(Array.isArray(numberOfAquariums) ? numberOfAquariums[0] : numberOfAquariums)
+	);
+
 	const { aquariums } = useStateContext();
+
+	const [groupAquariums, setGroupAquariums] = useState<Aquarium[]>(
+		aquariums.filter((aquarium) => aquariumsIds.includes(aquarium.id))
+	);
 
 	const { mutate: addAquariumsToGroup } = useAddAquariumsToGroup();
 	const { mutate: removeAquariumFromGroup } = useRemoveAquariumFromGroup();
-
-	let groupAquariums = aquariums.filter((aquarium) => aquariumsIds.includes(aquarium.id));
 
 	// Modal state
 	const [modalVisible, setModalVisible] = useState(false);
@@ -78,6 +83,11 @@ export default function GroupDetail() {
 					onSuccess: () => {
 						console.log("Added aquariums:", addedIds);
 						checkDone();
+						setGroupAquariums((prev) => [
+							...prev,
+							...aquariums.filter((aq) => addedIds.includes(aq.id)),
+						]);
+						setAquariumCount(groupAquariums.length);
 					},
 					onError: checkDone,
 				}
@@ -94,6 +104,10 @@ export default function GroupDetail() {
 					onSuccess: () => {
 						console.log("Removed aquariums:", removedIds);
 						checkDone();
+						setGroupAquariums((prev) =>
+							prev.filter((aq) => !removedIds.includes(aq.id))
+						);
+						setAquariumCount(groupAquariums.length);
 					},
 					onError: checkDone,
 				}

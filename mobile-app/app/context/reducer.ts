@@ -63,6 +63,8 @@ export function reducer(state: State, action: Action): State {
 					);
 					return {
 						...group,
+						numberOfAquariums:
+							(group.aquariums || []).length + aquariumsToAdd.length,
 						aquariums: [...(group.aquariums || []), ...aquariumsToAdd],
 					};
 				}
@@ -79,6 +81,9 @@ export function reducer(state: State, action: Action): State {
 				if (group.id === groupId) {
 					return {
 						...group,
+						numberOfAquariums: group.aquariums
+							? group.aquariums.length - aquariumIds.length
+							: 0,
 						aquariums: (group.aquariums || []).filter(
 							(aq) => !aquariumIds.includes(aq.id)
 						),
