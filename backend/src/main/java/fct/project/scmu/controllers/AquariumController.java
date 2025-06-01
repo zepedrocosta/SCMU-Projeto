@@ -7,10 +7,7 @@ import fct.project.scmu.dtos.forms.aquariums.AquariumForm;
 import fct.project.scmu.dtos.forms.aquariums.EditAquariumForm;
 import fct.project.scmu.dtos.forms.aquariums.SensorSnapshotForm;
 import fct.project.scmu.dtos.forms.aquariums.ThresholdForm;
-import fct.project.scmu.dtos.responses.aquariums.AquariumResponse;
-import fct.project.scmu.dtos.responses.aquariums.GroupsResponse;
-import fct.project.scmu.dtos.responses.aquariums.SnapshotResponse;
-import fct.project.scmu.dtos.responses.aquariums.ThresholdResponse;
+import fct.project.scmu.dtos.responses.aquariums.*;
 import fct.project.scmu.services.AquariumService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -49,7 +46,7 @@ public class AquariumController extends AbstractController{
     }
 
     @GetMapping
-    public ResponseEntity<Aquarium> getAquarium(@RequestParam String id) {
+    public ResponseEntity<PrivAquariumResponse> getAquarium(@RequestParam String id) {
         return ok(aquariumService.getAquarium(id));
     }
 

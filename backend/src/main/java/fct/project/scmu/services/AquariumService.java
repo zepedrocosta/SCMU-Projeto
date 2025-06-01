@@ -7,10 +7,7 @@ import fct.project.scmu.daos.SensorsSnapshot;
 import fct.project.scmu.daos.User;
 import fct.project.scmu.dtos.forms.aquariums.EditAquariumForm;
 import fct.project.scmu.dtos.forms.aquariums.ThresholdForm;
-import fct.project.scmu.dtos.responses.aquariums.AquariumResponse;
-import fct.project.scmu.dtos.responses.aquariums.GroupsResponse;
-import fct.project.scmu.dtos.responses.aquariums.SnapshotResponse;
-import fct.project.scmu.dtos.responses.aquariums.ThresholdResponse;
+import fct.project.scmu.dtos.responses.aquariums.*;
 import fct.project.scmu.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -87,11 +84,16 @@ public class AquariumService {
         return Optional.of(objectMapper.convertValue(aquarium, AquariumResponse.class));
     }
 
-    public Optional<Aquarium> getAquarium(String id) {
+    public Optional<PrivAquariumResponse> getAquarium(String id) {
         var res = aquariumRepository.findById(UUID.fromString(id));
         checkPermission(res);
+        var aquarium = res.get();
+        PrivAquariumResponse aquariumResponse = objectMapper.convertValue(aquarium, PrivAquariumResponse.class);
+        ThresholdResponse thresholdResponse = objectMapper.convertValue(res.get().getThreshold(), ThresholdResponse.class);
 
-        return res;
+        aquariumResponse.setOwnerUsername(aquarium.getOwner().getNickname());
+        aquariumResponse.setThreshold(thresholdResponse);
+        return Optional.of(aquariumResponse);
     }
 
     public Optional<AquariumResponse> updateAquarium(EditAquariumForm form) {
@@ -105,7 +107,7 @@ public class AquariumService {
     }
 
     public Optional<Void> deleteAquarium(String aquariumId) {
-        var res = aquariumRepository.findByName(aquariumId);
+        var res = aquariumRepository.findById(UUID.fromString(aquariumId));
         var aquarium = checkPermission(res);
 
         aquariumRepository.delete(aquarium);

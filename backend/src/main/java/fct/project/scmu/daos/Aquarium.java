@@ -1,6 +1,7 @@
 package fct.project.scmu.daos;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -48,6 +49,7 @@ public class Aquarium extends DAO implements Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToOne
+    @OneToOne(mappedBy = "aquarium", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @JsonManagedReference
     private Threshold threshold;
 }
