@@ -17,7 +17,7 @@ import java.util.Set;
 @Entity(name = "aquariums")
 public class Aquarium extends DAO implements Serializable {
 
-    @Column(length = 64, unique = true, nullable = false)
+    @Column(length = 64, nullable = false)
     private String name;
 
     @Column(nullable = false)
