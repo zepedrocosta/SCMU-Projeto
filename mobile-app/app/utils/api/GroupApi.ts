@@ -7,6 +7,7 @@ const basepath = "/aquariums/groups";
 const ENDPOINTS = {
 	GET_USER_GROUPS: basepath,
 	ADD_AQUARIUMS_TO_GROUP: `${basepath}/aquariums`,
+	ADD_GROUP: `${basepath}/group?groupName=`,
 };
 
 const mockResponse: GroupResponse[] = [
@@ -141,6 +142,36 @@ export async function addAquariumsToGroup(
 			});
 	}
 }
+
+export async function addGroup(groupName: string): Promise<GroupResponse> {
+	console.log(`Adding group with name: ${groupName}`);
+	return {
+		id: String(Date.now()),
+		name: groupName,
+		description: "",
+		numberOfAquariums: 0,
+		createdAt: new Date().toISOString(),
+		aquariumsIds: [],
+	};
+
+	// TODO remove this when backend is ready, check response type
+	return await axiosInstance
+		.post<string>(ENDPOINTS.ADD_GROUP + groupName)
+		.then((response) => {
+			return {
+				id: response.data,
+				name: groupName,
+				description: "Mock response for group creation",
+				numberOfAquariums: 0,
+				createdAt: new Date().toISOString(),
+				aquariumsIds: [],
+			};
+		})
+		.catch((error) => {
+			console.error("Error adding group:", error);
+			throw error;
+		});
+}
 //endregion
 
 //region DELETE
@@ -164,3 +195,20 @@ export async function removeAquariumFromGroup(
 			});
 	}
 }
+
+export async function deleteGroup(groupId: string): Promise<string> {
+	// TODO remove this when backend is ready
+	console.log(`Deleting group with ID: ${groupId}`);
+	return groupId;
+
+	// return await axiosInstance
+	// 	.delete(`${basepath}/group/${groupId}`)
+	// 	.then(() => {
+	// 		console.log(`Group with ID ${groupId} deleted successfully`);
+	// 	})
+	// 	.catch((error) => {
+	// 		console.error("Error deleting group:", error);
+	// 		throw error;
+	// 	});
+}
+//endregion

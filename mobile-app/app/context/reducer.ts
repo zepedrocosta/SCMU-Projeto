@@ -9,9 +9,10 @@ export const EVENTS = {
 	SET_GROUPS: "SET_GROUPS",
 	SET_DEFAULTS: "SET_DEFAULTS",
 	// ADD_AQUARIUM: "ADD_AQUARIUM",
-	// ADD_GROUP: "ADD_GROUP",
+	ADD_GROUP: "ADD_GROUP",
 	ADD_AQUARIUMS_TO_GROUP: "ADD_AQUARIUMS_TO_GROUP",
 	REMOVE_AQUARIUMS_FROM_GROUP: "REMOVE_AQUARIUMS_FROM_GROUP",
+	REMOVE_GROUP: "REMOVE_GROUP",
 	CLEAR_USER: "CLEAR_USER",
 	LOAD_STATE: "LOAD_STATE",
 } as const;
@@ -22,7 +23,7 @@ export type Action =
 	| { type: typeof EVENTS.SET_GROUPS; payload: Group[] }
 	| { type: typeof EVENTS.SET_DEFAULTS; payload: UserDefaults }
 	// | { type: typeof EVENTS.ADD_AQUARIUM; payload: Aquarium }
-	// | { type: typeof EVENTS.ADD_GROUP; payload: Group }
+	| { type: typeof EVENTS.ADD_GROUP; payload: Group }
 	| {
 			type: typeof EVENTS.ADD_AQUARIUMS_TO_GROUP;
 			payload: {
@@ -35,6 +36,12 @@ export type Action =
 			payload: {
 				groupId: string;
 				aquariumIds: string[];
+			};
+	  }
+	| {
+			type: typeof EVENTS.REMOVE_GROUP;
+			payload: {
+				groupId: string;
 			};
 	  }
 	| { type: typeof EVENTS.CLEAR_USER }
@@ -52,8 +59,8 @@ export function reducer(state: State, action: Action): State {
 			return { ...state, defaults: action.payload };
 		// case EVENTS.ADD_AQUARIUM:
 		// 	return { ...state, aquariums: [...state.aquariums, action.payload] };
-		// case EVENTS.ADD_GROUP:
-		// 	return { ...state, groups: [...state.groups, action.payload] };
+		case EVENTS.ADD_GROUP:
+			return { ...state, groups: [...state.groups, action.payload] };
 		case EVENTS.ADD_AQUARIUMS_TO_GROUP: {
 			const { groupId, aquariumIds } = action.payload;
 			const updatedGroups = state.groups.map((group) => {
@@ -91,6 +98,14 @@ export function reducer(state: State, action: Action): State {
 				}
 				return group;
 			});
+			return {
+				...state,
+				groups: updatedGroups,
+			};
+		}
+		case EVENTS.REMOVE_GROUP: {
+			const { groupId } = action.payload;
+			const updatedGroups = state.groups.filter((group) => group.id !== groupId);
 			return {
 				...state,
 				groups: updatedGroups,

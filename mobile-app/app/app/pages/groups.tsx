@@ -1,19 +1,42 @@
-import React from "react";
-import { View, StyleSheet, FlatList } from "react-native";
-import { Card, Text, Badge, Avatar } from "react-native-paper";
+import React, { useState } from "react";
+import { View, StyleSheet, FlatList, Modal } from "react-native";
+import { Card, Text, Badge, Avatar, Button } from "react-native-paper";
 import { useRoutes } from "../../utils/routes";
 import { useStateContext } from "../../context/StateContext";
+import AddGroupForm from "../../components/AddGroupForm"; // <-- import your form
+import { useAddGroup } from "../../utils/services/GroupService";
 
 export default function GroupsPage() {
 	const router = useRoutes();
-
 	const { groups } = useStateContext();
+
+	const [modalVisible, setModalVisible] = useState(false);
+
+	const { mutate } = useAddGroup();
+
+	const handleAddGroup = (data: { name: string }) => {
+		console.log("Add group:", data.name);
+		mutate(data.name, {});
+		setModalVisible(false);
+	};
 
 	return (
 		<View style={styles.container}>
-			<Text variant="titleLarge" style={styles.header}>
-				Aquarium Groups
-			</Text>
+			<View style={styles.headerRow}>
+				<Text variant="titleLarge" style={styles.header}>
+					Aquarium Groups
+				</Text>
+				<Button
+					mode="contained"
+					onPress={() => setModalVisible(true)}
+					style={styles.addButtonHeader}
+					labelStyle={styles.addButtonHeaderLabel}
+					icon="plus"
+					compact
+				>
+					Add
+				</Button>
+			</View>
 			<FlatList
 				data={groups}
 				keyExtractor={(item) => item.id}
@@ -55,6 +78,28 @@ export default function GroupsPage() {
 				contentContainerStyle={{ paddingBottom: 24 }}
 				showsVerticalScrollIndicator={false}
 			/>
+
+			{/* Add Group Modal */}
+			<Modal
+				visible={modalVisible}
+				animationType="slide"
+				transparent={true}
+				onRequestClose={() => setModalVisible(false)}
+			>
+				<View style={styles.modalOverlay}>
+					<View style={styles.modalContent}>
+						<Text style={styles.modalTitle}>Add Group</Text>
+						<AddGroupForm onSubmit={handleAddGroup} />
+						<Button
+							mode="outlined"
+							onPress={() => setModalVisible(false)}
+							style={styles.modalButton}
+						>
+							Cancel
+						</Button>
+					</View>
+				</View>
+			</Modal>
 		</View>
 	);
 }
@@ -65,10 +110,7 @@ const styles = StyleSheet.create({
 		padding: 16,
 		backgroundColor: "#f5f7fa",
 	},
-	header: {
-		marginBottom: 18,
-		fontWeight: "bold",
-	},
+
 	card: {
 		marginBottom: 18,
 		borderRadius: 16,
@@ -109,5 +151,51 @@ const styles = StyleSheet.create({
 	aquariumLabel: {
 		color: "#888",
 		fontSize: 13,
+	},
+	headerRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		marginBottom: 18,
+	},
+	header: {
+		fontWeight: "bold",
+		fontSize: 22,
+	},
+	addButtonHeader: {
+		backgroundColor: "#1976D2",
+		borderRadius: 20,
+		paddingHorizontal: 14,
+		minWidth: 0,
+		elevation: 0,
+	},
+	addButtonHeaderLabel: {
+		fontSize: 15,
+		fontWeight: "bold",
+		color: "#fff",
+		textTransform: "none",
+	},
+	modalOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0,0,0,0.3)",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	modalContent: {
+		backgroundColor: "#fff",
+		borderRadius: 16,
+		padding: 24,
+		width: "85%",
+		maxWidth: 400,
+		alignItems: "center",
+	},
+	modalTitle: {
+		fontSize: 20,
+		fontWeight: "bold",
+		marginBottom: 16,
+	},
+	modalButton: {
+		marginTop: 8,
+		alignSelf: "stretch",
 	},
 });
