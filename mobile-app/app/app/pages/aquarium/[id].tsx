@@ -1,10 +1,15 @@
 import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import { Dimensions, View, StyleSheet } from "react-native";
-import { Text, Avatar, ActivityIndicator } from "react-native-paper";
+import { Dimensions, View, StyleSheet, Modal } from "react-native";
+import { Text, Avatar, ActivityIndicator, Button } from "react-native-paper";
 import { useStateContext } from "../../../context/StateContext";
 import ThresholdBar from "../../../components/ThresholdBar";
-import { useChangeWaterPumpStatus } from "../../../utils/services/AquariumService";
+import {
+	useChangeWaterPumpStatus,
+	useUpdateThresholds,
+} from "../../../utils/services/AquariumService";
+import { updateThresholdsRequest } from "../../../types/Aquarium";
+import EditThresholdsForm from "../../../components/EditThresholdsForm";
 
 // ####### WaterPump #######
 const BombStatus = ({
@@ -224,17 +229,27 @@ export default function AquariumPage() {
 	const { aquariums } = useStateContext();
 	const aquarium = aquariums.find((aq) => aq.id === id);
 
-	const { mutate, isPending } = useChangeWaterPumpStatus();
+	const { mutate: changeWaterPumpStatus, isPending } = useChangeWaterPumpStatus();
+	const { mutate: updateThresholds } = useUpdateThresholds();
 
 	const [bombOn, setBombOn] = useState(aquarium?.isBombWorking ?? false);
 
+	const [modalVisible, setModalVisible] = useState(false);
+
 	const handleToggleBomb = (value: boolean) => {
-		mutate(id as string, {
+		changeWaterPumpStatus(id as string, {
 			onSuccess: () => {
 				console.log(`Water pump status for aquarium ${id} changed to ${value}`);
 				setBombOn(value);
 			},
 		});
+	};
+
+	const handleEditThresholds = (data: updateThresholdsRequest) => {
+		console.log("Updating thresholds:", data);
+		updateThresholds(data);
+
+		setModalVisible(false);
 	};
 
 	if (!aquarium) {
@@ -255,6 +270,43 @@ export default function AquariumPage() {
 			/>
 			<BombStatus isWorking={bombOn} onToggle={handleToggleBomb} isPending={isPending} />
 			<ThresholdsSection threshold={aquarium.threshold} />
+
+			<Button
+				mode="contained"
+				onPress={() => setModalVisible(true)}
+				style={styles.addButtonHeader}
+				labelStyle={styles.addButtonHeaderLabel}
+				icon="plus"
+				compact
+			>
+				Add
+			</Button>
+
+			{/* Edit Thresholds Modal */}
+			<Modal
+				visible={modalVisible}
+				animationType="slide"
+				transparent={true}
+				onRequestClose={() => setModalVisible(false)}
+			>
+				<View style={styles.modalOverlay}>
+					<View style={styles.modalContent}>
+						<Text style={styles.modalTitle}>Edit Thresholds</Text>
+						<EditThresholdsForm
+							aquariumId={aquarium.id}
+							onSubmit={handleEditThresholds}
+							initialValues={aquarium.threshold}
+						/>
+						<Button
+							mode="outlined"
+							onPress={() => setModalVisible(false)}
+							style={styles.modalButton}
+						>
+							Cancel
+						</Button>
+					</View>
+				</View>
+			</Modal>
 		</View>
 	);
 }
@@ -328,5 +380,41 @@ const styles = StyleSheet.create({
 		fontSize: 13,
 		color: "#333",
 		marginBottom: 6,
+	},
+	modalOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0,0,0,0.3)",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	modalContent: {
+		backgroundColor: "#fff",
+		borderRadius: 16,
+		padding: 24,
+		width: "85%",
+		maxWidth: 400,
+		alignItems: "center",
+	},
+	modalTitle: {
+		fontSize: 20,
+		fontWeight: "bold",
+		marginBottom: 16,
+	},
+	modalButton: {
+		marginTop: 8,
+		alignSelf: "stretch",
+	},
+	addButtonHeader: {
+		backgroundColor: "#1976D2",
+		borderRadius: 20,
+		paddingHorizontal: 14,
+		minWidth: 0,
+		elevation: 0,
+	},
+	addButtonHeaderLabel: {
+		fontSize: 15,
+		fontWeight: "bold",
+		color: "#fff",
+		textTransform: "none",
 	},
 });

@@ -2,6 +2,7 @@ import { defaultUser, State } from "./state";
 import { User, UserDefaults } from "../types/User";
 import { Aquarium } from "../types/Aquarium";
 import { Group } from "../types/Group";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const EVENTS = {
 	SET_USER: "SET_USER",
@@ -14,6 +15,7 @@ export const EVENTS = {
 	REMOVE_AQUARIUMS_FROM_GROUP: "REMOVE_AQUARIUMS_FROM_GROUP",
 	REMOVE_GROUP: "REMOVE_GROUP",
 	CHANGE_WATER_PUMP_STATUS: "CHANGE_WATER_PUMP_STATUS",
+	UPDATE_THRESHOLDS: "UPDATE_THRESHOLDS",
 	CLEAR_USER: "CLEAR_USER",
 	LOAD_STATE: "LOAD_STATE",
 } as const;
@@ -46,6 +48,22 @@ export type Action =
 			};
 	  }
 	| { type: typeof EVENTS.CHANGE_WATER_PUMP_STATUS; payload: string }
+	| {
+			type: typeof EVENTS.UPDATE_THRESHOLDS;
+			payload: {
+				aquariumId: string;
+				thresholds: {
+					minTemperature: number;
+					maxTemperature: number;
+					minPH: number;
+					maxPH: number;
+					minTds: number;
+					maxTds: number;
+					minHeight: number;
+					maxHeight: number;
+				};
+			};
+	  }
 	| { type: typeof EVENTS.CLEAR_USER }
 	| { type: typeof EVENTS.LOAD_STATE; payload: State };
 
@@ -126,8 +144,24 @@ export function reducer(state: State, action: Action): State {
 			});
 			return { ...state, aquariums: updatedAquariums };
 		}
+		case EVENTS.UPDATE_THRESHOLDS: {
+			const { aquariumId, thresholds } = action.payload;
+			const updatedAquariums = state.aquariums.map((aquarium) => {
+				if (aquarium.id === aquariumId) {
+					return {
+						...aquarium,
+						threshold: {
+							...aquarium.threshold,
+							...thresholds,
+						},
+					};
+				}
+				return aquarium;
+			});
+			return { ...state, aquariums: updatedAquariums };
+		}
 		case EVENTS.CLEAR_USER: {
-			//TODO REMVOVE FROM async storage the TOKEN
+			AsyncStorage.removeItem("accessToken");
 			return {
 				...state,
 				user: defaultUser,

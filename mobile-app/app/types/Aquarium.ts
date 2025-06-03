@@ -32,3 +32,26 @@ export type AquariumResponse = {
 export type AquariumListResponse = {
 	aquariumList: AquariumResponse[];
 };
+
+export type updateThresholdsRequest = {
+	aquariumId: string;
+	minTemperature: number;
+	maxTemperature: number;
+	minPH: number;
+	maxPH: number;
+	minTds: number;
+	maxTds: number;
+	minHeight: number;
+	maxHeight: number;
+};
+
+export type thresholdsResponse = {
+	minTemperature: number;
+	maxTemperature: number;
+	minPH: number;
+	maxPH: number;
+	minTds: number;
+	maxTds: number;
+	minHeight: number;
+	maxHeight: number;
+};

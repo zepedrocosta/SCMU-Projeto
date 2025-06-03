@@ -1,5 +1,10 @@
-import { map } from "zod";
-import { Aquarium, AquariumListResponse, AquariumResponse } from "../../types/Aquarium";
+import {
+	Aquarium,
+	AquariumListResponse,
+	AquariumResponse,
+	ThresholdResponse,
+	updateThresholdsRequest,
+} from "../../types/Aquarium";
 import { axiosInstance, sleep, URL_PLACEHOLDER } from "./axiosConfig";
 
 const basePath = "/aquariums";
@@ -9,6 +14,7 @@ const ENDPOINTS = {
 	AQUARIUM_BY_ID: `/aquariums/${URL_PLACEHOLDER.AQUARIUM_ID}`,
 	USER_AQUARIUMS: `${basePath}/list`,
 	CHANGE_WATER_PUMP_STATUS: `${basePath}/bomb/?aquariumId=`,
+	UPDATE_THRESHOLDS: `${basePath}/threshold`,
 };
 
 const mockResponse: AquariumResponse[] = [
@@ -274,3 +280,21 @@ export async function changeWaterPumpStatus(aquariumId: string): Promise<string>
 	// 		throw error;
 	// 	});
 }
+
+export async function updateThresholds(updateThresholds: updateThresholdsRequest) {
+	console.log("Updating thresholds:", updateThresholds);
+	return updateThresholds;
+
+	// TODO uncomment when backend is ready
+	// return await axiosInstance
+	// 	.put<ThresholdResponse>(ENDPOINTS.UPDATE_THRESHOLDS, updateThresholds)
+	// 	.then((response) => {
+	// 		console.log("Thresholds updated successfully:", response.data);
+	// 		return response.data;
+	// 	})
+	// 	.catch((error) => {
+	// 		console.error("Error updating thresholds:", error);
+	// 		throw error;
+	// 	});
+}
+//endregion
