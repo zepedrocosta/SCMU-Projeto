@@ -1,18 +1,21 @@
 import React, { useState } from "react";
 import { View, StyleSheet, StatusBar, Modal, ScrollView } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { Text, Avatar, Badge, Button, Checkbox } from "react-native-paper";
+import { Text, Avatar, Badge, Button, Checkbox, Menu, IconButton } from "react-native-paper";
 import { useStateContext } from "../../../context/StateContext";
 import ListAquariums from "../../../components/ListAquariums";
 import {
 	useAddAquariumsToGroup,
+	useDeleteGroup,
 	useRemoveAquariumFromGroup,
 } from "../../../utils/services/GroupService";
 import { Aquarium } from "../../../types/Aquarium";
+import { useRoutes } from "../../../utils/routes";
 
 export default function GroupDetail() {
 	const { id } = useLocalSearchParams();
 	const { groups, aquariums } = useStateContext();
+	const router = useRoutes();
 	const group = groups.find((aq) => aq.id === id);
 
 	if (!group) {
@@ -23,16 +26,25 @@ export default function GroupDetail() {
 		);
 	}
 
+	const [menuVisible, setMenuVisible] = useState(false);
+	const openMenu = () => setMenuVisible(true);
+	const closeMenu = () => setMenuVisible(false);
+
+	const [editModalVisible, setEditModalVisible] = useState(false);
+
 	const [groupAquariums, setGroupAquariums] = useState<Aquarium[]>(group.aquariums || []);
 
 	const { mutate: addAquariumsToGroup } = useAddAquariumsToGroup();
 	const { mutate: removeAquariumFromGroup } = useRemoveAquariumFromGroup();
+	const { mutate: deleteGroup } = useDeleteGroup();
 
 	// Modal state
 	const [modalVisible, setModalVisible] = useState(false);
 	const [selectedAquariumsIds, setSelectedAquariumsIds] = useState<string[]>(
 		groupAquariums.map((aq) => aq.id)
 	);
+
+	const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
 	const handleToggleAquarium = (id: string) => {
 		setSelectedAquariumsIds((prev) =>
@@ -110,6 +122,19 @@ export default function GroupDetail() {
 		}
 	};
 
+	const handleDeleteGroup = () => {
+		deleteGroup(group.id, {
+			onSuccess: () => {
+				setDeleteModalVisible(false);
+				router.gotoGroups();
+			},
+			onError: () => {
+				setDeleteModalVisible(false);
+				// Optionally show an error message
+			},
+		});
+	};
+
 	return (
 		<View style={styles.container}>
 			<View style={[styles.header, { backgroundColor: group.color }]}>
@@ -117,6 +142,87 @@ export default function GroupDetail() {
 				<Text variant="titleLarge" style={styles.groupNameHeader}>
 					{group.name}
 				</Text>
+				<Menu
+					visible={menuVisible}
+					onDismiss={closeMenu}
+					anchor={
+						<IconButton
+							icon="dots-vertical"
+							iconColor="#000000"
+							size={28}
+							onPress={openMenu}
+						/>
+					}
+				>
+					<Menu.Item
+						onPress={() => {
+							closeMenu();
+							setEditModalVisible(true);
+						}}
+						title="Edit Group Name"
+						leadingIcon="pencil"
+					/>
+					<Menu.Item
+						onPress={() => {
+							closeMenu();
+							setDeleteModalVisible(true);
+						}}
+						title="Delete Group"
+						leadingIcon="trash-can"
+						titleStyle={{ color: "#e53935" }}
+					/>
+				</Menu>
+
+				{/* Delete Group Modal */}
+				<Modal
+					visible={deleteModalVisible}
+					transparent
+					animationType="fade"
+					onRequestClose={() => setDeleteModalVisible(false)}
+				>
+					<View style={styles.modalOverlay}>
+						<View style={styles.modalContent}>
+							<Text style={styles.modalTitle}>Delete Group</Text>
+							<Text style={{ marginBottom: 20, textAlign: "center" }}>
+								Are you sure you want to delete this group?
+							</Text>
+							<View style={styles.modalButtonRow}>
+								<Button
+									mode="outlined"
+									onPress={() => setDeleteModalVisible(false)}
+									style={styles.modalButton}
+								>
+									Cancel
+								</Button>
+								<Button
+									mode="contained"
+									onPress={handleDeleteGroup}
+									style={[
+										styles.modalButton,
+										{ backgroundColor: "#e53935" },
+									]}
+								>
+									Delete
+								</Button>
+							</View>
+						</View>
+					</View>
+				</Modal>
+
+				<Modal
+					visible={editModalVisible}
+					transparent
+					animationType="slide"
+					onRequestClose={() => setEditModalVisible(false)}
+				>
+					<View style={styles.modalOverlay}>
+						<View style={styles.modalContent}>
+							<Text style={styles.modalTitle}>Edit Group Name</Text>
+							{/* Place your edit group form here */}
+							<Button onPress={() => setEditModalVisible(false)}>Close</Button>
+						</View>
+					</View>
+				</Modal>
 			</View>
 			<View style={styles.infoSection}>
 				<View style={styles.badgeRow}>
@@ -224,12 +330,6 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 32,
 		paddingTop: 20,
 		alignItems: "center",
-	},
-	groupDesc: {
-		color: "#666",
-		marginBottom: 18,
-		fontSize: 16,
-		textAlign: "center",
 	},
 	badgeRow: {
 		flexDirection: "row",
