@@ -1,6 +1,7 @@
 package fct.project.scmu.daos;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,11 +17,14 @@ import java.util.Set;
 @Entity(name = "aquariums")
 public class Aquarium extends DAO implements Serializable {
 
-    @Column(length = 64, unique = true, nullable = false)
+    @Column(length = 64, nullable = false)
     private String name;
 
     @Column(nullable = false)
     private String location;
+
+    @Column
+    private boolean isBombWorking = false;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
@@ -30,7 +34,7 @@ public class Aquarium extends DAO implements Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "aquarium", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "aquarium", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<SensorsSnapshot> values;
 
     @ToString.Exclude
@@ -42,4 +46,10 @@ public class Aquarium extends DAO implements Serializable {
     @EqualsAndHashCode.Exclude
     @ManyToMany(mappedBy = "aquariums", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private Set<Group> groups;
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToOne(mappedBy = "aquarium", cascade = CascadeType.MERGE, fetch = FetchType.EAGER, orphanRemoval = true)
+    @JsonManagedReference
+    private Threshold threshold;
 }

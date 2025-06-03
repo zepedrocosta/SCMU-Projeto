@@ -29,16 +29,16 @@ public class UserController extends AbstractController {
         return ok(userService.create(convert(form, User.class)), UserResponse.class);
     }
 
+    @SneakyThrows
     @GetMapping("/{nickname}")
-    public ResponseEntity<?> get(@PathVariable String nickname)
-            throws ExecutionException, InterruptedException {
+    public ResponseEntity<UserResponse> get(@PathVariable String nickname) {
         var user = userService.get(nickname);
         return ok(user, UserResponse.class);
     }
 
     @PutMapping("/{nickname}")
     @PreAuthorize("hasAnyRole('ADMIN') or authentication.principal.nickname == #form.nickname")
-    public ResponseEntity<UserResponse> edit(@Validated @RequestPart EditUserForm form) {
+    public ResponseEntity<UserResponse> edit(@RequestBody EditUserForm form) {
         return ok(userService.edit(form), UserResponse.class);
     }
 
