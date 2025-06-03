@@ -1,45 +1,34 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
-import { Text, Avatar } from "react-native-paper";
+import { View, StyleSheet, Text } from "react-native";
 
 interface ThresholdBarProps {
-	icon: string;
-	iconColor: string;
+	min: number;
+	max: number;
+	currentValue: number;
 	bgColor: string;
-	label: string;
-	min: string | number;
-	max: string | number;
-	unit?: string;
 }
 
-export default function ThresholdBar({
-	icon,
-	iconColor,
-	bgColor,
-	label,
-	min,
-	max,
-	unit,
-}: ThresholdBarProps) {
+export default function ThresholdBar({ min, max, currentValue, bgColor }: ThresholdBarProps) {
+	const barHeight = 170;
+	const markerSize = 28;
+
+	// Clamp value and calculate position
+	const safeValue = Math.max(min, Math.min(currentValue, max));
+	const percent = (safeValue - min) / (max - min);
+	const markerPosition = barHeight - percent * barHeight - markerSize / 2;
+
 	return (
-		<View style={[styles.verticalBar, { backgroundColor: bgColor }]}>
-			<Avatar.Icon
-				icon={icon}
-				size={36}
-				style={[styles.verticalBarIcon, { backgroundColor: iconColor }]}
-				color="#fff"
-			/>
-			<Text style={styles.verticalBarLabel}>{label}</Text>
-			<View style={styles.verticalBarValues}>
-				<Text style={styles.verticalBarValueMin}>
-					{min}
-					{unit}
-				</Text>
-				<View style={styles.verticalBarDivider} />
-				<Text style={styles.verticalBarValueMax}>
-					{max}
-					{unit}
-				</Text>
+		<View style={[styles.verticalBar, { backgroundColor: bgColor, height: barHeight }]}>
+			{/* Marker */}
+			<View
+				style={[
+					styles.marker,
+					{
+						top: markerPosition,
+					},
+				]}
+			>
+				<Text style={styles.markerText}>{currentValue}</Text>
 			</View>
 		</View>
 	);
@@ -48,7 +37,6 @@ export default function ThresholdBar({
 const styles = StyleSheet.create({
 	verticalBar: {
 		width: 50,
-		height: 170,
 		borderRadius: 16,
 		alignItems: "center",
 		justifyContent: "flex-start",
@@ -59,37 +47,23 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.08,
 		shadowRadius: 4,
 		shadowOffset: { width: 0, height: 2 },
+		position: "relative",
 	},
-	verticalBarIcon: {
-		marginBottom: 6,
+	marker: {
+		position: "absolute",
+		left: 11,
+		width: 28,
+		height: 28,
+		borderRadius: 14,
 		backgroundColor: "#1976d2",
-	},
-	verticalBarLabel: {
-		fontWeight: "bold",
-		fontSize: 13,
-		color: "#333",
-		marginBottom: 6,
-	},
-	verticalBarValues: {
-		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
+		borderWidth: 2,
+		borderColor: "#fff",
 	},
-	verticalBarValueMin: {
-		fontSize: 12,
-		color: "#222",
-		fontWeight: "600",
-	},
-	verticalBarDivider: {
-		width: 18,
-		height: 2,
-		backgroundColor: "#bbb",
-		marginVertical: 3,
-		borderRadius: 1,
-	},
-	verticalBarValueMax: {
-		fontSize: 12,
-		color: "#222",
-		fontWeight: "600",
+	markerText: {
+		color: "#fff",
+		fontWeight: "bold",
+		fontSize: 13,
 	},
 });

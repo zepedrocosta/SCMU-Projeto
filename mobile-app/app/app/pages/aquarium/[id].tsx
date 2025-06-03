@@ -1,15 +1,12 @@
 import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import { Dimensions, View, StyleSheet, FlatList } from "react-native";
-import { Text, Avatar, Divider } from "react-native-paper";
+import { Dimensions, View, StyleSheet } from "react-native";
+import { Text, Avatar, ActivityIndicator } from "react-native-paper";
 import { useStateContext } from "../../../context/StateContext";
 import ThresholdBar from "../../../components/ThresholdBar";
 import { useChangeWaterPumpStatus } from "../../../utils/services/AquariumService";
 
 // ####### WaterPump #######
-import { ActivityIndicator } from "react-native-paper";
-// ...existing imports...
-
 const BombStatus = ({
 	isWorking,
 	onToggle,
@@ -36,7 +33,7 @@ const BombStatus = ({
 					icon={"power"}
 					size={56}
 					style={{
-						backgroundColor: isWorking ? "#43a047" : "#e53935",
+						backgroundColor: isWorking ? "#43a047" : "#e5383546",
 						marginRight: 0,
 					}}
 					color="#fff"
@@ -100,16 +97,56 @@ const AquariumHeader = ({
 	);
 };
 
-// ####### ThresholdsSection #######
+const ThresholdBarWithLabels = ({
+	icon,
+	iconColor,
+	label,
+	min,
+	max,
+	unit,
+	bgColor,
+	...barProps
+}: any) => (
+	<View style={{ alignItems: "center", width: "100%" }}>
+		{/* Icon with circle and label below the bar */}
+		<View style={{ alignItems: "center", marginTop: 8 }}>
+			<Text style={styles.verticalBarLabel}>{label}</Text>
+
+			<Avatar.Icon
+				icon={icon}
+				size={36}
+				style={[styles.verticalBarIcon, { backgroundColor: iconColor }]}
+				color="#fff"
+			/>
+		</View>
+		{/* Max value on top */}
+		<Text style={{ fontSize: 13, color: "#888", marginBottom: 2 }}>
+			{max}
+			{unit ? ` ${unit}` : ""}
+		</Text>
+		{/* The bar itself */}
+		<ThresholdBar bgColor={bgColor} max={max} min={min} currentValue={10} />
+
+		{/* Min value below */}
+		<Text style={{ fontSize: 13, color: "#888", marginTop: 2 }}>
+			{min}
+			{unit ? ` ${unit}` : ""}
+		</Text>
+	</View>
+);
+
 const ThresholdsSection = ({ threshold }: { threshold: any }) => {
-	const BAR_WIDTH = 50;
-	const BAR_MARGIN = 8;
+	const screenWidth = Dimensions.get("window").width;
+	const horizontalPadding = 32;
+	const spacing = 12;
+	const barCount = 5;
+	const barWidth = (screenWidth - horizontalPadding - (barCount - 1) * spacing) / barCount;
 
 	const data = [
 		{
 			key: "temp",
 			icon: "thermometer",
-			iconColor: "#1976d2",
+			iconColor: "#d23519",
 			bgColor: "#e3f2fd",
 			label: "Temp",
 			min: threshold?.minTemperature,
@@ -138,8 +175,8 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 		{
 			key: "height",
 			icon: "waves",
-			iconColor: "#00bcd4",
-			bgColor: "#e0f7fa",
+			iconColor: "#2f90ff",
+			bgColor: "#e0ebfa",
 			label: "Height",
 			min: threshold?.minHeight,
 			max: threshold?.maxHeight,
@@ -157,37 +194,27 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 		},
 	];
 
-	const screenWidth = Dimensions.get("window").width;
-	const totalBarWidth = data.length * BAR_WIDTH + (data.length - 1) * BAR_MARGIN;
-
 	return (
 		<View style={styles.thresholdsContainer}>
-			<Text style={styles.thresholdsTitle}>Thresholds</Text>
-			{totalBarWidth < screenWidth - 32 ? (
-				<View
-					style={{
-						flexDirection: "row",
-						justifyContent: "center",
-						alignItems: "flex-end",
-					}}
-				>
-					{data.map(({ key, ...props }) => (
-						<ThresholdBar key={key} {...props} />
-					))}
-				</View>
-			) : (
-				<FlatList
-					data={data}
-					horizontal
-					showsHorizontalScrollIndicator={false}
-					keyExtractor={(item) => item.key}
-					contentContainerStyle={{ paddingVertical: 8, alignItems: "flex-end" }}
-					renderItem={({ item }) => {
-						const { key, ...props } = item;
-						return <ThresholdBar key={key} {...props} />;
-					}}
-				/>
-			)}
+			<View
+				style={{
+					flexDirection: "row",
+					justifyContent: "center",
+					alignItems: "flex-end",
+				}}
+			>
+				{data.map(({ key, ...props }, idx) => (
+					<View
+						key={key}
+						style={{
+							width: barWidth,
+							marginRight: idx !== data.length - 1 ? spacing : 0,
+						}}
+					>
+						<ThresholdBarWithLabels {...props} />
+					</View>
+				))}
+			</View>
 		</View>
 	);
 };
@@ -226,7 +253,6 @@ export default function AquariumPage() {
 				ownerUsername={aquarium.ownerUsername}
 				createdDate={aquarium.createdDate}
 			/>
-			<Divider style={{ marginVertical: 12 }} />
 			<BombStatus isWorking={bombOn} onToggle={handleToggleBomb} isPending={isPending} />
 			<ThresholdsSection threshold={aquarium.threshold} />
 		</View>
@@ -292,5 +318,15 @@ const styles = StyleSheet.create({
 		color: "#444",
 		marginBottom: 8,
 		marginLeft: 4,
+	},
+	verticalBarIcon: {
+		marginBottom: 6,
+		backgroundColor: "#1976d2",
+	},
+	verticalBarLabel: {
+		fontWeight: "bold",
+		fontSize: 13,
+		color: "#333",
+		marginBottom: 6,
 	},
 });
