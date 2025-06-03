@@ -11,6 +11,7 @@ export default function ListAquariums({ aquariums }: ListAquariumsProps) {
 	const router = useRoutes();
 
 	const handlePress = (itemId: string) => {
+		console.log("Selected Aquarium ID:", itemId);
 		router.gotoAquarium(itemId);
 	};
 
@@ -26,7 +27,6 @@ export default function ListAquariums({ aquariums }: ListAquariumsProps) {
 				renderItem={({ item }) => (
 					<List.Item
 						title={item.name}
-						description={item.description}
 						onPress={() => handlePress(item.id)}
 						style={styles.listItem}
 						left={(props) => (
@@ -36,6 +36,15 @@ export default function ListAquariums({ aquariums }: ListAquariumsProps) {
 								size={36}
 								style={styles.listAvatar}
 								color="#fff"
+							/>
+						)}
+						right={(props) => (
+							<Avatar.Icon
+								{...props}
+								icon="pencil"
+								size={36}
+								style={styles.listEdit}
+								color="#e7a650"
 							/>
 						)}
 					/>
@@ -65,5 +74,8 @@ const styles = StyleSheet.create({
 	},
 	listAvatar: {
 		backgroundColor: "#1976d2",
+	},
+	listEdit: {
+		backgroundColor: "#2e6bc5",
 	},
 });

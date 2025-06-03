@@ -1,4 +1,4 @@
-import { AquariumListResponse, AquariumResponse } from "../../types/Aquarium";
+import { Aquarium, AquariumListResponse, AquariumResponse } from "../../types/Aquarium";
 import { axiosInstance, URL_PLACEHOLDER } from "./axiosConfig";
 
 const ENDPOINTS = {
@@ -7,26 +7,217 @@ const ENDPOINTS = {
 	USER_AQUARIUMS: `/users/${URL_PLACEHOLDER.USER_ID}/aquariums`,
 };
 
-//region GET
-export async function getAquariumById(aquariumId: string): Promise<AquariumResponse> {
-	const mockResponse: AquariumResponse[] = [
-		{
-			id: "1",
-			name: "My Aquarium",
-			description: "A beautiful aquarium",
+const mockResponse: AquariumResponse[] = [
+	{
+		id: "1",
+		name: "Aquarium 1",
+		location: "Living Room",
+		isBombWorking: true,
+		createdDate: "2024-01-01T00:00:00Z",
+		ownerUsername: "john_doe",
+		threshold: {
+			minTemperature: 20,
+			maxTemperature: 28,
+			minPH: 6.5,
+			maxPH: 8.5,
+			minTds: 100,
+			maxTds: 500,
+			minHeight: 30,
+			maxHeight: 60,
 		},
-		{
-			id: "2",
-			name: "My Second Aquarium",
-			description: "Another beautiful aquarium",
+	},
+	{
+		id: "2",
+		name: "Aquarium 2",
+		location: "Lisbon",
+		isBombWorking: true,
+		createdDate: "2024-01-01T00:00:00Z",
+		ownerUsername: "john_doe",
+		threshold: {
+			minTemperature: 20,
+			maxTemperature: 28,
+			minPH: 6.5,
+			maxPH: 8.5,
+			minTds: 100,
+			maxTds: 500,
+			minHeight: 30,
+			maxHeight: 60,
 		},
-		{
-			id: "3",
-			name: "Mock Aquarium",
-			description: "This is a mock aquarium for testing purposes.",
+	},
+	{
+		id: "3",
+		name: "Aquarium 3",
+		location: "Kitchen",
+		isBombWorking: false,
+		createdDate: "2024-01-01T00:00:00Z",
+		ownerUsername: "john_doe",
+		threshold: {
+			minTemperature: 20,
+			maxTemperature: 28,
+			minPH: 6.5,
+			maxPH: 8.5,
+			minTds: 100,
+			maxTds: 500,
+			minHeight: 30,
+			maxHeight: 60,
 		},
-	];
+	},
+	{
+		id: "4",
+		name: "Aquarium 4",
+		location: "Bedroom",
+		isBombWorking: true,
+		createdDate: "2024-01-01T00:00:00Z",
+		ownerUsername: "john_doe",
+		threshold: {
+			minTemperature: 20,
+			maxTemperature: 28,
+			minPH: 6.5,
+			maxPH: 8.5,
+			minTds: 100,
+			maxTds: 500,
+			minHeight: 30,
+			maxHeight: 60,
+		},
+	},
+	{
+		id: "5",
+		name: "Aquarium 5",
+		location: "Office",
+		isBombWorking: true,
+		createdDate: "2024-01-01T00:00:00Z",
+		ownerUsername: "john_doe",
+		threshold: {
+			minTemperature: 20,
+			maxTemperature: 28,
+			minPH: 6.5,
+			maxPH: 8.5,
+			minTds: 100,
+			maxTds: 500,
+			minHeight: 30,
+			maxHeight: 60,
+		},
+	},
+	{
+		id: "6",
+		name: "Aquarium 6",
+		location: "Garage",
+		isBombWorking: false,
+		createdDate: "2024-01-01T00:00:00Z",
+		ownerUsername: "john_doe",
+		threshold: {
+			minTemperature: 20,
+			maxTemperature: 28,
+			minPH: 6.5,
+			maxPH: 8.5,
+			minTds: 100,
+			maxTds: 500,
+			minHeight: 30,
+			maxHeight: 60,
+		},
+	},
+	{
+		id: "7",
+		name: "Aquarium 7",
+		location: "Balcony",
+		isBombWorking: true,
+		createdDate: "2024-01-01T00:00:00Z",
+		ownerUsername: "john_doe",
+		threshold: {
+			minTemperature: 20,
+			maxTemperature: 28,
+			minPH: 6.5,
+			maxPH: 8.5,
+			minTds: 100,
+			maxTds: 500,
+			minHeight: 30,
+			maxHeight: 60,
+		},
+	},
+	{
+		id: "8",
+		name: "Aquarium 8",
+		location: "Garden",
+		isBombWorking: false,
+		createdDate: "2024-01-01T00:00:00Z",
+		ownerUsername: "john_doe",
+		threshold: {
+			minTemperature: 20,
+			maxTemperature: 28,
+			minPH: 6.5,
+			maxPH: 8.5,
+			minTds: 100,
+			maxTds: 500,
+			minHeight: 30,
+			maxHeight: 60,
+		},
+	},
+	{
+		id: "9",
+		name: "Aquarium 9",
+		location: "Patio",
+		isBombWorking: true,
+		createdDate: "2024-01-01T00:00:00Z",
+		ownerUsername: "john_doe",
+		threshold: {
+			minTemperature: 20,
+			maxTemperature: 28,
+			minPH: 6.5,
+			maxPH: 8.5,
+			minTds: 100,
+			maxTds: 500,
+			minHeight: 30,
+			maxHeight: 60,
+		},
+	},
+	{
+		id: "10",
+		name: "Aquarium 10",
+		location: "Veranda",
+		isBombWorking: false,
+		createdDate: "2024-01-01T00:00:00Z",
+		ownerUsername: "john_doe",
+		threshold: {
+			minTemperature: 20,
+			maxTemperature: 28,
+			minPH: 6.5,
+			maxPH: 8.5,
+			minTds: 100,
+			maxTds: 500,
+			minHeight: 30,
+			maxHeight: 60,
+		},
+	},
+];
 
+// Helper functions to map AquariumResponse to Aquarium type
+export function mapToAquariumResponse(aquarium: AquariumResponse): AquariumResponse {
+	return {
+		id: aquarium.id,
+		name: aquarium.name,
+		location: aquarium.location,
+		isBombWorking: aquarium.isBombWorking,
+		createdDate: aquarium.createdDate,
+		ownerUsername: aquarium.ownerUsername,
+		threshold: {
+			minTemperature: aquarium.threshold.minTemperature,
+			maxTemperature: aquarium.threshold.maxTemperature,
+			minPH: aquarium.threshold.minPH,
+			maxPH: aquarium.threshold.maxPH,
+			minTds: aquarium.threshold.minTds,
+			maxTds: aquarium.threshold.maxTds,
+			minHeight: aquarium.threshold.minHeight,
+			maxHeight: aquarium.threshold.maxHeight,
+		},
+	};
+}
+
+export function mapToAquariumArrayResponse(aquariums: AquariumResponse[]): Aquarium[] {
+	return aquariums.map((aquarium: AquariumResponse) => mapToAquariumResponse(aquarium));
+}
+
+//region GET
+export async function getAquariumById(aquariumId: string): Promise<Aquarium> {
 	const foundAquarium = mockResponse.find((aquarium) => aquarium.id === aquariumId);
 	return foundAquarium || mockResponse[0];
 
@@ -44,61 +235,8 @@ export async function getAquariumById(aquariumId: string): Promise<AquariumRespo
 		});
 }
 
-export async function getUserAquariums(userId: string): Promise<AquariumResponse[]> {
-	const mockResponse: AquariumResponse[] = [
-		{
-			id: "1",
-			name: "My Aquarium",
-			description: "A beautiful aquarium",
-		},
-		{
-			id: "2",
-			name: "My Second Aquarium",
-			description: "Another beautiful aquarium",
-		},
-		{
-			id: "3",
-			name: "Mock Aquarium",
-			description: "This is a mock aquarium for testing purposes.",
-		},
-		{
-			id: "4",
-			name: "User Aquarium 1",
-			description: "Aquarium owned by user 1",
-		},
-		{
-			id: "5",
-			name: "User Aquarium 2",
-			description: "Another aquarium owned by user 1",
-		},
-		{
-			id: "6",
-			name: "User Aquarium 3",
-			description: "Yet another aquarium owned by user 1",
-		},
-		{
-			id: "7",
-			name: "User Aquarium 4",
-			description: "Fourth aquarium owned by user 1",
-		},
-		{
-			id: "8",
-			name: "User Aquarium 5",
-			description: "Fifth aquarium owned by user 1",
-		},
-		{
-			id: "9",
-			name: "User Aquarium 6",
-			description: "Sixth aquarium owned by user 1",
-		},
-		{
-			id: "10",
-			name: "User Aquarium 7",
-			description: "Seventh aquarium owned by user 1",
-		},
-	];
-
-	return mockResponse;
+export async function getUserAquariums(userId: string): Promise<Aquarium[]> {
+	return mapToAquariumArrayResponse(mockResponse);
 
 	// TODO uncomment when backend is ready
 	// 	return await axiosInstance

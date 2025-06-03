@@ -1,141 +1,92 @@
 import { useLocalSearchParams } from "expo-router";
 import React from "react";
-import { View, Image, StyleSheet } from "react-native";
-import { Text, Card, Avatar, ProgressBar } from "react-native-paper";
-
-const aquariumInfo = [
-	{
-		name: "Aquarium 1",
-		description: "This aquarium is very nice",
-		image: "https://example.com/aquarium1.jpg",
-		waterLevel: 0.5, // 50%
-		waterTemperature: 25, // °C
-		waterComposition: 100, // ppm
-		waterPh: 7.0,
-		lightIntensity: 0.5, // 50%
-		feedingSchedule: "Every day at 10h00",
-		fishCount: 10,
-	},
-];
-
-function getTempColor(temp: number) {
-	if (temp < 20) return "#2196f3"; // blue (cold)
-	if (temp > 28) return "#e53935"; // red (hot)
-	return "#43a047"; // green (normal)
-}
-
-function getTempIcon(temp: number) {
-	if (temp < 20) return "snowflake";
-	if (temp > 28) return "fire";
-	return "thermometer";
-}
+import { View, StyleSheet } from "react-native";
+import { Text, Card, Avatar } from "react-native-paper";
+import { useStateContext } from "../../../context/StateContext";
 
 export default function AquariumPage() {
 	const { id } = useLocalSearchParams();
-	// For demo, just use the first aquarium
-	const aquarium = aquariumInfo[0];
+	const { aquariums } = useStateContext();
+	const aquarium = aquariums.find((aq) => aq.id === id);
+
+	if (!aquarium) {
+		return (
+			<View style={styles.container}>
+				<Text variant="titleLarge">Aquarium not found</Text>
+			</View>
+		);
+	}
 
 	return (
 		<View style={styles.container}>
 			<Card style={styles.card}>
-				<Card.Cover source={{ uri: aquarium.image }} />
-				<Card.Title title={aquarium.name} subtitle={aquarium.description} />
+				<Card.Title title={aquarium.name} subtitle={aquarium.location} />
 				<Card.Content>
 					<View style={styles.row}>
 						<Avatar.Icon
-							icon="water"
-							size={36}
-							style={{ backgroundColor: "#2196f3", marginRight: 8 }}
-						/>
-						<View style={{ flex: 1 }}>
-							<Text>Water Level</Text>
-							<ProgressBar
-								progress={aquarium.waterLevel}
-								color="#2196f3"
-								style={styles.progress}
-							/>
-							<Text>{Math.round(aquarium.waterLevel * 100)}%</Text>
-						</View>
-					</View>
-					<View style={styles.row}>
-						<Avatar.Icon
-							icon={getTempIcon(aquarium.waterTemperature)}
+							icon={aquarium.isBombWorking ? "check-circle" : "alert-circle"}
 							size={36}
 							style={{
-								backgroundColor: getTempColor(aquarium.waterTemperature),
+								backgroundColor: aquarium.isBombWorking
+									? "#43a047"
+									: "#e53935",
 								marginRight: 8,
 							}}
 						/>
 						<View>
-							<Text>Temperature</Text>
-							<Text
-								style={{
-									color: getTempColor(aquarium.waterTemperature),
-									fontWeight: "bold",
-								}}
-							>
-								{aquarium.waterTemperature}°C
+							<Text>
+								Bomb:{" "}
+								<Text style={{ fontWeight: "bold" }}>
+									{aquarium.isBombWorking ? "Working" : "Not Working"}
+								</Text>
 							</Text>
 						</View>
 					</View>
 					<View style={styles.row}>
 						<Avatar.Icon
-							icon="chemical-weapon"
+							icon="calendar"
+							size={36}
+							style={{ backgroundColor: "#1976d2", marginRight: 8 }}
+						/>
+						<View>
+							<Text>Created</Text>
+							<Text>{new Date(aquarium.createdDate).toLocaleString()}</Text>
+						</View>
+					</View>
+					<View style={styles.row}>
+						<Avatar.Icon
+							icon="account"
 							size={36}
 							style={{ backgroundColor: "#8e24aa", marginRight: 8 }}
 						/>
 						<View>
-							<Text>Composition</Text>
-							<Text>{aquarium.waterComposition} ppm</Text>
+							<Text>Owner</Text>
+							<Text>{aquarium.ownerUsername}</Text>
 						</View>
 					</View>
 					<View style={styles.row}>
 						<Avatar.Icon
-							icon="beaker"
+							icon="tune"
 							size={36}
 							style={{ backgroundColor: "#00bcd4", marginRight: 8 }}
 						/>
 						<View>
-							<Text>pH</Text>
-							<Text>{aquarium.waterPh}</Text>
-						</View>
-					</View>
-					<View style={styles.row}>
-						<Avatar.Icon
-							icon="white-balance-sunny"
-							size={36}
-							style={{ backgroundColor: "#ffd600", marginRight: 8 }}
-						/>
-						<View style={{ flex: 1 }}>
-							<Text>Light Intensity</Text>
-							<ProgressBar
-								progress={aquarium.lightIntensity}
-								color="#ffd600"
-								style={styles.progress}
-							/>
-							<Text>{Math.round(aquarium.lightIntensity * 100)}%</Text>
-						</View>
-					</View>
-					<View style={styles.row}>
-						<Avatar.Icon
-							icon="fish"
-							size={36}
-							style={{ backgroundColor: "#039be5", marginRight: 8 }}
-						/>
-						<View>
-							<Text>Fish Count</Text>
-							<Text>{aquarium.fishCount}</Text>
-						</View>
-					</View>
-					<View style={styles.row}>
-						<Avatar.Icon
-							icon="food"
-							size={36}
-							style={{ backgroundColor: "#ff7043", marginRight: 8 }}
-						/>
-						<View>
-							<Text>Feeding Schedule</Text>
-							<Text>{aquarium.feedingSchedule}</Text>
+							<Text>Thresholds</Text>
+							<Text>
+								Temp: {aquarium.threshold.minTemperature}°C -{" "}
+								{aquarium.threshold.maxTemperature}°C
+							</Text>
+							<Text>
+								pH: {aquarium.threshold.minPH} - {aquarium.threshold.maxPH}
+							</Text>
+							<Text>
+								TDS: {aquarium.threshold.minTds} - {aquarium.threshold.maxTds}{" "}
+								ppm
+							</Text>
+							<Text>
+								Height: {aquarium.threshold.minHeight} -{" "}
+								{aquarium.threshold.maxHeight} cm
+							</Text>
 						</View>
 					</View>
 				</Card.Content>
@@ -160,10 +111,5 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 		marginVertical: 8,
-	},
-	progress: {
-		height: 8,
-		borderRadius: 4,
-		marginVertical: 4,
 	},
 });
