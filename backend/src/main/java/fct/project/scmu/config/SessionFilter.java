@@ -1,5 +1,6 @@
 package fct.project.scmu.config;
 
+import fct.project.scmu.daos.Role;
 import fct.project.scmu.daos.User;
 import fct.project.scmu.services.AuthService;
 import fct.project.scmu.utils.AuthUtils;
@@ -19,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static fct.project.scmu.config.SecurityConfig.ALLOWED;
 
@@ -72,7 +74,10 @@ public class SessionFilter extends OncePerRequestFilter {
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            claims.put("role", user.getRoles());
+            String roles = user.getRoles().stream()
+                    .map(Role::getRole)
+                    .collect(Collectors.joining(","));
+            claims.put("role", roles.trim());
             claims.put("nickname", user.getNickname());
 
             // Renew the token, extending its expiration time.

@@ -6,12 +6,14 @@ import fct.project.scmu.daos.SensorsSnapshot;
 import fct.project.scmu.dtos.forms.aquariums.AquariumForm;
 import fct.project.scmu.dtos.forms.aquariums.EditAquariumForm;
 import fct.project.scmu.dtos.forms.aquariums.SensorSnapshotForm;
-import fct.project.scmu.dtos.responses.aquariums.AquariumResponse;
+import fct.project.scmu.dtos.forms.aquariums.ThresholdForm;
+import fct.project.scmu.dtos.responses.aquariums.*;
 import fct.project.scmu.services.AquariumService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -25,7 +27,7 @@ public class AquariumController extends AbstractController{
     private final AquariumService aquariumService;
 
     @PostMapping("/snapshot")
-    public ResponseEntity<Void> storeSnapshot(@RequestBody SensorSnapshotForm form) {
+    public ResponseEntity<SnapshotResponse> storeSnapshot(@RequestBody SensorSnapshotForm form) {
         return ok(aquariumService.storeSnapshot(convert(form, SensorsSnapshot.class), form.getAquariumId()));
     }
 
@@ -44,7 +46,7 @@ public class AquariumController extends AbstractController{
     }
 
     @GetMapping
-    public ResponseEntity<Aquarium> getAquarium(@RequestParam String id) {
+    public ResponseEntity<PrivAquariumResponse> getAquarium(@RequestParam String id) {
         return ok(aquariumService.getAquarium(id));
     }
 
@@ -58,9 +60,24 @@ public class AquariumController extends AbstractController{
         return ok(aquariumService.deleteAquarium(id));
     }
 
+    @SneakyThrows
     @GetMapping("/list")
     public ResponseEntity<List<AquariumResponse>> listAquariums() {
-        return ok(aquariumService.listAquariums());
+        return ok(aquariumService.listAquariums().get());
+    }
+
+    @SneakyThrows
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<Page<AquariumResponse>> searchAquariums(@RequestParam String query,
+                                                                  @RequestParam(defaultValue = "0") Integer page,
+                                                                 @RequestParam(defaultValue = "12") Integer size) {
+        return ok(aquariumService.searchAquariums(query, page, size).get());
+    }
+
+    @PutMapping("/bomb")
+    public ResponseEntity<Boolean> bombAquarium(@RequestParam String aquariumId) {
+        return ok(aquariumService.bombAquarium(aquariumId));
     }
 
     @PostMapping("/groups")
@@ -69,7 +86,7 @@ public class AquariumController extends AbstractController{
     }
 
     @GetMapping("/groups") //TODO: Check if aquariums are needed here
-    public ResponseEntity<List<String>> listGroups() {
+    public ResponseEntity<List<GroupsResponse>> listGroups() {
         return ok(aquariumService.listGroups());
     }
 
@@ -88,6 +105,11 @@ public class AquariumController extends AbstractController{
     @GetMapping("/groups/aquariums")
     public ResponseEntity<List<AquariumResponse>> getAquariumsInGroup(@RequestParam String groupId) {
         return ok(aquariumService.getAquariumsInGroup(groupId));
+    }
+
+    @PutMapping("/threshold")
+    public ResponseEntity<ThresholdResponse> editThreshold(@RequestBody ThresholdForm form) {
+        return ok(aquariumService.editThreshold(form));
     }
 
 }

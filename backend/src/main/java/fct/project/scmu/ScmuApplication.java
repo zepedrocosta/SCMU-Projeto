@@ -2,10 +2,12 @@ package fct.project.scmu;
 
 import fct.project.scmu.daos.Aquarium;
 import fct.project.scmu.daos.Role;
+import fct.project.scmu.daos.Threshold;
 import fct.project.scmu.daos.User;
 import fct.project.scmu.daos.enums.UserStatus;
 import fct.project.scmu.repositories.AquariumRepository;
 import fct.project.scmu.repositories.RoleRepository;
+import fct.project.scmu.repositories.ThresholdRepository;
 import fct.project.scmu.repositories.UserRepository;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,9 @@ import java.util.Set;
 
 @SpringBootApplication
 public class ScmuApplication implements CommandLineRunner {
+
+    @Autowired
+    private ThresholdRepository thresholdRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(ScmuApplication.class, args);
@@ -54,7 +59,17 @@ public class ScmuApplication implements CommandLineRunner {
             roleRepository.save(new Role("USER", "Role used by App's users", new HashSet<>()));
         }
 
-        //var user = userRepository.findByNickname("rs.albuquerque").get();
-        //aquariumRepository.save(new Aquarium("Aq1", "Covilha", user, new HashSet<>(), new HashSet<>(), new HashSet<>()));
+        var user = userRepository.findByNickname("admin").get();
+        if (aquariumRepository.findByName("Aq1").isEmpty()) {
+            var threshold = new Threshold();
+            var aquarium = new Aquarium();
+            aquarium.setName("Aq1");
+            aquarium.setLocation("Covilha");
+            aquarium.setOwner(user);
+            aquarium.setThreshold(threshold);
+            threshold.setAquarium(aquarium);
+            thresholdRepository.save(threshold);
+            aquariumRepository.save(aquarium);
+        }
     }
 }
