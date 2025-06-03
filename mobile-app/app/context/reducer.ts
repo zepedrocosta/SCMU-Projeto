@@ -13,6 +13,7 @@ export const EVENTS = {
 	ADD_AQUARIUMS_TO_GROUP: "ADD_AQUARIUMS_TO_GROUP",
 	REMOVE_AQUARIUMS_FROM_GROUP: "REMOVE_AQUARIUMS_FROM_GROUP",
 	REMOVE_GROUP: "REMOVE_GROUP",
+	CHANGE_WATER_PUMP_STATUS: "CHANGE_WATER_PUMP_STATUS",
 	CLEAR_USER: "CLEAR_USER",
 	LOAD_STATE: "LOAD_STATE",
 } as const;
@@ -44,6 +45,7 @@ export type Action =
 				groupId: string;
 			};
 	  }
+	| { type: typeof EVENTS.CHANGE_WATER_PUMP_STATUS; payload: string }
 	| { type: typeof EVENTS.CLEAR_USER }
 	| { type: typeof EVENTS.LOAD_STATE; payload: State };
 
@@ -110,6 +112,19 @@ export function reducer(state: State, action: Action): State {
 				...state,
 				groups: updatedGroups,
 			};
+		}
+		case EVENTS.CHANGE_WATER_PUMP_STATUS: {
+			const aquariumId = action.payload;
+			const updatedAquariums = state.aquariums.map((aquarium) => {
+				if (aquarium.id === aquariumId) {
+					return {
+						...aquarium,
+						isBombWorking: !aquarium.isBombWorking,
+					};
+				}
+				return aquarium;
+			});
+			return { ...state, aquariums: updatedAquariums };
 		}
 		case EVENTS.CLEAR_USER: {
 			//TODO REMVOVE FROM async storage the TOKEN

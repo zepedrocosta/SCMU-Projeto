@@ -1,61 +1,110 @@
 import { useLocalSearchParams } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { Dimensions, View, StyleSheet, FlatList } from "react-native";
-import { Text, Card, Avatar, Divider } from "react-native-paper";
+import { Text, Avatar, Divider } from "react-native-paper";
 import { useStateContext } from "../../../context/StateContext";
 import ThresholdBar from "../../../components/ThresholdBar";
+import { useChangeWaterPumpStatus } from "../../../utils/services/AquariumService";
 
-const BombStatus = ({ isWorking }: { isWorking: boolean }) => (
-	<View style={styles.infoRow}>
-		<Avatar.Icon
-			icon={isWorking ? "check-circle" : "alert-circle"}
-			size={40}
-			style={{
-				backgroundColor: isWorking ? "#43a047" : "#e53935",
-				marginRight: 16,
-			}}
-		/>
+// ####### WaterPump #######
+import { ActivityIndicator } from "react-native-paper";
+// ...existing imports...
+
+const BombStatus = ({
+	isWorking,
+	onToggle,
+	isPending = false,
+}: {
+	isWorking: boolean;
+	onToggle?: (value: boolean) => void;
+	isPending?: boolean;
+}) => (
+	<View style={styles.bombStatusContainer}>
+		<View
+			style={{ justifyContent: "center", alignItems: "center", height: 56, width: 56 }}
+		>
+			{isPending ? (
+				<ActivityIndicator
+					size={36}
+					color="#1976d2"
+					style={{
+						alignSelf: "center",
+					}}
+				/>
+			) : (
+				<Avatar.Icon
+					icon={"power"}
+					size={56}
+					style={{
+						backgroundColor: isWorking ? "#43a047" : "#e53935",
+						marginRight: 0,
+					}}
+					color="#fff"
+					onTouchEnd={() => onToggle && onToggle(!isWorking)}
+				/>
+			)}
+		</View>
 		<View>
-			<Text style={styles.sectionLabel}>Bomb Status</Text>
-			<Text style={[styles.bold, { color: isWorking ? "#43a047" : "#e53935" }]}>
+			<Text>Bomb Status</Text>
+			<Text style={[{ color: isWorking ? "#43a047" : "#e53935" }]}>
 				{isWorking ? "Working" : "Not Working"}
 			</Text>
 		</View>
 	</View>
 );
 
-const CreatedInfo = ({ createdDate }: { createdDate: string }) => (
-	<View style={styles.infoRow}>
-		<Avatar.Icon
-			icon="calendar"
-			size={40}
-			style={{ backgroundColor: "#1976d2", marginRight: 16 }}
-		/>
-		<View>
-			<Text style={styles.sectionLabel}>Created</Text>
-			<Text>{new Date(createdDate).toLocaleString()}</Text>
+// ####### AquariumHeader #######
+const AquariumHeader = ({
+	name,
+	location,
+	ownerUsername,
+	createdDate,
+}: {
+	name: string;
+	location: string;
+	ownerUsername: string;
+	createdDate: string;
+}) => {
+	const dateObj = new Date(createdDate);
+	const formattedDate = dateObj.toLocaleDateString("en-US", {
+		day: "2-digit",
+		month: "short",
+		year: "numeric",
+	});
+	return (
+		<View style={styles.headerContainer}>
+			<View style={styles.headerRow}>
+				<Avatar.Icon icon="fish" size={52} style={styles.avatarMain} color="#fff" />
+				<View style={{ flex: 1 }}>
+					<Text style={styles.headerTitle}>{name}</Text>
+					<Text style={styles.headerSubtitle}>{location}</Text>
+				</View>
+			</View>
+			<View style={styles.headerInfoRow}>
+				<Avatar.Icon
+					icon="account"
+					size={28}
+					style={styles.headerInfoIcon}
+					color="#fff"
+				/>
+				<Text style={styles.headerInfoText}>{ownerUsername}</Text>
+				<Avatar.Icon
+					icon="calendar"
+					size={28}
+					style={styles.headerInfoIcon}
+					color="#fff"
+				/>
+				<Text style={styles.headerInfoText}>{formattedDate}</Text>
+			</View>
 		</View>
-	</View>
-);
+	);
+};
 
-const OwnerInfo = ({ ownerUsername }: { ownerUsername: string }) => (
-	<View style={styles.infoRow}>
-		<Avatar.Icon
-			icon="account"
-			size={40}
-			style={{ backgroundColor: "#8e24aa", marginRight: 16 }}
-		/>
-		<View>
-			<Text style={styles.sectionLabel}>Owner</Text>
-			<Text style={styles.bold}>{ownerUsername}</Text>
-		</View>
-	</View>
-);
-
-const BAR_WIDTH = 50; // Should match ThresholdBar style
-const BAR_MARGIN = 8; // marginHorizontal * 2
-
+// ####### ThresholdsSection #######
 const ThresholdsSection = ({ threshold }: { threshold: any }) => {
+	const BAR_WIDTH = 50;
+	const BAR_MARGIN = 8;
+
 	const data = [
 		{
 			key: "temp",
@@ -115,7 +164,6 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 		<View style={styles.thresholdsContainer}>
 			<Text style={styles.thresholdsTitle}>Thresholds</Text>
 			{totalBarWidth < screenWidth - 32 ? (
-				// Centered row if fits
 				<View
 					style={{
 						flexDirection: "row",
@@ -128,7 +176,6 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 					))}
 				</View>
 			) : (
-				// FlatList if not
 				<FlatList
 					data={data}
 					horizontal
@@ -150,6 +197,19 @@ export default function AquariumPage() {
 	const { aquariums } = useStateContext();
 	const aquarium = aquariums.find((aq) => aq.id === id);
 
+	const { mutate, isPending } = useChangeWaterPumpStatus();
+
+	const [bombOn, setBombOn] = useState(aquarium?.isBombWorking ?? false);
+
+	const handleToggleBomb = (value: boolean) => {
+		mutate(id as string, {
+			onSuccess: () => {
+				console.log(`Water pump status for aquarium ${id} changed to ${value}`);
+				setBombOn(value);
+			},
+		});
+	};
+
 	if (!aquarium) {
 		return (
 			<View style={styles.container}>
@@ -160,30 +220,15 @@ export default function AquariumPage() {
 
 	return (
 		<View style={styles.container}>
-			<Card style={styles.card} mode="elevated">
-				<Card.Title
-					title={aquarium.name}
-					subtitle={aquarium.location}
-					titleStyle={styles.title}
-					subtitleStyle={styles.subtitle}
-					left={(props) => (
-						<Avatar.Icon
-							{...props}
-							icon="fish"
-							style={styles.avatarMain}
-							color="#fff"
-						/>
-					)}
-				/>
-				<Divider style={{ marginVertical: 8 }} />
-				<Card.Content>
-					<BombStatus isWorking={aquarium.isBombWorking} />
-					<CreatedInfo createdDate={aquarium.createdDate} />
-					<OwnerInfo ownerUsername={aquarium.ownerUsername} />
-					<Divider style={{ marginVertical: 12 }} />
-					<ThresholdsSection threshold={aquarium.threshold} />
-				</Card.Content>
-			</Card>
+			<AquariumHeader
+				name={aquarium.name}
+				location={aquarium.location}
+				ownerUsername={aquarium.ownerUsername}
+				createdDate={aquarium.createdDate}
+			/>
+			<Divider style={{ marginVertical: 12 }} />
+			<BombStatus isWorking={bombOn} onToggle={handleToggleBomb} isPending={isPending} />
+			<ThresholdsSection threshold={aquarium.threshold} />
 		</View>
 	);
 }
@@ -193,39 +238,49 @@ const styles = StyleSheet.create({
 		flex: 1,
 		padding: 16,
 		backgroundColor: "#f5f5f5",
-		justifyContent: "center",
+		justifyContent: "flex-start",
 	},
-	card: {
-		borderRadius: 20,
-		elevation: 6,
-		backgroundColor: "#faf6ff",
-		paddingBottom: 8,
-	},
-	title: {
-		fontSize: 24,
-		fontWeight: "bold",
-		color: "#222",
-	},
-	subtitle: {
-		fontSize: 16,
-		color: "#666",
-	},
-	avatarMain: {
+	headerContainer: {
 		backgroundColor: "#1976d2",
+		borderRadius: 18,
+		padding: 18,
+		marginBottom: 16,
 	},
-	infoRow: {
+	headerRow: {
 		flexDirection: "row",
 		alignItems: "center",
-		marginVertical: 10,
+		marginBottom: 8,
 	},
-	sectionLabel: {
-		fontSize: 15,
-		color: "#888",
-		marginBottom: 2,
+	avatarMain: {
+		backgroundColor: "#1565c0",
+		marginRight: 14,
 	},
-	bold: {
+	headerTitle: {
+		fontSize: 24,
 		fontWeight: "bold",
+		color: "#fff",
+	},
+	headerSubtitle: {
 		fontSize: 16,
+		color: "#e3e3e3",
+	},
+	headerInfoRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginTop: 2,
+	},
+	headerInfoIcon: {
+		backgroundColor: "#2196f3",
+		marginRight: 6,
+	},
+	headerInfoText: {
+		color: "#fff",
+		fontSize: 15,
+		marginRight: 18,
+	},
+	bombStatusContainer: {
+		alignItems: "center",
+		marginVertical: 16,
 	},
 	thresholdsContainer: {
 		marginTop: 12,
@@ -237,36 +292,5 @@ const styles = StyleSheet.create({
 		color: "#444",
 		marginBottom: 8,
 		marginLeft: 4,
-	},
-	thresholdsRow: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		marginBottom: 8,
-	},
-	thresholdBox: {
-		flex: 1,
-		flexDirection: "row",
-		alignItems: "center",
-		borderRadius: 12,
-		padding: 10,
-		marginHorizontal: 4,
-		elevation: 2,
-		shadowColor: "#000",
-		shadowOpacity: 0.07,
-		shadowRadius: 4,
-		shadowOffset: { width: 0, height: 2 },
-	},
-	thresholdIcon: {
-		marginRight: 10,
-		backgroundColor: "#1976d2",
-	},
-	thresholdLabel: {
-		fontWeight: "bold",
-		fontSize: 15,
-		color: "#333",
-	},
-	thresholdValue: {
-		fontSize: 14,
-		color: "#222",
 	},
 });

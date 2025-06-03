@@ -1,6 +1,6 @@
 import { map } from "zod";
 import { Aquarium, AquariumListResponse, AquariumResponse } from "../../types/Aquarium";
-import { axiosInstance, URL_PLACEHOLDER } from "./axiosConfig";
+import { axiosInstance, sleep, URL_PLACEHOLDER } from "./axiosConfig";
 
 const basePath = "/aquariums";
 
@@ -8,6 +8,7 @@ const ENDPOINTS = {
 	AQUARIUM: basePath,
 	AQUARIUM_BY_ID: `/aquariums/${URL_PLACEHOLDER.AQUARIUM_ID}`,
 	USER_AQUARIUMS: `${basePath}/list`,
+	CHANGE_WATER_PUMP_STATUS: `${basePath}/bomb/?aquariumId=`,
 };
 
 const mockResponse: AquariumResponse[] = [
@@ -250,6 +251,26 @@ export async function getUserAquariums(userId: string): Promise<Aquarium[]> {
 	// 	})
 	// 	.catch((error) => {
 	// 		console.error("Error fetching aquariums by user ID:", error);
+	// 		throw error;
+	// 	});
+}
+
+//region PUT
+export async function changeWaterPumpStatus(aquariumId: string): Promise<string> {
+	await sleep(1000); // Simulate network delay
+
+	return aquariumId;
+
+	// TODO uncomment when backend is ready
+	// return await axiosInstance
+	// 	.put(ENDPOINTS.CHANGE_WATER_PUMP_STATUS + aquariumId)
+	// 	.then(() => {
+	// 		console.log(
+	// 			`Water pump status for aquarium ${aquariumId} changed successfully`
+	// 		);
+	// 	})
+	// 	.catch((error) => {
+	// 		console.error("Error changing water pump status:", error);
 	// 		throw error;
 	// 	});
 }
