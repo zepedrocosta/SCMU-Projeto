@@ -34,7 +34,7 @@ public class Aquarium extends DAO implements Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "aquarium", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "aquarium", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<SensorsSnapshot> values;
 
     @ToString.Exclude
