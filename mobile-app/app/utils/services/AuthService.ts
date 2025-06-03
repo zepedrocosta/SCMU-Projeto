@@ -7,7 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useStateContext } from "../../context/StateContext";
 import { EVENTS } from "../../context/reducer";
 import { useRoutes } from "../routes";
-import { getUserGroups } from "../api/GroupApi";
+import { getUserGroups, mapGroupResponseToGroup } from "../api/GroupApi";
 import { Aquarium, AquariumResponse } from "../../types/Aquarium";
 import { Group, GroupResponse } from "../../types/Group";
 
@@ -68,18 +68,13 @@ export function useLogin() {
 	});
 }
 
-function mapAquariumsToGroups(
-	aquariums: AquariumResponse[],
-	groups: GroupResponse[]
-): Group[] {
+function mapAquariumsToGroups(aquariums: Aquarium[], groups: GroupResponse[]): Group[] {
 	return groups.map((group) => {
-		const groupAquariums = aquariums.filter((aquarium) =>
-			group.aquariumsIds.includes(aquarium.id)
-		);
+		const g = mapGroupResponseToGroup(group, aquariums);
 		return {
-			...group,
-			numberOfAquariums: groupAquariums.length,
-			aquariums: groupAquariums,
+			...g,
+			color: g.color,
+			numberOfAquariums: g.aquariums.length,
 		};
 	});
 }

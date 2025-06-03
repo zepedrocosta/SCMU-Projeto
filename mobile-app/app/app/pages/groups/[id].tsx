@@ -3,7 +3,6 @@ import { View, StyleSheet, StatusBar, Modal, ScrollView } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Text, Avatar, Badge, Button, Checkbox } from "react-native-paper";
 import { useStateContext } from "../../../context/StateContext";
-import { useRoutes } from "../../../utils/routes";
 import ListAquariums from "../../../components/ListAquariums";
 import {
 	useAddAquariumsToGroup,
@@ -12,21 +11,19 @@ import {
 import { Aquarium } from "../../../types/Aquarium";
 
 export default function GroupDetail() {
-	const router = useRoutes();
+	const { id } = useLocalSearchParams();
+	const { groups, aquariums } = useStateContext();
+	const group = groups.find((aq) => aq.id === id);
 
-	const { id, name, description, numberOfAquariums, color, aquariumsIds } =
-		useLocalSearchParams();
-	const groupColor = Array.isArray(color) ? color[0] : color;
+	if (!group) {
+		return (
+			<View style={styles.container}>
+				<Text variant="titleLarge">Group not found</Text>
+			</View>
+		);
+	}
 
-	const [aquariumCount, setAquariumCount] = useState<number>(
-		Number(Array.isArray(numberOfAquariums) ? numberOfAquariums[0] : numberOfAquariums)
-	);
-
-	const { aquariums } = useStateContext();
-
-	const [groupAquariums, setGroupAquariums] = useState<Aquarium[]>(
-		aquariums.filter((aquarium) => aquariumsIds.includes(aquarium.id))
-	);
+	const [groupAquariums, setGroupAquariums] = useState<Aquarium[]>(group.aquariums || []);
 
 	const { mutate: addAquariumsToGroup } = useAddAquariumsToGroup();
 	const { mutate: removeAquariumFromGroup } = useRemoveAquariumFromGroup();
@@ -87,7 +84,6 @@ export default function GroupDetail() {
 							...prev,
 							...aquariums.filter((aq) => addedIds.includes(aq.id)),
 						]);
-						setAquariumCount(groupAquariums.length);
 					},
 					onError: checkDone,
 				}
@@ -107,7 +103,6 @@ export default function GroupDetail() {
 						setGroupAquariums((prev) =>
 							prev.filter((aq) => !removedIds.includes(aq.id))
 						);
-						setAquariumCount(groupAquariums.length);
 					},
 					onError: checkDone,
 				}
@@ -117,19 +112,16 @@ export default function GroupDetail() {
 
 	return (
 		<View style={styles.container}>
-			<View style={[styles.header, { backgroundColor: groupColor }]}>
+			<View style={[styles.header, { backgroundColor: group.color }]}>
 				<Avatar.Icon icon="fish" size={48} style={styles.avatar} color="#fff" />
 				<Text variant="titleLarge" style={styles.groupNameHeader}>
-					{name}
+					{group.name}
 				</Text>
 			</View>
 			<View style={styles.infoSection}>
-				<Text variant="bodyMedium" style={styles.groupDesc}>
-					{description}
-				</Text>
 				<View style={styles.badgeRow}>
-					<Badge style={[styles.badge, { backgroundColor: groupColor }]}>
-						{aquariumCount}
+					<Badge style={[styles.badge, { backgroundColor: group.color }]}>
+						{groupAquariums.length}
 					</Badge>
 					<Text style={styles.aquariumLabel}>Aquariums</Text>
 				</View>

@@ -60,17 +60,8 @@ export const useRoutes = () => {
 		router.push(ROUTES.GROUPS);
 	};
 
-	const gotoGroup = (group: Group) => {
-		router.push({
-			pathname: `${ROUTES.GROUPS}/${group.id}`,
-			params: {
-				name: group.name,
-				description: group.description,
-				numberOfAquariums: group.numberOfAquariums,
-				color: group.color,
-				aquariumsIds: group.aquariums.map((a) => a.id),
-			},
-		});
+	const gotoGroup = (groupId: string) => {
+		router.push(`${ROUTES.GROUPS}/${groupId}`);
 	};
 
 	return {

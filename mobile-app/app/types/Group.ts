@@ -15,7 +15,6 @@ export type GroupResponse = {
 	name: string;
 	description: string;
 	numberOfAquariums: number;
-	color: string;
 	createdAt: string;
 	aquariumsIds: string[];
 };
