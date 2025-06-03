@@ -31,8 +31,8 @@ export function useLogin() {
 			try {
 				// Fetch user aquarium data
 				const [userInfo, userAquariums, userGroups] = await Promise.all([
-					getUserInfo(data.userId),
-					getUserAquariums(data.userId),
+					getUserInfo(data.nickname),
+					getUserAquariums(data.nickname),
 					getUserGroups(),
 				]);
 

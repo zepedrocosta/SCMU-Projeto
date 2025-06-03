@@ -1,10 +1,13 @@
+import { map } from "zod";
 import { Aquarium, AquariumListResponse, AquariumResponse } from "../../types/Aquarium";
 import { axiosInstance, URL_PLACEHOLDER } from "./axiosConfig";
 
+const basePath = "/aquariums";
+
 const ENDPOINTS = {
-	AQUARIUM: "/aquariums",
+	AQUARIUM: basePath,
 	AQUARIUM_BY_ID: `/aquariums/${URL_PLACEHOLDER.AQUARIUM_ID}`,
-	USER_AQUARIUMS: `/users/${URL_PLACEHOLDER.USER_ID}/aquariums`,
+	USER_AQUARIUMS: `${basePath}/list`,
 };
 
 const mockResponse: AquariumResponse[] = [
@@ -239,15 +242,14 @@ export async function getUserAquariums(userId: string): Promise<Aquarium[]> {
 	return mapToAquariumArrayResponse(mockResponse);
 
 	// TODO uncomment when backend is ready
-	// 	return await axiosInstance
-	// 		.get<AquariumResponse[]>(
-	// 			ENDPOINTS.USER_AQUARIUMS.replace(URL_PLACEHOLDER.USER_ID, userId)
-	// 		)
-	// 		.then((response) => {
-	// 			return response.data;
-	// 		})
-	// 		.catch((error) => {
-	// 			console.error("Error fetching aquariums by user ID:", error);
-	// 			throw error;
-	// 		});
+	// return await axiosInstance
+	// 	.get<AquariumResponse[]>(ENDPOINTS.USER_AQUARIUMS)
+	// 	.then((response) => {
+	// 		console.log("Fetched user aquariums:", response.data);
+	// 		return mapToAquariumArrayResponse(response.data);
+	// 	})
+	// 	.catch((error) => {
+	// 		console.error("Error fetching aquariums by user ID:", error);
+	// 		throw error;
+	// 	});
 }

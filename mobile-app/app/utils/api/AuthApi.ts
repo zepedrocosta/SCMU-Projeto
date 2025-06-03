@@ -4,7 +4,9 @@ import {
 	RegisterRequest,
 	RegisterResponse,
 } from "../../types/Auth";
+import { Token } from "../../types/Token";
 import { axiosInstance } from "./axiosConfig";
+import { jwtDecode } from "jwt-decode";
 
 const basePath = "/security";
 
@@ -13,23 +15,49 @@ const ENDPOINTS = {
 	LOGOUT: basePath,
 };
 
+function extractTokenFromResponse(response: any): string {
+	const authHeader = response.headers["authorization"];
+	if (!authHeader) {
+		throw new Error("Authorization header not found in response");
+	}
+	const token = authHeader.split(" ")[1];
+	if (!token) {
+		throw new Error("Token not found in authorization header");
+	}
+	return token;
+}
+
 export async function authenticateUser(body: LoginRequest): Promise<LoginResponse> {
 	const mockResponse: LoginResponse = {
-		userId: "mockUserId",
+		nickname: "mockUserId",
 		accessToken: "mockAccessToken",
-		refreshToken: "mockRefreshToken",
 	};
 
 	return mockResponse;
 
 	//TODO - Uncomment the following code when the backend is ready
 	// return axiosInstance
-	// 	.put<LoginResponse>(ENDPOINTS.LOGIN, body)
+	// 	.put(ENDPOINTS.LOGIN, body)
 	// 	.then((response) => {
-	// 		return response.data;
+	// 		const decodedToken: Token = jwtDecode(extractTokenFromResponse(response));
+
+	// 		console.log("Decoded token:", decodedToken);
+
+	// 		const loginResponse: LoginResponse = {
+	// 			nickname: decodedToken.nickname,
+	// 			accessToken: extractTokenFromResponse(response),
+	// 		};
+
+	// 		return loginResponse;
 	// 	})
 	// 	.catch((error) => {
 	// 		console.error("Error during authentication:", error);
+	// 		console.error("Details:", {
+	// 			path: error.config?.url,
+	// 			method: error.config?.method,
+	// 			status: error.response?.status,
+	// 			data: error.response?.data,
+	// 		});
 	// 		throw error;
 	// 	});
 }
@@ -43,6 +71,12 @@ export async function logoutUser(): Promise<void> {
 	// 	})
 	// 	.catch((error) => {
 	// 		console.error("Error during logout:", error);
+	// 		console.error("Details:", {
+	// 			path: error.config?.url,
+	// 			method: error.config?.method,
+	// 			status: error.response?.status,
+	// 			data: error.response?.data,
+	// 		});
 	// 		throw error;
 	// 	});
 

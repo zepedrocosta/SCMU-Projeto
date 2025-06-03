@@ -4,9 +4,8 @@ export type LoginRequest = {
 };
 
 export type LoginResponse = {
-	userId: string;
+	nickname: string;
 	accessToken: string;
-	refreshToken: string;
 };
 
 export type RegisterRequest = {
