@@ -82,7 +82,7 @@ export default function GroupsPage() {
 			{/* Add Group Modal */}
 			<Modal
 				visible={modalVisible}
-				animationType="slide"
+				animationType="fade"
 				transparent={true}
 				onRequestClose={() => setModalVisible(false)}
 			>

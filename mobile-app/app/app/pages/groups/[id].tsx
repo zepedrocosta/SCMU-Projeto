@@ -212,13 +212,13 @@ export default function GroupDetail() {
 				<Modal
 					visible={editModalVisible}
 					transparent
-					animationType="slide"
+					animationType="fade"
 					onRequestClose={() => setEditModalVisible(false)}
 				>
 					<View style={styles.modalOverlay}>
 						<View style={styles.modalContent}>
 							<Text style={styles.modalTitle}>Edit Group Name</Text>
-							{/* Place your edit group form here */}
+							{/* Place edit group form here */}
 							<Button onPress={() => setEditModalVisible(false)}>Close</Button>
 						</View>
 					</View>
@@ -255,7 +255,7 @@ export default function GroupDetail() {
 			{/* Modal for selecting aquariums */}
 			<Modal
 				visible={modalVisible}
-				animationType="slide"
+				animationType="fade"
 				transparent={true}
 				onRequestClose={handleCancel}
 			>

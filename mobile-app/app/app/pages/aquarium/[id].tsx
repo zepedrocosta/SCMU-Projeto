@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import { Dimensions, View, StyleSheet, Modal } from "react-native";
+import { Dimensions, View, StyleSheet, Modal, ScrollView } from "react-native";
 import { Text, Avatar, ActivityIndicator, Button } from "react-native-paper";
 import { useStateContext } from "../../../context/StateContext";
 import ThresholdBar from "../../../components/ThresholdBar";
@@ -245,6 +245,9 @@ export default function AquariumPage() {
 		});
 	};
 
+	//get device height
+	const deviceHeight = Dimensions.get("window").height;
+
 	const handleEditThresholds = (data: updateThresholdsRequest) => {
 		console.log("Updating thresholds:", data);
 		updateThresholds(data);
@@ -285,19 +288,21 @@ export default function AquariumPage() {
 			{/* Edit Thresholds Modal */}
 			<Modal
 				visible={modalVisible}
-				animationType="slide"
+				animationType="fade"
 				transparent={true}
 				onRequestClose={() => setModalVisible(false)}
 			>
 				<View style={styles.modalOverlay}>
 					<View style={styles.modalContent}>
 						<Text style={styles.modalTitle}>Edit Thresholds</Text>
-						<EditThresholdsForm
-							aquariumId={aquarium.id}
-							onSubmit={handleEditThresholds}
-							initialValues={aquarium.threshold}
-							onCancel={() => setModalVisible(false)}
-						/>
+						<ScrollView style={{ maxHeight: deviceHeight * 0.8 }}>
+							<EditThresholdsForm
+								aquariumId={aquarium.id}
+								onSubmit={handleEditThresholds}
+								initialValues={aquarium.threshold}
+								onCancel={() => setModalVisible(false)}
+							/>
+						</ScrollView>
 					</View>
 				</View>
 			</Modal>

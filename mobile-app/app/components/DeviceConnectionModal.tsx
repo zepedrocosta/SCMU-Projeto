@@ -59,7 +59,7 @@ export default function DeviceModal(props: DeviceModalProps) {
 	return (
 		<Modal
 			style={modalStyle.modalContainer}
-			animationType="slide"
+			animationType="fade"
 			transparent={false}
 			visible={visible}
 		>
