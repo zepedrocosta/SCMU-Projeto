@@ -1,6 +1,6 @@
 import { defaultUser, State } from "./state";
 import { User, UserDefaults } from "../types/User";
-import { Aquarium } from "../types/Aquarium";
+import { Aquarium, EditAquarium } from "../types/Aquarium";
 import { Group } from "../types/Group";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -17,6 +17,7 @@ export const EVENTS = {
 	REMOVE_GROUP: "REMOVE_GROUP",
 	CHANGE_WATER_PUMP_STATUS: "CHANGE_WATER_PUMP_STATUS",
 	UPDATE_THRESHOLDS: "UPDATE_THRESHOLDS",
+	UPDATE_AQUARIUM: "UPDATE_AQUARIUM",
 	CLEAR_USER: "CLEAR_USER",
 	LOAD_STATE: "LOAD_STATE",
 } as const;
@@ -69,6 +70,7 @@ export type Action =
 				};
 			};
 	  }
+	| { type: typeof EVENTS.UPDATE_AQUARIUM; payload: EditAquarium }
 	| { type: typeof EVENTS.CLEAR_USER }
 	| { type: typeof EVENTS.LOAD_STATE; payload: State };
 
@@ -169,6 +171,19 @@ export function reducer(state: State, action: Action): State {
 							...aquarium.threshold,
 							...thresholds,
 						},
+					};
+				}
+				return aquarium;
+			});
+			return { ...state, aquariums: updatedAquariums };
+		}
+		case EVENTS.UPDATE_AQUARIUM: {
+			const updatedAquarium = action.payload;
+			const updatedAquariums = state.aquariums.map((aquarium) => {
+				if (aquarium.id === updatedAquarium.id) {
+					return {
+						...aquarium,
+						...updatedAquarium,
 					};
 				}
 				return aquarium;

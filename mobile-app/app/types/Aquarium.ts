@@ -55,3 +55,9 @@ export type thresholdsResponse = {
 	minHeight: number;
 	maxHeight: number;
 };
+
+export type EditAquarium = {
+	id: string;
+	name: string;
+	location: string;
+};

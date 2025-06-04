@@ -2,6 +2,7 @@ import {
 	Aquarium,
 	AquariumListResponse,
 	AquariumResponse,
+	EditAquarium,
 	ThresholdResponse,
 	updateThresholdsRequest,
 } from "../../types/Aquarium";
@@ -15,6 +16,7 @@ const ENDPOINTS = {
 	USER_AQUARIUMS: `${basePath}/list`,
 	CHANGE_WATER_PUMP_STATUS: `${basePath}/bomb/?aquariumId=`,
 	UPDATE_THRESHOLDS: `${basePath}/threshold`,
+	UPDATE_AQUARIUM: basePath,
 };
 
 const mockResponse: AquariumResponse[] = [
@@ -297,6 +299,29 @@ export async function updateThresholds(updateThresholds: updateThresholdsRequest
 	// 		throw error;
 	// 	});
 }
+
+export async function editAquarium(editAquariumRequest: EditAquarium): Promise<EditAquarium> {
+	console.log("Editing aquarium:", editAquariumRequest);
+	const aquariumId = editAquariumRequest.id;
+	return {
+		id: aquariumId,
+		name: editAquariumRequest.name,
+		location: editAquariumRequest.location,
+	};
+
+	// // TODO uncomment when backend is ready
+	// return await axiosInstance
+	// 	.put<AquariumResponse>(ENDPOINTS.UPDATE_AQUARIUM)
+	// 	.then((response) => {
+	// 		console.log(`Aquarium ${aquariumId} edited successfully`, response.data);
+	// 		return response.data;
+	// 	})
+	// 	.catch((error) => {
+	// 		console.error("Error editing aquarium:", error);
+	// 		throw error;
+	// 	});
+}
+
 //endregion
 
 //region DELETE

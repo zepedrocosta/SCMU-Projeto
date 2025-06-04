@@ -7,11 +7,13 @@ import ThresholdBar from "../../../components/ThresholdBar";
 import {
 	useChangeWaterPumpStatus,
 	useDeleteAquarium,
+	useEditAquarium,
 	useUpdateThresholds,
 } from "../../../utils/services/AquariumService";
-import { updateThresholdsRequest } from "../../../types/Aquarium";
+import { EditAquarium, updateThresholdsRequest } from "../../../types/Aquarium";
 import EditThresholdsForm from "../../../components/EditThresholdsForm";
 import { useRoutes } from "../../../utils/routes";
+import EditAquariumForm from "../../../components/EditAquariumForm";
 
 // ####### WaterPump #######
 const BombStatus = ({
@@ -81,6 +83,21 @@ const AquariumHeader = ({
 	const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
 	const { mutate: deleteAquarium } = useDeleteAquarium();
+	const { mutate: updateAquarium } = useEditAquarium();
+
+	const handleEditAquarium = (data: EditAquarium) => {
+		console.log("Edit aquarium:", data);
+		updateAquarium(data, {
+			onSuccess: () => {
+				setEditModalVisible(false);
+				router.gotoHome();
+			},
+			onError: () => {
+				setEditModalVisible(false);
+			},
+		});
+		setEditModalVisible(false);
+	};
 
 	const handleDeleteAquarium = () => {
 		deleteAquarium(aquariumId, {
@@ -185,6 +202,34 @@ const AquariumHeader = ({
 								Delete
 							</Button>
 						</View>
+					</View>
+				</View>
+			</Modal>
+
+			{/* Edit Aquarium Modal */}
+			<Modal
+				visible={editModalVisible}
+				animationType="fade"
+				transparent={true}
+				onRequestClose={() => setEditModalVisible(false)}
+			>
+				<View style={styles.modalOverlay}>
+					<View style={styles.modalContent}>
+						<Text style={styles.modalTitle}>Edit Aquarium</Text>
+						<EditAquariumForm
+							name={name}
+							location={location}
+							onSubmit={(data: { name: string; location: string }) =>
+								handleEditAquarium({ id: aquariumId, ...data })
+							}
+						/>
+						<Button
+							mode="outlined"
+							onPress={() => setEditModalVisible(false)}
+							style={styles.modalButton}
+						>
+							Cancel
+						</Button>
 					</View>
 				</View>
 			</Modal>
