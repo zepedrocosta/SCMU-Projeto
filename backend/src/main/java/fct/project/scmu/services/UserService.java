@@ -3,7 +3,7 @@ package fct.project.scmu.services;
 import fct.project.scmu.daos.User;
 import fct.project.scmu.daos.enums.UserStatus;
 import fct.project.scmu.dtos.forms.users.*;
-import fct.project.scmu.repositories.UserRepository;
+import fct.project.scmu.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -27,11 +28,20 @@ import java.util.concurrent.Future;
 public class UserService {
 
     private final PasswordEncoder encoder;
-
+    private final RoleRepository roles;
     private final UserRepository users;
+    private final AquariumRepository aquariums;
+    private final ThresholdRepository thresholds;
+    private final SensorsSnapshotRepository snapshots;
+    private final GroupsRepository groups;
 
     @Transactional
     public Optional<User> create(User user) {
+        var role = roles.findByRole(("USER"));
+        if (role == null)
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Role USER not found");
+
+        user.setRoles(Set.of(role));
         user.setPassword(encoder.encode(user.getPassword()));
         user.setEmail(user.getEmail().toLowerCase().trim());
         user.setNickname(user.getNickname().trim());
@@ -55,8 +65,13 @@ public class UserService {
     }
 
     @Transactional
-    public Optional<Void> delete(String nickname) throws ExecutionException, InterruptedException {
+    public Optional<Void> delete(String nickname) {
         User u = users.findByNickname(nickname).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        snapshots.deleteAllByAquariumIn(u.getOwns());
+        groups.deleteAllByOwner(u);
+        thresholds.deleteAllByAquariumIn(u.getOwns());
+        aquariums.deleteAllByOwner(u);
+        users.delete(u);
         return Optional.empty();
     }
 

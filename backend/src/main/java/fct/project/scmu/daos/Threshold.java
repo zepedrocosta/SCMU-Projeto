@@ -3,6 +3,8 @@ package fct.project.scmu.daos;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.UUID;
 
@@ -13,6 +15,8 @@ import java.util.UUID;
 @ToString(doNotUseGetters = true, callSuper = true)
 @EqualsAndHashCode(doNotUseGetters = true)
 @Entity(name = "thresholds")
+@SQLRestriction("is_deleted = false")
+@SQLDelete(sql = "UPDATE aquariums SET is_deleted = true WHERE id = ?")
 public class Threshold {
 
     @Id
@@ -44,9 +48,12 @@ public class Threshold {
     @Column
     private double maxHeight = 50.0;
 
+    @Column
+    private boolean isDeleted = false;
+
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JsonBackReference
     private Aquarium aquarium;
 }

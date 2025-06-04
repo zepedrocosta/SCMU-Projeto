@@ -6,9 +6,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Set;
 import java.util.UUID;
 
 public interface SensorsSnapshotRepository extends JpaRepository<SensorsSnapshot, UUID> {
 
     Page<SensorsSnapshot> findAllByAquariumOrderByCreatedDateDesc(Aquarium aquarium, Pageable pageable);
+
+    void deleteAllByAquariumIn(Set<Aquarium> aquariums);
 }

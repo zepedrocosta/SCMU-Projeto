@@ -62,14 +62,14 @@ public class AquariumController extends AbstractController{
 
     @SneakyThrows
     @GetMapping("/list")
-    public ResponseEntity<List<AquariumResponse>> listAquariums() {
+    public ResponseEntity<List<PrivAquariumResponse>> listAquariums() {
         return ok(aquariumService.listAquariums().get());
     }
 
     @SneakyThrows
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<Page<AquariumResponse>> searchAquariums(@RequestParam String query,
+    public ResponseEntity<Page<PrivAquariumResponse>> searchAquariums(@RequestParam String query,
                                                                   @RequestParam(defaultValue = "0") Integer page,
                                                                  @RequestParam(defaultValue = "12") Integer size) {
         return ok(aquariumService.searchAquariums(query, page, size).get());
@@ -81,11 +81,11 @@ public class AquariumController extends AbstractController{
     }
 
     @PostMapping("/groups")
-    public ResponseEntity<String> createGroup(@RequestParam String groupName) {
+    public ResponseEntity<GroupsResponse> createGroup(@RequestParam String groupName) {
         return ok(aquariumService.createGroup(groupName));
     }
 
-    @GetMapping("/groups") //TODO: Check if aquariums are needed here
+    @GetMapping("/groups")
     public ResponseEntity<List<GroupsResponse>> listGroups() {
         return ok(aquariumService.listGroups());
     }

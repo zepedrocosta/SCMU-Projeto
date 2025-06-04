@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -15,6 +17,8 @@ import java.util.Set;
 @ToString(doNotUseGetters = true, callSuper = true)
 @EqualsAndHashCode(doNotUseGetters = true, callSuper = true)
 @Entity(name = "aquariums")
+@SQLRestriction("is_deleted = false")
+@SQLDelete(sql = "UPDATE aquariums SET is_deleted = true WHERE id = ?")
 public class Aquarium extends DAO implements Serializable {
 
     @Column(length = 64, nullable = false)
@@ -26,6 +30,9 @@ public class Aquarium extends DAO implements Serializable {
     @Column
     private boolean isBombWorking = false;
 
+    @Column
+    private boolean isDeleted = false;
+
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToOne
@@ -34,7 +41,7 @@ public class Aquarium extends DAO implements Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "aquarium", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "aquarium", cascade = CascadeType.MERGE)
     private Set<SensorsSnapshot> values;
 
     @ToString.Exclude
@@ -49,7 +56,7 @@ public class Aquarium extends DAO implements Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToOne(mappedBy = "aquarium", cascade = CascadeType.MERGE, fetch = FetchType.EAGER, orphanRemoval = true)
+    @OneToOne(mappedBy = "aquarium", fetch = FetchType.EAGER, orphanRemoval = true)
     @JsonManagedReference
     private Threshold threshold;
 }

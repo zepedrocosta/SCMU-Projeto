@@ -56,7 +56,11 @@ public class ScmuApplication implements CommandLineRunner {
         }
 
         if (!roleRepository.existsByRole("USER")) {
-            roleRepository.save(new Role("USER", "Role used by App's users", new HashSet<>()));
+            Role role = new Role("USER", "Role used by App's users", new HashSet<>());
+            roleRepository.save(role);
+            userRepository.save(new User("user", passwordEncoder.encode(adminPassword), "User",
+                    "user@aqsmart.pt", UserStatus.ACTIVE, Set.of(role), new HashSet<>(), new HashSet<>(),
+                    new HashSet<>(), new HashSet<>()));
         }
 
         var user = userRepository.findByNickname("admin").get();
@@ -65,6 +69,19 @@ public class ScmuApplication implements CommandLineRunner {
             var aquarium = new Aquarium();
             aquarium.setName("Aq1");
             aquarium.setLocation("Covilha");
+            aquarium.setOwner(user);
+            aquarium.setThreshold(threshold);
+            threshold.setAquarium(aquarium);
+            thresholdRepository.save(threshold);
+            aquariumRepository.save(aquarium);
+        }
+
+        user = userRepository.findByNickname("user").get();
+        if (aquariumRepository.findByName("Aq2").isEmpty()) {
+            var threshold = new Threshold();
+            var aquarium = new Aquarium();
+            aquarium.setName("Aq2");
+            aquarium.setLocation("Caparica");
             aquarium.setOwner(user);
             aquarium.setThreshold(threshold);
             threshold.setAquarium(aquarium);
