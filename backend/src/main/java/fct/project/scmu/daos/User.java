@@ -1,8 +1,11 @@
 package fct.project.scmu.daos;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fct.project.scmu.daos.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +21,8 @@ import java.util.Set;
 @ToString(doNotUseGetters = true, callSuper = true)
 @EqualsAndHashCode(doNotUseGetters = true, callSuper = true)
 @Entity(name = "users")
+@SQLDelete(sql = "UPDATE users SET status = 2 WHERE id = ?")
+@SQLRestriction("status != 2")
 public class User extends DAO implements UserDetails, Serializable {
 
     @Column(length = 64, unique = true, nullable = false)
@@ -42,22 +47,23 @@ public class User extends DAO implements UserDetails, Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "user")
+    @JsonIgnore
+    @OneToMany(mappedBy = "user",  fetch = FetchType.LAZY)
     private Set<Session> sessions;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
     private Set<Aquarium> owns;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToMany(mappedBy = "managers", cascade = CascadeType.MERGE)
+    @ManyToMany(mappedBy = "managers", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private Set<Aquarium> manages;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
     private Set<Group> groups;
 
 

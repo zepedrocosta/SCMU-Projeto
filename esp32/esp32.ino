@@ -8,7 +8,13 @@
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
+
 #include <WiFi.h>
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
@@ -17,19 +23,20 @@
 #include <Adafruit_SSD1306.h>
 
 #include <Preferences.h>
-#include <BluetoothSerial.h>
 
 #include <secrets.h>
 #include <pitches.h>
+#include <CredentialsCallback.h>
 
 // GPIO Connections
 #define TEMPERATURE_SENSOR 4 // DS18B20
 #define TDS_SENSOR 34        // TDS Sensor
-#define LDR_SENSOR 35        // LDR Sensor 
+#define LDR_SENSOR 35        // LDR Sensor
 #define TRIG_PIN 12          // Ultrasonic Trigger Pin
 #define ECHO_PIN 14          // Ultrasonic Echo Pin
 #define PH_SENSOR 25         // pH Sensor
 #define BUZZER_PIN 18        // Buzzer Pin
+#define WATER_PUMP_PIN 19    // Water Pump Pin
 
 #define VREF 3.3       // Reference voltage for the ADC
 #define SAMPLES_TDS 30 // Number of samples for TDS
@@ -46,6 +53,9 @@
 #define DIST_ULTRA_TO_GROUND 21 // Distance from the ultrasonic sensor to the ground in cm
 #define WIFI_BT_TIMEOUT 30000   // Bluetooth and Wi-Fi connection timeout in milliseconds (30 seconds)
 
+#define SERVICE_UUID "bd8db997-757f-44b7-ad11-b81515927ca8"        // UUID for the BLE service
+#define CHARACTERISTIC_UUID "6e4fe646-a8f0-4892-8ef4-9ac94142da48" // UUID for the BLE characteristic
+
 OneWire oneWire(TEMPERATURE_SENSOR);
 DallasTemperature sensors(&oneWire);
 
@@ -61,9 +71,12 @@ int pH_buf[SAMPLES_PH];
 
 float angle = 0;
 
-volatile bool setupFinished = false;
-bool hasWiFi = false;
-bool hasDisplay = false;
+volatile bool setupFinished = false; // Flag to indicate if setup is finished
+bool hasWiFi = false;                // Flag to indicate if Wi-Fi is connected
+bool hasDisplay = false;             // Flag to indicate if OLED display is connected
+bool credentialsReceivedBT = false;  // Flag to indicate if credentials were received via Bluetooth
+bool isBombWorking = false;          // Flag to indicate if the bomb is working
+bool areValuesNormal = false;        // Flag to indicate if the values are normal
 
 int melody[] = {
     NOTE_E5, NOTE_D5, NOTE_FS4, NOTE_GS4,
@@ -80,6 +93,9 @@ int durations[] = {
 void setup()
 {
   Serial.begin(9600);
+  delay(2000); // Wait for serial monitor to open
+
+  Serial.println("Initializing SCMU project!\n");
 
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) // Address 0x3D for 128x64
   {
@@ -98,15 +114,14 @@ void setup()
 
 void setupTask(void *parameter)
 {
-  delay(2000); // Wait for serial monitor to open
-  Serial.println("Initializing SCMU project!\n");
-
-  sensors.begin();             // Start DS18B20
-  pinMode(TDS_SENSOR, INPUT);  // TDS
-  pinMode(LDR_SENSOR, INPUT);  // LDR
-  pinMode(ECHO_PIN, INPUT);    // Ultrasonic Echo Pin
-  pinMode(BUZZER_PIN, OUTPUT); // Buzzer Pin
-  pinMode(TRIG_PIN, OUTPUT);   // Ultrasonic Trigger Pin
+  sensors.begin();                   // Start DS18B20
+  pinMode(TDS_SENSOR, INPUT);        // TDS
+  pinMode(LDR_SENSOR, INPUT);        // LDR
+  pinMode(ECHO_PIN, INPUT);          // Ultrasonic Echo Pin
+  pinMode(BUZZER_PIN, OUTPUT);       // Buzzer Pin
+  pinMode(TRIG_PIN, OUTPUT);         // Ultrasonic Trigger Pin
+  pinMode(WATER_PUMP_PIN, OUTPUT);   // Water Pump Pin
+  digitalWrite(WATER_PUMP_PIN, LOW); // Start with pump off
 
   String ssid, password;
 
@@ -137,7 +152,10 @@ bool getWiFiInfo(String &ssid, String &password)
   {
     Serial.println("No stored WiFi credentials found.");
 
-    btConnect(ssid, password);
+    btConnect();
+
+    ssid = preferences.getString("ssid", "");
+    password = preferences.getString("pass", "");
 
     if (ssid == "" || password == "")
     {
@@ -178,59 +196,42 @@ void connectToWiFi(String &ssid, String &password)
   }
 }
 
-void btConnect(String &ssid, String &password)
+void btConnect()
 {
-  BluetoothSerial SerialBT;
+  // Initialize BLE
+  BLEDevice::init("SmartAquarium");
+  BLEServer *pServer = BLEDevice::createServer();
+  BLEService *pService = pServer->createService(SERVICE_UUID);
 
-  SerialBT.begin("Smart_Aquarium_SCMU"); // Bluetooth name
-  Serial.println("Waiting for Bluetooth connection...");
+  BLECharacteristic *pCharacteristic = pService->createCharacteristic(
+      CHARACTERISTIC_UUID,
+      BLECharacteristic::PROPERTY_WRITE);
 
-  while (!SerialBT.connected(WIFI_BT_TIMEOUT))
+  pCharacteristic->setCallbacks(new CredentialsCallback());
+
+  pService->start();
+
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->start();
+
+  Serial.println("ESP32 is now advertising...");
+
+  unsigned long startAttemptTime = millis();
+
+  while (!credentialsReceivedBT && millis() - startAttemptTime < WIFI_BT_TIMEOUT)
   {
     delay(500);
     Serial.print(".");
   }
 
-  Serial.println("\nBluetooth connected!");
+  // Stop BLE once credentials are received
+  Serial.println("Credentials received, stopping BLE...");
+  pAdvertising->stop();
+  pServer->removeService(pService);
+  BLEDevice::deinit(true);
 
-  String jsonBuffer = "";
-
-  while (true)
-  {
-    if (SerialBT.available())
-    {
-      char c = SerialBT.read();
-      jsonBuffer += c;
-
-      if (c == '\n')
-      {
-        Serial.print("Received JSON: ");
-        Serial.println(jsonBuffer);
-
-        StaticJsonDocument<200> doc;
-        DeserializationError error = deserializeJson(doc, jsonBuffer);
-
-        if (error)
-        {
-          Serial.print("Failed to parse JSON: ");
-          Serial.println(error.c_str());
-          jsonBuffer = ""; // Clear buffer and keep waiting
-        }
-        else
-        {
-          ssid = doc["ssid"].as<String>();
-          password = doc["password"].as<String>();
-          Serial.print("Received SSID: ");
-          Serial.println(ssid);
-          break;
-        }
-      }
-    }
-
-    delay(10); // Prevent CPU hogging
-  }
-  SerialBT.end(); // Close Bluetooth connection
-  Serial.println("Bluetooth connection closed.");
+  Serial.println("BLE shut down!");
 }
 
 void initializationTask(void *parameter)
@@ -262,10 +263,12 @@ void loop()
     if (hasDisplay)
       showData(tempC, tdsValue, hasLight, depth, pHValue);
 
-    // if (hasWiFi)
-    //   sendData(tempC, tdsValue, hasLight, depth, pHValue);
+    if (hasWiFi)
+      sendData(tempC, tdsValue, hasLight, depth, pHValue);
 
-    if (!idealValues(tempC, pHValue, tdsValue, hasLight))
+    controlWaterPump();
+
+    if (!areValuesNormal)
       singNokia();
 
     Serial.println();
@@ -306,8 +309,7 @@ float readTDS(float temperature)
   float compensationCoefficient = 1.0 + 0.02 * (temperature - 25.0);
   float compensationVoltage = averageVoltage / compensationCoefficient;
 
-  float tds = (133.42 * pow(compensationVoltage, 3) - 255.86 * pow(compensationVoltage, 2) 
-    + 857.39 * compensationVoltage) * 0.5;
+  float tds = (133.42 * pow(compensationVoltage, 3) - 255.86 * pow(compensationVoltage, 2) + 857.39 * compensationVoltage) * 0.5;
 
   Serial.print("TDS Value: ");
   Serial.print(tds, 0);
@@ -399,7 +401,7 @@ void sendData(float temperature, float tds, int ldr, int depth, float pH)
     {
       Serial.printf("POST... code: %d\n", httpResponseCode);
       String response = http.getString();
-      Serial.println(response);
+      analyseResponse(response);
     }
     else
     {
@@ -414,12 +416,27 @@ void sendData(float temperature, float tds, int ldr, int depth, float pH)
   }
 }
 
-bool idealValues(float temperature, float pH, float tds, int ldr)
+void analyseResponse(String response)
 {
-  return (temperature >= 24.0 && temperature <= 27.0) &&
-         (pH >= 6.5 && pH <= 7.5) &&
-         (tds >= 150 && tds <= 300) &&
-         (ldr == LOW);
+  StaticJsonDocument<200> jsonDoc;
+  DeserializationError error = deserializeJson(jsonDoc, response);
+
+  if (error)
+  {
+    Serial.print("deserializeJson() failed: ");
+    Serial.println(error.f_str());
+    return;
+  }
+
+  if (jsonDoc.containsKey("isBombWorking"))
+  {
+    isBombWorking = jsonDoc["isBombWorking"];
+  }
+
+  if (jsonDoc.containsKey("areValuesNormal"))
+  {
+    areValuesNormal = jsonDoc["areValuesNormal"];
+  }
 }
 
 void showData(float temperature, float tds, int ldr, int depth, float pH)
@@ -430,36 +447,46 @@ void showData(float temperature, float tds, int ldr, int depth, float pH)
 
   printHeader();
 
+  int row = 0;
+
   // row 0 ─ Temperature
-  display.setCursor(0, START_Y + 0 * LINE_SPACING);
+  display.setCursor(0, START_Y + row * LINE_SPACING);
   display.print("Temperature:");
-  display.setCursor(VALUE_X, START_Y + 0 * LINE_SPACING);
+  display.setCursor(VALUE_X, START_Y + row * LINE_SPACING);
   display.print(temperature, 1);
   display.print(" C");
 
+  row++;
+
   // row 1 ─ TDS
-  display.setCursor(0, START_Y + 1 * LINE_SPACING);
+  display.setCursor(0, START_Y + row * LINE_SPACING);
   display.print("TDS Value:");
-  display.setCursor(VALUE_X, START_Y + 1 * LINE_SPACING);
+  display.setCursor(VALUE_X, START_Y + row * LINE_SPACING);
   display.print(tds, 0);
   display.print(" ppm");
 
+  row++;
+
   // row 2 ─ LDR
-  display.setCursor(0, START_Y + 2 * LINE_SPACING);
+  display.setCursor(0, START_Y + row * LINE_SPACING);
   display.print("LDR State:");
-  display.setCursor(VALUE_X, START_Y + 2 * LINE_SPACING);
+  display.setCursor(VALUE_X, START_Y + row * LINE_SPACING);
   display.println(ldr == HIGH ? "Dark" : "Light");
 
+  row++;
+
   // row 3 ─ pH
-  display.setCursor(0, START_Y + 3 * LINE_SPACING);
+  display.setCursor(0, START_Y + row * LINE_SPACING);
   display.print("pH:");
-  display.setCursor(VALUE_X, START_Y + 3 * LINE_SPACING);
+  display.setCursor(VALUE_X, START_Y + row * LINE_SPACING);
   display.print(pH, 2);
 
+  row++;
+
   // row 4 ─ Depth
-  display.setCursor(0, START_Y + 4 * LINE_SPACING);
+  display.setCursor(0, START_Y + row * LINE_SPACING);
   display.print("Depth:");
-  display.setCursor(VALUE_X, START_Y + 4 * LINE_SPACING);
+  display.setCursor(VALUE_X, START_Y + row * LINE_SPACING);
   display.print(depth);
   display.print(" cm");
 
@@ -545,6 +572,20 @@ long microsecondsToCentimeters(long microseconds)
   // The ping travels out and back, so to find the distance of the
   // object we take half of the distance travelled.
   return (microseconds / 29.1) / 2;
+}
+
+void controlWaterPump()
+{
+  if (isBombWorking)
+  {
+    Serial.println("Bomb is working, turning on water pump...");
+    digitalWrite(WATER_PUMP_PIN, HIGH);
+  }
+  else
+  {
+    Serial.println("Bomb is not working, turning off water pump...");
+    digitalWrite(WATER_PUMP_PIN, LOW);
+  }
 }
 
 void singNokia()

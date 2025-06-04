@@ -2,6 +2,8 @@ package fct.project.scmu.daos;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.Set;
 
@@ -11,11 +13,16 @@ import java.util.Set;
 @AllArgsConstructor
 @ToString(doNotUseGetters = true, callSuper = true)
 @EqualsAndHashCode(doNotUseGetters = true, callSuper = true)
-@Entity(name = "AqGroups")
+@Entity(name = "aqGroups")
+@SQLRestriction("is_deleted = false")
+@SQLDelete(sql = "UPDATE aquariums SET is_deleted = true WHERE id = ?")
 public class Group extends DAO{
 
     @Column(nullable = false)
     private String name;
+
+    @Column
+    private boolean isDeleted = false;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

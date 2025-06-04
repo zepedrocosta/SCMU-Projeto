@@ -1,13 +1,11 @@
 package fct.project.scmu.daos;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
-import org.springframework.data.annotation.CreatedDate;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Setter
@@ -16,40 +14,46 @@ import java.util.UUID;
 @AllArgsConstructor
 @ToString(doNotUseGetters = true, callSuper = true)
 @EqualsAndHashCode(doNotUseGetters = true)
-@Entity(name = "sensorsSnapshot")
+@Entity(name = "thresholds")
 @SQLRestriction("is_deleted = false")
 @SQLDelete(sql = "UPDATE aquariums SET is_deleted = true WHERE id = ?")
-public class SensorsSnapshot implements Serializable {
+public class Threshold {
 
     @Id
     @GeneratedValue(generator = "uuid2", strategy = GenerationType.AUTO)
     @Column(columnDefinition = "BINARY(16)", unique = true, nullable = false)
     private UUID id;
 
-    @CreatedDate
-    private LocalDateTime createdDate = LocalDateTime.now();
+    @Column
+    private double minTemperature = 0.0;
 
-    @Column(nullable = false)
-    private double temperature;
+    @Column
+    private double maxTemperature = 100.0;
 
-    @Column(nullable = false)
-    private boolean ldr;
+    @Column
+    private double minPH = 0.0;
 
-    @Column(nullable = false)
-    private double ph;
+    @Column
+    private double maxPH = 14.0;
 
-    @Column(nullable = false)
-    private int tds;
+    @Column
+    private int minTds = 0;
 
-    @Column(nullable = false)
-    private double height;
+    @Column
+    private int maxTds = 500;
+
+    @Column
+    private double minHeight = 0.0;
+
+    @Column
+    private double maxHeight = 50.0;
 
     @Column
     private boolean isDeleted = false;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "aquariumId")
+    @OneToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @JsonBackReference
     private Aquarium aquarium;
 }

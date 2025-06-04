@@ -21,6 +21,7 @@
 - OLED Display: - **3.3V**
   - SDA: GPIO 21
   - SCL: GPIO 22
+- Water Pump: GPIO 19 - **3.3V**
 
 ## Secrets
 
@@ -31,8 +32,6 @@ All sensitive information is stored in a separate file called `secrets.h`. You c
 
 #define SECRETS_H
 
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
 const char* serverUrl = "YOUR_SERVER_URL";
 
 #endif
@@ -51,7 +50,7 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - [x] OLED Display
 - [ ] RGB LED
 - [x] Buzzer
-- [ ] Water Pump
+- [x] Water Pump
 
 ## OLED Representation
 
@@ -81,7 +80,10 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - Adafruit_GFX
 - Adafruit_SSD1306
 - Preferences
-- BluetoothSerial
+- BLEDevice
+- BLEUtils
+- BLEServer
+- BLE2902
 
 ## Bibliography
 

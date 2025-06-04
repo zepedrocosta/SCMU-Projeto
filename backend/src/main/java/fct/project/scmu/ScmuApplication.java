@@ -1,10 +1,15 @@
 package fct.project.scmu;
 
+import fct.project.scmu.daos.Aquarium;
 import fct.project.scmu.daos.Role;
+import fct.project.scmu.daos.Threshold;
 import fct.project.scmu.daos.User;
 import fct.project.scmu.daos.enums.UserStatus;
+import fct.project.scmu.repositories.AquariumRepository;
 import fct.project.scmu.repositories.RoleRepository;
+import fct.project.scmu.repositories.ThresholdRepository;
 import fct.project.scmu.repositories.UserRepository;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -18,6 +23,9 @@ import java.util.Set;
 @SpringBootApplication
 public class ScmuApplication implements CommandLineRunner {
 
+    @Autowired
+    private ThresholdRepository thresholdRepository;
+
     public static void main(String[] args) {
         SpringApplication.run(ScmuApplication.class, args);
     }
@@ -27,6 +35,9 @@ public class ScmuApplication implements CommandLineRunner {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AquariumRepository aquariumRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -45,7 +56,37 @@ public class ScmuApplication implements CommandLineRunner {
         }
 
         if (!roleRepository.existsByRole("USER")) {
-            roleRepository.save(new Role("USER", "Role used by App's users", new HashSet<>()));
+            Role role = new Role("USER", "Role used by App's users", new HashSet<>());
+            roleRepository.save(role);
+            userRepository.save(new User("user", passwordEncoder.encode(adminPassword), "User",
+                    "user@aqsmart.pt", UserStatus.ACTIVE, Set.of(role), new HashSet<>(), new HashSet<>(),
+                    new HashSet<>(), new HashSet<>()));
+        }
+
+        var user = userRepository.findByNickname("admin").get();
+        if (aquariumRepository.findByName("Aq1").isEmpty()) {
+            var threshold = new Threshold();
+            var aquarium = new Aquarium();
+            aquarium.setName("Aq1");
+            aquarium.setLocation("Covilha");
+            aquarium.setOwner(user);
+            aquarium.setThreshold(threshold);
+            threshold.setAquarium(aquarium);
+            thresholdRepository.save(threshold);
+            aquariumRepository.save(aquarium);
+        }
+
+        user = userRepository.findByNickname("user").get();
+        if (aquariumRepository.findByName("Aq2").isEmpty()) {
+            var threshold = new Threshold();
+            var aquarium = new Aquarium();
+            aquarium.setName("Aq2");
+            aquarium.setLocation("Caparica");
+            aquarium.setOwner(user);
+            aquarium.setThreshold(threshold);
+            threshold.setAquarium(aquarium);
+            thresholdRepository.save(threshold);
+            aquariumRepository.save(aquarium);
         }
     }
 }
