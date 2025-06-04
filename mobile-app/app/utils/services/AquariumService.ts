@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useStateContext } from "../../context/StateContext";
 import { EVENTS } from "../../context/reducer";
-import { changeWaterPumpStatus, updateThresholds } from "../api/AquariumApi";
+import { changeWaterPumpStatus, deleteAquarium, updateThresholds } from "../api/AquariumApi";
 import { updateThresholdsRequest } from "../../types/Aquarium";
 
 //region QUERIES
@@ -53,6 +53,24 @@ export function useUpdateThresholds() {
 				},
 			});
 			console.log("Thresholds updated successfully:", data);
+		},
+	});
+}
+
+export function useDeleteAquarium() {
+	const { dispatch } = useStateContext();
+
+	return useMutation({
+		mutationFn: (data: string) => deleteAquarium(data),
+		onError: (error) => {
+			console.error("Error deleting aquarium:", error);
+		},
+		onSuccess: (data) => {
+			dispatch({
+				type: EVENTS.REMOVE_AQUARIUM,
+				payload: data,
+			});
+			console.log(`Aquarium with ID ${data} deleted successfully`);
 		},
 	});
 }

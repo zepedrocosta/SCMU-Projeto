@@ -1,15 +1,17 @@
 import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { Dimensions, View, StyleSheet, Modal, ScrollView } from "react-native";
-import { Text, Avatar, ActivityIndicator, Button } from "react-native-paper";
+import { Text, Avatar, ActivityIndicator, Button, Menu, IconButton } from "react-native-paper";
 import { useStateContext } from "../../../context/StateContext";
 import ThresholdBar from "../../../components/ThresholdBar";
 import {
 	useChangeWaterPumpStatus,
+	useDeleteAquarium,
 	useUpdateThresholds,
 } from "../../../utils/services/AquariumService";
 import { updateThresholdsRequest } from "../../../types/Aquarium";
 import EditThresholdsForm from "../../../components/EditThresholdsForm";
+import { useRoutes } from "../../../utils/routes";
 
 // ####### WaterPump #######
 const BombStatus = ({
@@ -57,16 +59,41 @@ const BombStatus = ({
 
 // ####### AquariumHeader #######
 const AquariumHeader = ({
+	aquariumId,
 	name,
 	location,
 	ownerUsername,
 	createdDate,
 }: {
+	aquariumId: string;
 	name: string;
 	location: string;
 	ownerUsername: string;
 	createdDate: string;
 }) => {
+	const router = useRoutes();
+
+	const [menuVisible, setMenuVisible] = useState(false);
+	const openMenu = () => setMenuVisible(true);
+	const closeMenu = () => setMenuVisible(false);
+
+	const [editModalVisible, setEditModalVisible] = useState(false);
+	const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
+	const { mutate: deleteAquarium } = useDeleteAquarium();
+
+	const handleDeleteAquarium = () => {
+		deleteAquarium(aquariumId, {
+			onSuccess: () => {
+				setDeleteModalVisible(false);
+				router.gotoHome();
+			},
+			onError: () => {
+				setDeleteModalVisible(false);
+			},
+		});
+	};
+
 	const dateObj = new Date(createdDate);
 	const formattedDate = dateObj.toLocaleDateString("en-US", {
 		day: "2-digit",
@@ -98,6 +125,69 @@ const AquariumHeader = ({
 				/>
 				<Text style={styles.headerInfoText}>{formattedDate}</Text>
 			</View>
+			<Menu
+				visible={menuVisible}
+				onDismiss={closeMenu}
+				anchor={
+					<IconButton
+						icon="dots-vertical"
+						iconColor="#000000"
+						size={28}
+						onPress={openMenu}
+					/>
+				}
+			>
+				<Menu.Item
+					onPress={() => {
+						closeMenu();
+						setEditModalVisible(true);
+					}}
+					title="Edit Aquarium Name"
+					leadingIcon="pencil"
+				/>
+				<Menu.Item
+					onPress={() => {
+						closeMenu();
+						setDeleteModalVisible(true);
+					}}
+					title="Delete Aquarium"
+					leadingIcon="trash-can"
+					titleStyle={{ color: "#e53935" }}
+				/>
+			</Menu>
+
+			{/* Delete Aquarium Modal */}
+			<Modal
+				visible={deleteModalVisible}
+				transparent
+				animationType="fade"
+				onRequestClose={() => setDeleteModalVisible(false)}
+			>
+				<View style={styles.modalOverlay}>
+					<View style={styles.modalContent}>
+						<Text style={styles.modalTitle}>Delete Aquarium</Text>
+						<Text style={{ marginBottom: 20, textAlign: "center" }}>
+							Are you sure you want to delete this aquarium?
+						</Text>
+						<View style={styles.modalButtonRow}>
+							<Button
+								mode="outlined"
+								onPress={() => setDeleteModalVisible(false)}
+								style={styles.modalButton}
+							>
+								Cancel
+							</Button>
+							<Button
+								mode="contained"
+								onPress={handleDeleteAquarium}
+								style={[styles.modalButton, { backgroundColor: "#e53935" }]}
+							>
+								Delete
+							</Button>
+						</View>
+					</View>
+				</View>
+			</Modal>
 		</View>
 	);
 };
@@ -266,6 +356,7 @@ export default function AquariumPage() {
 	return (
 		<View style={styles.container}>
 			<AquariumHeader
+				aquariumId={aquarium.id}
 				name={aquarium.name}
 				location={aquarium.location}
 				ownerUsername={aquarium.ownerUsername}
@@ -401,10 +492,6 @@ const styles = StyleSheet.create({
 		fontWeight: "bold",
 		marginBottom: 16,
 	},
-	modalButton: {
-		marginTop: 8,
-		alignSelf: "stretch",
-	},
 	addButtonHeader: {
 		backgroundColor: "#1976D2",
 		borderRadius: 20,
@@ -417,5 +504,15 @@ const styles = StyleSheet.create({
 		fontWeight: "bold",
 		color: "#fff",
 		textTransform: "none",
+	},
+	modalButtonRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		marginTop: 24,
+		width: "100%",
+	},
+	modalButton: {
+		flex: 1,
+		marginHorizontal: 8,
 	},
 });

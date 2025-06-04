@@ -298,3 +298,21 @@ export async function updateThresholds(updateThresholds: updateThresholdsRequest
 	// 	});
 }
 //endregion
+
+//region DELETE
+export async function deleteAquarium(aquariumId: string): Promise<string> {
+	console.log(`Deleting aquarium with ID: ${aquariumId}`);
+	return aquariumId;
+
+	// TODO uncomment when backend is ready
+	// return await axiosInstance
+	// 	.delete(ENDPOINTS.AQUARIUM_BY_ID.replace(URL_PLACEHOLDER.AQUARIUM_ID, aquariumId))
+	// 	.then(() => {
+	// 		console.log(`Aquarium ${aquariumId} deleted successfully`);
+	// 		return aquariumId;
+	// 	})
+	// 	.catch((error) => {
+	// 		console.error("Error deleting aquarium:", error);
+	// 		throw error;
+	// 	});
+}

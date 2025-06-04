@@ -66,9 +66,7 @@ export default function GroupsPage() {
 									{item.description}
 								</Text>
 								<View style={styles.badgeRow}>
-									<Badge style={styles.badge}>
-										{item.numberOfAquariums}
-									</Badge>
+									<Badge style={styles.badge}>{item.aquariums.length}</Badge>
 									<Text style={styles.aquariumLabel}>Aquariums</Text>
 								</View>
 							</View>

@@ -74,7 +74,6 @@ function mapAquariumsToGroups(aquariums: Aquarium[], groups: GroupResponse[]): G
 		return {
 			...g,
 			color: g.color,
-			numberOfAquariums: g.aquariums.length,
 		};
 	});
 }
