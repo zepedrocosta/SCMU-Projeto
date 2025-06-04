@@ -1,3 +1,11 @@
+/**
+ * Smart Aquarium
+ * SCMU - 24/25 - NOVA FCT
+ * @author: José Costa - 62637
+ * @author: Rodrigo Albuquerque - 70294
+ * @author: Rafael Mira - 59243
+ */
+
 #ifndef CREDENTIALS_CALLBACK_H
 
 #define CREDENTIALS_CALLBACK_H
