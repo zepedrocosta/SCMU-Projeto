@@ -1,99 +1,144 @@
 import { useMutation } from "@tanstack/react-query";
-import {
-  LoginRequest,
-  RegisterRequest,
-  RegisterResponse,
-} from "../../types/Auth";
-import { authenticateUser, registerUser } from "../api/AuthApi";
+import { LoginRequest, RegisterRequest } from "../../types/Auth";
+import { authenticateUser, logoutUser, registerUser } from "../api/AuthApi";
 import { getUserAquariums } from "../api/AquariumApi";
 import { getUserInfo } from "../api/UserApi";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useStateContext } from "../../context/StateContext";
 import { EVENTS } from "../../context/reducer";
 import { useRoutes } from "../routes";
-import { jwtDecode } from "jwt-decode";
+import { getUserGroups, mapGroupResponseToGroup } from "../api/GroupApi";
+import { Aquarium, AquariumResponse } from "../../types/Aquarium";
+import { Group, GroupResponse } from "../../types/Group";
 
 export function useLogin() {
-  const router = useRoutes();
+	const router = useRoutes();
 
-  const { dispatch } = useStateContext();
+	const { dispatch } = useStateContext();
 
-  return useMutation({
-    mutationFn: (data: LoginRequest) => authenticateUser(data),
-    onError: (error) => {
-      console.error("Login error:", error);
-    },
-    onSuccess: async (response) => {
-      await AsyncStorage.setItem("accessToken", response);
-      let t: any = jwtDecode(response); //TODO: Maybe create a type for this... Maybe not...
+	return useMutation({
+		mutationFn: (data: LoginRequest) => authenticateUser(data),
+		onError: (error) => {
+			console.error("Login error:", error);
+		},
+		onSuccess: async (response) => {
+			const data = response;
 
-      try {
-        // Fetch user aquarium data
-        const userAquariums = await getUserAquariums();
+			console.log("Login successful:", data);
 
-        dispatch({
-          type: EVENTS.SET_USER,
-          payload: {
-            nickname: t.nickname,
-            name: t.name,
-            email: t.email,
-            role: t.role,
-          },
-        });
+			await AsyncStorage.setItem("accessToken", data.accessToken);
 
-        if (userAquariums)
-          dispatch({ type: EVENTS.SET_AQUARIUMS, payload: userAquariums });
-        else dispatch({ type: EVENTS.SET_AQUARIUMS, payload: [] });
+			try {
+				// Fetch user aquarium data
+				const [userInfo, userAquariums, userGroups] = await Promise.all([
+					getUserInfo(data.nickname),
+					getUserAquariums(data.nickname),
+					getUserGroups(),
+				]);
 
-        router.gotoHome(true);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
+				if (userInfo) {
+					dispatch({ type: EVENTS.SET_USER, payload: userInfo });
+					dispatch({ type: EVENTS.SET_DEFAULTS, payload: userInfo.defaults });
+				} else {
+					console.error("User not found");
+				}
 
-      router.gotoHome(true);
-    },
-  });
+				if (userAquariums) {
+					dispatch({ type: EVENTS.SET_AQUARIUMS, payload: userAquariums });
+					console.log("User aquariums:", userAquariums);
+				} else {
+					dispatch({ type: EVENTS.SET_AQUARIUMS, payload: [] });
+					console.log("No aquariums found for user");
+				}
+
+				if (userGroups) {
+					const mappedGroups = mapAquariumsToGroups(userAquariums, userGroups);
+					dispatch({ type: EVENTS.SET_GROUPS, payload: mappedGroups });
+					console.log("User groups:", userGroups);
+				} else {
+					dispatch({ type: EVENTS.SET_GROUPS, payload: [] });
+					console.log("No groups found for user");
+				}
+			} catch (error) {
+				console.error("Error fetching user data:", error);
+			}
+
+			router.gotoHome(true);
+		},
+	});
+}
+
+function mapAquariumsToGroups(aquariums: Aquarium[], groups: GroupResponse[]): Group[] {
+	return groups.map((group) => {
+		const g = mapGroupResponseToGroup(group, aquariums);
+		return {
+			...g,
+			color: g.color,
+		};
+	});
 }
 
 export function useRegister() {
-  const router = useRoutes();
+	const router = useRoutes();
 
-  const { dispatch } = useStateContext();
+	const { dispatch } = useStateContext();
 
-  return useMutation({
-    mutationFn: (data: RegisterRequest) => registerUser(data),
-    onError: (error) => {
-      console.error("Register error:", error);
-    },
-    onSuccess: async (response) => {
-      const data = response;
+	return useMutation({
+		mutationFn: (data: RegisterRequest) => registerUser(data),
+		onError: (error) => {
+			console.error("Register error:", error);
+		},
+		onSuccess: async (response) => {
+			const data = response;
 
-      await AsyncStorage.setItem("accessToken", data.token);
+			console.log("Register successful:", data);
 
-      try {
-        // Fetch user aquarium data
-        const userAquariums = await getUserAquariums();
+			await AsyncStorage.setItem("accessToken", data.accessToken);
 
-        dispatch({
-          type: EVENTS.SET_USER,
-          payload: {
-            nickname: response.nickname,
-            name: response.name,
-            email: response.email,
-            role: response.role,
-          },
-        });
+			try {
+				// Fetch user aquarium data
+				const [userInfo, userAquariums] = await Promise.all([
+					getUserInfo(data.userId),
+					getUserAquariums(data.userId),
+				]);
 
-        if (userAquariums)
-          dispatch({ type: EVENTS.SET_AQUARIUMS, payload: userAquariums });
-        else dispatch({ type: EVENTS.SET_AQUARIUMS, payload: [] });
+				if (userInfo) {
+					dispatch({ type: EVENTS.SET_USER, payload: userInfo });
+					dispatch({ type: EVENTS.SET_DEFAULTS, payload: userInfo.defaults });
+				} else {
+					console.error("User not found");
+				}
 
-        router.gotoHome(true);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
+				if (userAquariums) {
+					dispatch({ type: EVENTS.SET_AQUARIUMS, payload: userAquariums });
+					console.log("User aquariums:", userAquariums);
+				} else {
+					dispatch({ type: EVENTS.SET_AQUARIUMS, payload: [] });
+					console.log("No aquariums found for user");
+				}
+			} catch (error) {
+				console.error("Error fetching user data:", error);
+			}
 
-      router.gotoHome(true);
-    },
-  });
+			router.gotoHome(true);
+		},
+	});
+}
+
+export function useLogout() {
+	const router = useRoutes();
+
+	const { dispatch } = useStateContext();
+
+	return useMutation({
+		mutationFn: () => logoutUser(),
+		onError: (error) => {
+			console.error("Register error:", error);
+		},
+		onSuccess: async (response) => {
+			dispatch({ type: EVENTS.CLEAR_USER });
+			router.gotoIndex();
+			console.log("Logout successful");
+		},
+	});
 }

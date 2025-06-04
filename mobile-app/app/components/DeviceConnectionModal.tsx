@@ -6,6 +6,7 @@ import {
 	Text,
 	StyleSheet,
 	TouchableOpacity,
+	View,
 } from "react-native";
 import { Device } from "react-native-ble-plx";
 
@@ -24,6 +25,8 @@ type DeviceModalProps = {
 
 const DeviceModalListItem: FC<DeviceModalListItemProps> = (props) => {
 	const { item, connectToPeripheral, closeModal } = props;
+
+	console.log("DeviceModalListItem", item.item);
 
 	const connectAndCloseModal = useCallback(() => {
 		connectToPeripheral(item.item);
@@ -56,16 +59,21 @@ export default function DeviceModal(props: DeviceModalProps) {
 	return (
 		<Modal
 			style={modalStyle.modalContainer}
-			animationType="slide"
+			animationType="fade"
 			transparent={false}
 			visible={visible}
 		>
-			<Text style={modalStyle.modalTitleText}>Tap on a device to connect</Text>
-			<FlatList
-				contentContainerStyle={modalStyle.modalFlatlistContiner}
-				data={devices}
-				renderItem={renderDeviceModalListItem}
-			/>
+			<View style={{ flex: 1 }}>
+				<Text style={modalStyle.modalTitleText}>Choose your device</Text>
+				<FlatList
+					contentContainerStyle={modalStyle.modalFlatlistContiner}
+					data={devices}
+					renderItem={renderDeviceModalListItem}
+				/>
+				<TouchableOpacity onPress={closeModal} style={modalStyle.cancelButton}>
+					<Text style={modalStyle.cancelButtonText}>Cancel</Text>
+				</TouchableOpacity>
+			</View>
 		</Modal>
 	);
 }
@@ -111,5 +119,19 @@ const modalStyle = StyleSheet.create({
 		fontSize: 18,
 		fontWeight: "bold",
 		color: "white",
+	},
+	cancelButton: {
+		backgroundColor: "#ccc",
+		justifyContent: "center",
+		alignItems: "center",
+		height: 50,
+		marginHorizontal: 20,
+		marginBottom: 40,
+		borderRadius: 8,
+	},
+	cancelButtonText: {
+		fontSize: 18,
+		fontWeight: "bold",
+		color: "#333",
 	},
 });

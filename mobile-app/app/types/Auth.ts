@@ -1,20 +1,23 @@
 export type LoginRequest = {
-  email: string;
-  password: string;
+	email: string;
+	password: string;
+};
+
+export type LoginResponse = {
+	nickname: string;
+	accessToken: string;
 };
 
 export type RegisterRequest = {
-  nickname: string;
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
+	name: string;
+	nickname: string;
+	email: string;
+	password: string;
+	confirmPassword: string;
 };
 
 export type RegisterResponse = {
-  nickname: string;
-  name: string;
-  email: string;
-  role: string;
-  token: string;
+	userId: string;
+	accessToken: string;
+	refreshToken: string;
 };
