@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { StyleSheet, Platform, KeyboardAvoidingView, ScrollView, View } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -15,8 +15,8 @@ const schema = z.object({
 	maxTds: z.coerce.number().min(0),
 	minHeight: z.coerce.number().min(0),
 	maxHeight: z.coerce.number().min(0),
-	// minLight: z.coerce.number().min(0),
-	// maxLight: z.coerce.number().min(0),
+	minLight: z.coerce.number().min(0),
+	maxLight: z.coerce.number().min(0),
 });
 
 type EditThresholdsInput = z.infer<typeof schema>;
@@ -25,10 +25,12 @@ export default function EditThresholdsForm({
 	aquariumId,
 	initialValues,
 	onSubmit,
+	onCancel,
 }: {
 	aquariumId: string;
 	initialValues: ThresholdResponse;
 	onSubmit: (data: updateThresholdsRequest) => void;
+	onCancel: () => void;
 }) {
 	const {
 		handleSubmit,
@@ -61,47 +63,68 @@ export default function EditThresholdsForm({
 	};
 
 	return (
-		<View style={styles.container}>
-			{fields.map((f) => (
-				<View key={f.name} style={styles.inputGroup}>
-					<TextInput
-						label={f.label}
-						value={String(watch(f.name as keyof EditThresholdsInput) ?? "")}
-						onChangeText={(text) =>
-							setValue(
-								f.name as keyof EditThresholdsInput,
-								text ? parseFloat(text) : 0
-							)
-						}
-						mode="outlined"
-						keyboardType="numeric"
-						error={!!errors[f.name as keyof EditThresholdsInput]}
-						style={styles.input}
-					/>
-					{errors[f.name as keyof EditThresholdsInput] && (
-						<Text style={styles.errorText}>
-							{errors[f.name as keyof EditThresholdsInput]?.message as string}
-						</Text>
-					)}
-				</View>
-			))}
-			<Button
-				mode="contained"
-				onPress={handleSubmit(handleFormSubmit)}
-				loading={isSubmitting}
-				style={styles.button}
-				disabled={isSubmitting}
+		<KeyboardAvoidingView
+			behavior={Platform.OS === "ios" ? "padding" : "height"}
+			keyboardVerticalOffset={64}
+		>
+			<ScrollView
+				contentContainerStyle={styles.container}
+				showsVerticalScrollIndicator={false}
+				keyboardShouldPersistTaps="handled"
 			>
-				Save Thresholds
-			</Button>
-		</View>
+				{fields.map((f) => (
+					<View key={f.name} style={styles.inputGroup}>
+						<TextInput
+							label={f.label}
+							value={
+								watch(f.name as keyof EditThresholdsInput) !== undefined
+									? String(watch(f.name as keyof EditThresholdsInput))
+									: ""
+							}
+							onChangeText={(text) =>
+								setValue(
+									f.name as keyof EditThresholdsInput,
+									text === "" ? 0 : parseFloat(text)
+								)
+							}
+							mode="outlined"
+							keyboardType="numeric"
+							error={!!errors[f.name as keyof EditThresholdsInput]}
+							style={styles.input}
+						/>
+						{errors[f.name as keyof EditThresholdsInput] && (
+							<Text style={styles.errorText}>
+								{
+									errors[f.name as keyof EditThresholdsInput]
+										?.message as string
+								}
+							</Text>
+						)}
+					</View>
+				))}
+				<Button
+					mode="contained"
+					onPress={handleSubmit(handleFormSubmit)}
+					loading={isSubmitting}
+					style={styles.button}
+					disabled={isSubmitting}
+				>
+					Save Thresholds
+				</Button>
+
+				<Button mode="outlined" onPress={() => onCancel()} style={styles.button}>
+					Cancel
+				</Button>
+			</ScrollView>
+		</KeyboardAvoidingView>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
 		padding: 8,
-		width: "100%",
+		paddingBottom: 24,
+		flexGrow: 1,
 	},
 	inputGroup: {
 		marginBottom: 8,

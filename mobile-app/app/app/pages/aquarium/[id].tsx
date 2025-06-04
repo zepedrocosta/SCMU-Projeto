@@ -296,14 +296,8 @@ export default function AquariumPage() {
 							aquariumId={aquarium.id}
 							onSubmit={handleEditThresholds}
 							initialValues={aquarium.threshold}
+							onCancel={() => setModalVisible(false)}
 						/>
-						<Button
-							mode="outlined"
-							onPress={() => setModalVisible(false)}
-							style={styles.modalButton}
-						>
-							Cancel
-						</Button>
 					</View>
 				</View>
 			</Modal>
@@ -391,9 +385,11 @@ const styles = StyleSheet.create({
 		backgroundColor: "#fff",
 		borderRadius: 16,
 		padding: 24,
-		width: "85%",
+		width: "90%",
 		maxWidth: 400,
-		alignItems: "center",
+		maxHeight: "80%",
+		alignItems: "stretch",
+		justifyContent: "flex-start",
 	},
 	modalTitle: {
 		fontSize: 20,
