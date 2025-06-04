@@ -2,6 +2,8 @@ package fct.project.scmu.daos;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.io.Serializable;
@@ -15,6 +17,8 @@ import java.util.UUID;
 @ToString(doNotUseGetters = true, callSuper = true)
 @EqualsAndHashCode(doNotUseGetters = true)
 @Entity(name = "sensorsSnapshot")
+@SQLRestriction("is_deleted = false")
+@SQLDelete(sql = "UPDATE aquariums SET is_deleted = true WHERE id = ?")
 public class SensorsSnapshot implements Serializable {
 
     @Id
@@ -40,9 +44,12 @@ public class SensorsSnapshot implements Serializable {
     @Column(nullable = false)
     private double height;
 
+    @Column
+    private boolean isDeleted = false;
+
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToOne(cascade = {CascadeType.MERGE})
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "aquariumId")
     private Aquarium aquarium;
 }
