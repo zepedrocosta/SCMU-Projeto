@@ -57,7 +57,6 @@ export default function AquariumHeader({ aquarium }: AquariumHeaderProps) {
 		});
 	};
 
-	//get device height
 	const deviceHeight = Dimensions.get("window").height;
 
 	const handleEditThresholds = (data: updateThresholdsRequest) => {
@@ -75,67 +74,89 @@ export default function AquariumHeader({ aquarium }: AquariumHeaderProps) {
 	});
 	return (
 		<View style={styles.headerContainer}>
-			<View style={styles.headerRow}>
-				<Avatar.Icon icon="fish" size={52} style={styles.avatarMain} color="#fff" />
-				<View style={{ flex: 1 }}>
+			{/* Top Row: Icon + Name/Location + Menu */}
+			<View style={styles.headerTopRow}>
+				<View style={styles.avatarWrapper}>
+					<Avatar.Icon
+						icon="fish"
+						size={56}
+						style={styles.avatarMain}
+						color="#fff"
+					/>
+				</View>
+				<View style={{ flex: 1, justifyContent: "center" }}>
 					<Text style={styles.headerTitle}>{name}</Text>
+				</View>
+				<Menu
+					visible={menuVisible}
+					onDismiss={closeMenu}
+					anchor={
+						<IconButton
+							icon="dots-vertical"
+							iconColor="#000000"
+							size={28}
+							onPress={openMenu}
+						/>
+					}
+				>
+					<Menu.Item
+						onPress={() => {
+							closeMenu();
+							setEditModalVisible(true);
+						}}
+						title="Edit Aquarium"
+						leadingIcon="pencil"
+					/>
+					<Menu.Item
+						onPress={() => {
+							closeMenu();
+							seteditThresholdsModalVisible(true);
+						}}
+						title="Edit Thresholds"
+						leadingIcon="cog"
+					/>
+					<Menu.Item
+						onPress={() => {
+							closeMenu();
+							setDeleteModalVisible(true);
+						}}
+						title="Delete Aquarium"
+						leadingIcon="trash-can"
+						titleStyle={{ color: "#e53935" }}
+					/>
+				</Menu>
+			</View>
+
+			{/* Info Row: Owner & Date */}
+			<View style={styles.infoRow}>
+				<View style={styles.infoItem}>
+					<Avatar.Icon
+						icon="map-marker"
+						size={24}
+						style={styles.infoIcon}
+						color="#d2fafd"
+					/>
 					<Text style={styles.headerSubtitle}>{location}</Text>
 				</View>
-			</View>
-			<View style={styles.headerInfoRow}>
-				<Avatar.Icon
-					icon="account"
-					size={28}
-					style={styles.headerInfoIcon}
-					color="#fff"
-				/>
-				<Text style={styles.headerInfoText}>{ownerUsername}</Text>
-				<Avatar.Icon
-					icon="calendar"
-					size={28}
-					style={styles.headerInfoIcon}
-					color="#fff"
-				/>
-				<Text style={styles.headerInfoText}>{formattedDate}</Text>
-			</View>
-			<Menu
-				visible={menuVisible}
-				onDismiss={closeMenu}
-				anchor={
-					<IconButton
-						icon="dots-vertical"
-						iconColor="#000000"
-						size={28}
-						onPress={openMenu}
+				<View style={styles.infoItem}>
+					<Avatar.Icon
+						icon="account"
+						size={24}
+						style={styles.infoIcon}
+						color="#d2fafd"
 					/>
-				}
-			>
-				<Menu.Item
-					onPress={() => {
-						closeMenu();
-						setEditModalVisible(true);
-					}}
-					title="Edit Aquarium"
-					leadingIcon="pencil"
-				/>
-				<Menu.Item
-					onPress={() => {
-						closeMenu();
-						seteditThresholdsModalVisible(true);
-					}}
-					title="Edit Thresholds"
-					leadingIcon="cog"
-				/>
-				<Menu.Item
-					onPress={() => {
-						closeMenu();
-						setDeleteModalVisible(true);
-					}}
-					title="Delete Aquarium"
-					leadingIcon="trash-can"
-					titleStyle={{ color: "#e53935" }}
-				/>
-			</Menu>
+					<Text style={styles.headerSubtitle}>{ownerUsername}</Text>
+				</View>
+				<View style={styles.infoItem}>
+					<Avatar.Icon
+						icon="calendar"
+						size={24}
+						style={styles.infoIcon}
+						color="#d2fafd"
+					/>
+					<Text style={styles.headerSubtitle}>{formattedDate}</Text>
+				</View>
+			</View>
 
 			{/* Delete Aquarium Modal */}
 			<Modal
@@ -224,74 +245,59 @@ export default function AquariumHeader({ aquarium }: AquariumHeaderProps) {
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		padding: 16,
-		backgroundColor: "#f5f5f5",
-		justifyContent: "flex-start",
+	headerCard: {
+		backgroundColor: "#fff",
+		borderRadius: 20,
+		padding: 22,
+		marginBottom: 18,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.08,
+		shadowRadius: 8,
+		elevation: 3,
 	},
-	headerContainer: {
-		backgroundColor: "#1976d2",
-		borderRadius: 18,
-		padding: 18,
-		marginBottom: 16,
-	},
-	headerRow: {
+	headerTopRow: {
 		flexDirection: "row",
 		alignItems: "center",
-		marginBottom: 8,
+		marginBottom: 10,
 	},
-	avatarMain: {
-		backgroundColor: "#1565c0",
-		marginRight: 14,
-	},
-	headerTitle: {
-		fontSize: 24,
-		fontWeight: "bold",
-		color: "#fff",
-	},
-	headerSubtitle: {
-		fontSize: 16,
-		color: "#e3e3e3",
-	},
-	headerInfoRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		marginTop: 2,
-	},
-	headerInfoIcon: {
-		backgroundColor: "#2196f3",
-		marginRight: 6,
-	},
-	headerInfoText: {
-		color: "#fff",
-		fontSize: 15,
+	avatarWrapper: {
 		marginRight: 18,
 	},
-	bombStatusContainer: {
+	headerTitle: {
+		fontSize: 22,
+		fontWeight: "700",
+		color: "#ffffff",
+		letterSpacing: 0.2,
+	},
+	headerSubtitle: {
+		fontSize: 15,
+		color: "#d2fafd",
+		marginTop: 2,
+	},
+	infoRow: {
+		flexDirection: "row",
+		flexWrap: "wrap", // Allow wrapping
+		justifyContent: "flex-start",
 		alignItems: "center",
-		marginVertical: 16,
+		gap: 12, // Reduce gap for compactness
+		marginTop: 6,
 	},
-	thresholdsContainer: {
-		marginTop: 12,
-		marginBottom: 8,
+	infoItem: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginRight: 0, // Remove fixed margin
+		marginBottom: 4, // Add a little space for wrapped rows
+		maxWidth: "100%",
+		flexShrink: 1,
 	},
-	thresholdsTitle: {
-		fontSize: 17,
-		fontWeight: "bold",
+	infoIcon: {
+		backgroundColor: "transparent",
+		marginRight: 4,
+	},
+	infoText: {
+		fontSize: 14,
 		color: "#444",
-		marginBottom: 8,
-		marginLeft: 4,
-	},
-	verticalBarIcon: {
-		marginBottom: 6,
-		backgroundColor: "#1976d2",
-	},
-	verticalBarLabel: {
-		fontWeight: "bold",
-		fontSize: 13,
-		color: "#333",
-		marginBottom: 6,
 	},
 	modalOverlay: {
 		flex: 1,
@@ -314,19 +320,6 @@ const styles = StyleSheet.create({
 		fontWeight: "bold",
 		marginBottom: 16,
 	},
-	addButtonHeader: {
-		backgroundColor: "#1976D2",
-		borderRadius: 20,
-		paddingHorizontal: 14,
-		minWidth: 0,
-		elevation: 0,
-	},
-	addButtonHeaderLabel: {
-		fontSize: 15,
-		fontWeight: "bold",
-		color: "#fff",
-		textTransform: "none",
-	},
 	modalButtonRow: {
 		flexDirection: "row",
 		justifyContent: "space-between",
@@ -336,5 +329,15 @@ const styles = StyleSheet.create({
 	modalButton: {
 		flex: 1,
 		marginHorizontal: 8,
+	},
+	avatarMain: {
+		backgroundColor: "#1565c0",
+		marginRight: 14,
+	},
+	headerContainer: {
+		backgroundColor: "#1976d2",
+		borderRadius: 18,
+		padding: 18,
+		marginBottom: 16,
 	},
 });
