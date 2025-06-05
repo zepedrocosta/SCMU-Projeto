@@ -92,8 +92,15 @@ export function reducer(state: State, action: Action): State {
 			const { groupId, aquariumIds } = action.payload;
 			const updatedGroups = state.groups.map((group) => {
 				if (group.id === groupId) {
+					const existingAquariums = group.aquariums || [];
+					const newAquariums = state.aquariums.filter(
+						(aq) =>
+							aquariumIds.includes(aq.id) &&
+							!existingAquariums.some((ea) => ea.id === aq.id)
+					);
 					return {
 						...group,
+						aquariums: [...existingAquariums, ...newAquariums],
 					};
 				}
 				return group;
