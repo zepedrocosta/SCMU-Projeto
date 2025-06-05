@@ -4,7 +4,6 @@ import { BleManager, Device, State } from "react-native-ble-plx";
 import { Buffer } from "buffer";
 
 import * as ExpoDevice from "expo-device";
-import { useRoutes } from "../utils/routes";
 
 interface BluetoothLowEnergyApi {
 	requestPermissions: () => Promise<boolean>;
@@ -20,6 +19,7 @@ interface BluetoothLowEnergyApi {
 	) => Promise<void>;
 	resetDevices: () => void;
 	refreshBluetoothState: () => void;
+	isConnectingToDevice: boolean;
 }
 
 export default function useBLE(): BluetoothLowEnergyApi {
@@ -27,11 +27,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
 		return new BleManager();
 	}, []);
 
-	const router = useRoutes();
-
 	const [allDevices, setAllDevices] = useState<Device[]>([]);
 	const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
 	const [isBluetoothOn, setBluetoothOn] = useState(false);
+	const [isConnectingToDevice, setIsConnectingToDevice] = useState(false);
 
 	useEffect(() => {
 		const subscription = bleManager.onStateChange((state) => {
@@ -113,15 +112,17 @@ export default function useBLE(): BluetoothLowEnergyApi {
 	};
 
 	const connectToDevice = async (device: Device) => {
+		setIsConnectingToDevice(true);
 		try {
 			const deviceConnection = await bleManager.connectToDevice(device.id);
 			setConnectedDevice(deviceConnection);
 			console.log("Connected to:", deviceConnection.name || deviceConnection.id);
 			await deviceConnection.discoverAllServicesAndCharacteristics();
 			bleManager.stopDeviceScan();
-			router.gotoSendWifiForm();
 		} catch (e) {
 			console.log("FAILED TO CONNECT", e);
+		} finally {
+			setIsConnectingToDevice(false);
 		}
 	};
 
@@ -154,5 +155,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
 		writeToDevice,
 		resetDevices,
 		refreshBluetoothState,
+		isConnectingToDevice,
 	};
 }
