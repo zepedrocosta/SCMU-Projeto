@@ -1,19 +1,11 @@
 import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import { Dimensions, View, StyleSheet, Modal, ScrollView } from "react-native";
-import { Text, Avatar, ActivityIndicator, Button, Menu, IconButton } from "react-native-paper";
+import { Dimensions, View, StyleSheet } from "react-native";
+import { Text, Avatar, ActivityIndicator } from "react-native-paper";
 import { useStateContext } from "../../../context/StateContext";
 import ThresholdBar from "../../../components/ThresholdBar";
-import {
-	useChangeWaterPumpStatus,
-	useDeleteAquarium,
-	useEditAquarium,
-	useUpdateThresholds,
-} from "../../../utils/services/AquariumService";
-import { EditAquarium, updateThresholdsRequest } from "../../../types/Aquarium";
-import EditThresholdsForm from "../../../components/EditThresholdsForm";
-import { useRoutes } from "../../../utils/routes";
-import EditAquariumForm from "../../../components/EditAquariumForm";
+import { useChangeWaterPumpStatus } from "../../../utils/services/AquariumService";
+import AquariumHeader from "../../../components/AquariumHeader";
 
 // ####### WaterPump #######
 const BombStatus = ({
@@ -59,220 +51,59 @@ const BombStatus = ({
 	</View>
 );
 
-// ####### AquariumHeader #######
-const AquariumHeader = ({
-	aquariumId,
-	name,
-	location,
-	ownerUsername,
-	createdDate,
-}: {
-	aquariumId: string;
-	name: string;
-	location: string;
-	ownerUsername: string;
-	createdDate: string;
-}) => {
-	const router = useRoutes();
-
-	const [menuVisible, setMenuVisible] = useState(false);
-	const openMenu = () => setMenuVisible(true);
-	const closeMenu = () => setMenuVisible(false);
-
-	const [editModalVisible, setEditModalVisible] = useState(false);
-	const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-
-	const { mutate: deleteAquarium } = useDeleteAquarium();
-	const { mutate: updateAquarium } = useEditAquarium();
-
-	const handleEditAquarium = (data: EditAquarium) => {
-		console.log("Edit aquarium:", data);
-		updateAquarium(data, {
-			onSuccess: () => {
-				setEditModalVisible(false);
-			},
-			onError: () => {
-				setEditModalVisible(false);
-			},
-		});
-		setEditModalVisible(false);
-	};
-
-	const handleDeleteAquarium = () => {
-		deleteAquarium(aquariumId, {
-			onSuccess: () => {
-				setDeleteModalVisible(false);
-				router.gotoHome();
-			},
-			onError: () => {
-				setDeleteModalVisible(false);
-			},
-		});
-	};
-
-	const dateObj = new Date(createdDate);
-	const formattedDate = dateObj.toLocaleDateString("en-US", {
-		day: "2-digit",
-		month: "short",
-		year: "numeric",
-	});
-	return (
-		<View style={styles.headerContainer}>
-			<View style={styles.headerRow}>
-				<Avatar.Icon icon="fish" size={52} style={styles.avatarMain} color="#fff" />
-				<View style={{ flex: 1 }}>
-					<Text style={styles.headerTitle}>{name}</Text>
-					<Text style={styles.headerSubtitle}>{location}</Text>
-				</View>
-			</View>
-			<View style={styles.headerInfoRow}>
-				<Avatar.Icon
-					icon="account"
-					size={28}
-					style={styles.headerInfoIcon}
-					color="#fff"
-				/>
-				<Text style={styles.headerInfoText}>{ownerUsername}</Text>
-				<Avatar.Icon
-					icon="calendar"
-					size={28}
-					style={styles.headerInfoIcon}
-					color="#fff"
-				/>
-				<Text style={styles.headerInfoText}>{formattedDate}</Text>
-			</View>
-			<Menu
-				visible={menuVisible}
-				onDismiss={closeMenu}
-				anchor={
-					<IconButton
-						icon="dots-vertical"
-						iconColor="#000000"
-						size={28}
-						onPress={openMenu}
-					/>
-				}
-			>
-				<Menu.Item
-					onPress={() => {
-						closeMenu();
-						setEditModalVisible(true);
-					}}
-					title="Edit Aquarium Name"
-					leadingIcon="pencil"
-				/>
-				<Menu.Item
-					onPress={() => {
-						closeMenu();
-						setDeleteModalVisible(true);
-					}}
-					title="Delete Aquarium"
-					leadingIcon="trash-can"
-					titleStyle={{ color: "#e53935" }}
-				/>
-			</Menu>
-
-			{/* Delete Aquarium Modal */}
-			<Modal
-				visible={deleteModalVisible}
-				transparent
-				animationType="fade"
-				onRequestClose={() => setDeleteModalVisible(false)}
-			>
-				<View style={styles.modalOverlay}>
-					<View style={styles.modalContent}>
-						<Text style={styles.modalTitle}>Delete Aquarium</Text>
-						<Text style={{ marginBottom: 20, textAlign: "center" }}>
-							Are you sure you want to delete this aquarium?
-						</Text>
-						<View style={styles.modalButtonRow}>
-							<Button
-								mode="outlined"
-								onPress={() => setDeleteModalVisible(false)}
-								style={styles.modalButton}
-							>
-								Cancel
-							</Button>
-							<Button
-								mode="contained"
-								onPress={handleDeleteAquarium}
-								style={[styles.modalButton, { backgroundColor: "#e53935" }]}
-							>
-								Delete
-							</Button>
-						</View>
-					</View>
-				</View>
-			</Modal>
-
-			{/* Edit Aquarium Modal */}
-			<Modal
-				visible={editModalVisible}
-				animationType="fade"
-				transparent={true}
-				onRequestClose={() => setEditModalVisible(false)}
-			>
-				<View style={styles.modalOverlay}>
-					<View style={styles.modalContent}>
-						<Text style={styles.modalTitle}>Edit Aquarium</Text>
-						<EditAquariumForm
-							name={name}
-							location={location}
-							onSubmit={(data: { name: string; location: string }) =>
-								handleEditAquarium({ id: aquariumId, ...data })
-							}
-						/>
-						<Button
-							mode="outlined"
-							onPress={() => setEditModalVisible(false)}
-							style={styles.modalButton}
-						>
-							Cancel
-						</Button>
-					</View>
-				</View>
-			</Modal>
-		</View>
-	);
-};
-
 const ThresholdBarWithLabels = ({
 	icon,
 	iconColor,
 	label,
 	min,
 	max,
+	value,
 	unit,
 	bgColor,
-	...barProps
-}: any) => (
-	<View style={{ alignItems: "center", width: "100%" }}>
-		{/* Icon with circle and label below the bar */}
-		<View style={{ alignItems: "center", marginTop: 8 }}>
-			<Text style={styles.verticalBarLabel}>{label}</Text>
+}: any) => {
+	return (
+		<View style={{ alignItems: "center", width: "100%" }}>
+			{/* Icon with circle and label below the bar */}
+			<View style={{ alignItems: "center", marginTop: 8 }}>
+				<Text style={styles.verticalBarLabel}>{label}</Text>
 
-			<Avatar.Icon
-				icon={icon}
-				size={36}
-				style={[styles.verticalBarIcon, { backgroundColor: iconColor }]}
-				color="#fff"
+				<Avatar.Icon
+					icon={icon}
+					size={36}
+					style={[styles.verticalBarIcon, { backgroundColor: iconColor }]}
+					color="#fff"
+				/>
+			</View>
+			{/* Current value below the bar */}
+			<Text
+				style={{
+					fontSize: 14,
+					fontWeight: "bold",
+					color: iconColor,
+					marginBottom: 10,
+				}}
+			>
+				{value}
+				{unit ? ` ${unit}` : ""}
+			</Text>
+
+			{/* Max value on top */}
+			<Text style={{ fontSize: 13, color: "#888", marginBottom: 10 }}>{max}</Text>
+
+			<ThresholdBar
+				bgColor={bgColor}
+				barColor={iconColor}
+				max={max}
+				min={min}
+				currentValue={value}
+				valueColor={iconColor}
 			/>
-		</View>
-		{/* Max value on top */}
-		<Text style={{ fontSize: 13, color: "#888", marginBottom: 2 }}>
-			{max}
-			{unit ? ` ${unit}` : ""}
-		</Text>
-		{/* The bar itself */}
-		<ThresholdBar bgColor={bgColor} max={max} min={min} currentValue={10} />
 
-		{/* Min value below */}
-		<Text style={{ fontSize: 13, color: "#888", marginTop: 2 }}>
-			{min}
-			{unit ? ` ${unit}` : ""}
-		</Text>
-	</View>
-);
+			{/* Min value below */}
+			<Text style={{ fontSize: 13, color: "#888", marginTop: 10 }}>{min}</Text>
+		</View>
+	);
+};
 
 const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 	const screenWidth = Dimensions.get("window").width;
@@ -286,10 +117,11 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 			key: "temp",
 			icon: "thermometer",
 			iconColor: "#d23519",
-			bgColor: "#e3f2fd",
+			bgColor: "#ffebee",
 			label: "Temp",
 			min: threshold?.minTemperature,
 			max: threshold?.maxTemperature,
+			value: 38,
 			unit: "°C",
 		},
 		{
@@ -300,6 +132,7 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 			label: "pH",
 			min: threshold?.minPH,
 			max: threshold?.maxPH,
+			value: 7.5,
 		},
 		{
 			key: "tds",
@@ -309,6 +142,7 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 			label: "TDS",
 			min: threshold?.minTds,
 			max: threshold?.maxTds,
+			value: 460,
 			unit: "ppm",
 		},
 		{
@@ -319,6 +153,7 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 			label: "Height",
 			min: threshold?.minHeight,
 			max: threshold?.maxHeight,
+			value: 31,
 			unit: "cm",
 		},
 		{
@@ -327,8 +162,9 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 			iconColor: "#fbc02d",
 			bgColor: "#fffde7",
 			label: "Light",
-			min: threshold?.minLight,
-			max: threshold?.maxLight,
+			min: threshold?.minLight || 0,
+			max: threshold?.maxLight || 1000,
+			value: 500,
 			unit: "lux",
 		},
 	];
@@ -364,11 +200,8 @@ export default function AquariumPage() {
 	const aquarium = aquariums.find((aq) => aq.id === id);
 
 	const { mutate: changeWaterPumpStatus, isPending } = useChangeWaterPumpStatus();
-	const { mutate: updateThresholds } = useUpdateThresholds();
 
 	const [bombOn, setBombOn] = useState(aquarium?.isBombWorking ?? false);
-
-	const [modalVisible, setModalVisible] = useState(false);
 
 	const handleToggleBomb = (value: boolean) => {
 		changeWaterPumpStatus(id as string, {
@@ -377,16 +210,6 @@ export default function AquariumPage() {
 				setBombOn(value);
 			},
 		});
-	};
-
-	//get device height
-	const deviceHeight = Dimensions.get("window").height;
-
-	const handleEditThresholds = (data: updateThresholdsRequest) => {
-		console.log("Updating thresholds:", data);
-		updateThresholds(data);
-
-		setModalVisible(false);
 	};
 
 	if (!aquarium) {
@@ -399,48 +222,9 @@ export default function AquariumPage() {
 
 	return (
 		<View style={styles.container}>
-			<AquariumHeader
-				aquariumId={aquarium.id}
-				name={aquarium.name}
-				location={aquarium.location}
-				ownerUsername={aquarium.ownerUsername}
-				createdDate={aquarium.createdDate}
-			/>
+			<AquariumHeader aquarium={aquarium} />
 			<BombStatus isWorking={bombOn} onToggle={handleToggleBomb} isPending={isPending} />
 			<ThresholdsSection threshold={aquarium.threshold} />
-
-			<Button
-				mode="contained"
-				onPress={() => setModalVisible(true)}
-				style={styles.addButtonHeader}
-				labelStyle={styles.addButtonHeaderLabel}
-				icon="plus"
-				compact
-			>
-				Add
-			</Button>
-
-			{/* Edit Thresholds Modal */}
-			<Modal
-				visible={modalVisible}
-				animationType="fade"
-				transparent={true}
-				onRequestClose={() => setModalVisible(false)}
-			>
-				<View style={styles.modalOverlay}>
-					<View style={styles.modalContent}>
-						<Text style={styles.modalTitle}>Edit Thresholds</Text>
-						<ScrollView style={{ maxHeight: deviceHeight * 0.8 }}>
-							<EditThresholdsForm
-								aquariumId={aquarium.id}
-								onSubmit={handleEditThresholds}
-								initialValues={aquarium.threshold}
-								onCancel={() => setModalVisible(false)}
-							/>
-						</ScrollView>
-					</View>
-				</View>
-			</Modal>
 		</View>
 	);
 }

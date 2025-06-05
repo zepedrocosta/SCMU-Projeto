@@ -1,69 +1,72 @@
 import React from "react";
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet, Text, Dimensions } from "react-native";
 
-interface ThresholdBarProps {
+type ThresholdBarProps = {
 	min: number;
 	max: number;
 	currentValue: number;
-	bgColor: string;
-}
+	barColor?: string;
+	bgColor?: string;
+	width?: number;
+	height?: number;
+	unit?: string;
+	valueColor?: string;
+};
 
-export default function ThresholdBar({ min, max, currentValue, bgColor }: ThresholdBarProps) {
-	const barHeight = 170;
-	const markerSize = 28;
-
-	// Clamp value and calculate position
-	const safeValue = Math.max(min, Math.min(currentValue, max));
-	const percent = (safeValue - min) / (max - min);
-	const markerPosition = barHeight - percent * barHeight - markerSize / 2;
+export default function ThresholdBar({
+	min,
+	max,
+	currentValue,
+	barColor = "#1976d2",
+	bgColor = "#e3f2fd",
+	width = Dimensions.get("window").width / 7,
+	height = Dimensions.get("window").width / 2,
+	unit,
+	valueColor,
+}: ThresholdBarProps) {
+	const percent =
+		max > min ? Math.max(0, Math.min(1, (currentValue - min) / (max - min))) : 0;
 
 	return (
-		<View style={[styles.verticalBar, { backgroundColor: bgColor, height: barHeight }]}>
-			{/* Marker */}
+		<View style={[styles.barContainer, { width, height, backgroundColor: bgColor }]}>
 			<View
 				style={[
-					styles.marker,
+					styles.barFill,
 					{
-						top: markerPosition,
+						backgroundColor: barColor,
+						width: "100%",
+						height: `${percent * 100}%`,
+						position: "absolute",
+						bottom: 0,
+						borderRadius: 8,
 					},
 				]}
-			>
-				<Text style={styles.markerText}>{currentValue}</Text>
-			</View>
+			/>
+
+			{/* Value label at fill level */}
+			<View
+				style={{
+					position: "absolute",
+					left: 0,
+					width: "100%",
+					alignItems: "center",
+					bottom: percent * height,
+					minHeight: 0,
+				}}
+				pointerEvents="none"
+			></View>
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
-	verticalBar: {
-		width: 50,
-		borderRadius: 16,
-		alignItems: "center",
-		justifyContent: "flex-start",
-		marginHorizontal: 4,
-		paddingVertical: 12,
-		elevation: 2,
-		shadowColor: "#000",
-		shadowOpacity: 0.08,
-		shadowRadius: 4,
-		shadowOffset: { width: 0, height: 2 },
+	barContainer: {
+		borderRadius: 8,
+		overflow: "hidden",
+		justifyContent: "flex-end",
 		position: "relative",
 	},
-	marker: {
-		position: "absolute",
-		left: 11,
-		width: 28,
-		height: 28,
-		borderRadius: 14,
-		backgroundColor: "#1976d2",
-		justifyContent: "center",
-		alignItems: "center",
-		borderWidth: 2,
-		borderColor: "#fff",
-	},
-	markerText: {
-		color: "#fff",
-		fontWeight: "bold",
-		fontSize: 13,
+	barFill: {
+		left: 0,
 	},
 });
