@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { PermissionsAndroid, Platform } from "react-native";
 import { BleManager, Device, State } from "react-native-ble-plx";
-import { Buffer } from "buffer"; // Add this at the top if not present
+import { Buffer } from "buffer";
 
 import * as ExpoDevice from "expo-device";
+import { useRoutes } from "../utils/routes";
 
 interface BluetoothLowEnergyApi {
 	requestPermissions: () => Promise<boolean>;
@@ -25,6 +26,8 @@ export default function useBLE(): BluetoothLowEnergyApi {
 	const bleManager = useMemo(() => {
 		return new BleManager();
 	}, []);
+
+	const router = useRoutes();
 
 	const [allDevices, setAllDevices] = useState<Device[]>([]);
 	const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
@@ -116,6 +119,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
 			console.log("Connected to:", deviceConnection.name || deviceConnection.id);
 			await deviceConnection.discoverAllServicesAndCharacteristics();
 			bleManager.stopDeviceScan();
+			router.gotoSendWifiForm();
 		} catch (e) {
 			console.log("FAILED TO CONNECT", e);
 		}

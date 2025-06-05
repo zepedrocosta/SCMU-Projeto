@@ -1,5 +1,4 @@
 import { useRouter } from "expo-router";
-import { Group } from "../types/Group";
 
 export const ROUTES = {
 	INDEX: "/",
@@ -11,6 +10,7 @@ export const ROUTES = {
 	CONNECT_TO_ESP: "/pages/connectToEsp",
 	CONNECTIING: "/pages/connectingScreen",
 	GROUPS: "/pages/groups",
+	SEND_WIFI_FORM: "/pages/SendWifiForm",
 };
 
 export const useRoutes = () => {
@@ -64,6 +64,10 @@ export const useRoutes = () => {
 		router.push(`${ROUTES.GROUPS}/${groupId}`);
 	};
 
+	const gotoSendWifiForm = () => {
+		router.push(ROUTES.SEND_WIFI_FORM);
+	};
+
 	return {
 		gotoIndex,
 		gotoHome,
@@ -76,5 +80,6 @@ export const useRoutes = () => {
 		gotoConnectingScreen,
 		gotoGroups,
 		gotoGroup,
+		gotoSendWifiForm,
 	};
 };

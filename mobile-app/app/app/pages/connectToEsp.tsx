@@ -4,11 +4,8 @@ import { Button, Text } from "react-native-paper";
 import { useRoutes } from "../../utils/routes";
 import useBLE from "../../hooks/useBle";
 import DeviceModal from "../../components/DeviceConnectionModal";
-import ConnectingScreen from "./connectingScreen";
 import { useIsFocused } from "@react-navigation/native";
 
-const SERVICE_UUID = "0x180D";
-const CHARACTERISTIC_UUID = "0x2A39";
 export default function ConnectToDevicePage() {
 	const router = useRoutes();
 
@@ -25,7 +22,6 @@ export default function ConnectToDevicePage() {
 	} = useBLE();
 	const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
-	// ...existing code...
 	const isFocused = useIsFocused();
 
 	useEffect(() => {
@@ -52,10 +48,6 @@ export default function ConnectToDevicePage() {
 		setIsModalVisible(true);
 	};
 
-	const handleSendData = () => {
-		//writeToDevice(SERVICE_UUID, CHARACTERISTIC_UUID, "Hello from app!");
-	};
-
 	return (
 		<>
 			<View style={styles.titleWrapper}>
@@ -63,10 +55,19 @@ export default function ConnectToDevicePage() {
 					<Text style={styles.text}>Please turn on Bluetooth </Text>
 				) : connectedDevice ? (
 					// This is when the device is connected
+					// This should not be rendered because if its connected, the user should be redirected to another page
+
 					<View style={styles.titleWrapper}>
 						<Button
 							mode="contained"
-							onPress={handleSendData}
+							onPress={() => {
+								console.log("Sending test data to device");
+								writeToDevice(
+									"service-uuid",
+									"characteristic-uuid",
+									JSON.stringify({ test: "data" })
+								);
+							}}
 							style={{ margin: 20 }}
 						>
 							Send Test Data
