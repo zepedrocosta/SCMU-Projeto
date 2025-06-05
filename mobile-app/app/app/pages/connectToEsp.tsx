@@ -5,6 +5,7 @@ import { useRoutes } from "../../utils/routes";
 import useBLE from "../../hooks/useBle";
 import DeviceModal from "../../components/DeviceConnectionModal";
 import { useIsFocused } from "@react-navigation/native";
+import SendWifiForm from "./SendWifiForm";
 
 export default function ConnectToDevicePage() {
 	const router = useRoutes();
@@ -55,10 +56,8 @@ export default function ConnectToDevicePage() {
 					<Text style={styles.text}>Please turn on Bluetooth </Text>
 				) : connectedDevice ? (
 					// This is when the device is connected
-					// This should not be rendered because if its connected, the user should be redirected to another page
-
 					<View style={styles.titleWrapper}>
-						<Button
+						{/* <Button
 							mode="contained"
 							onPress={() => {
 								console.log("Sending test data to device");
@@ -71,7 +70,9 @@ export default function ConnectToDevicePage() {
 							style={{ margin: 20 }}
 						>
 							Send Test Data
-						</Button>
+						</Button> */}
+
+						<SendWifiForm writeToDevice={writeToDevice} />
 					</View>
 				) : (
 					<Text style={styles.titleText}>
@@ -79,19 +80,27 @@ export default function ConnectToDevicePage() {
 					</Text>
 				)}
 			</View>
-			<TouchableOpacity
-				onPress={openModal}
-				style={[styles.ctaButton, !isBluetoothOn && { backgroundColor: "#ccc" }]}
-				disabled={!isBluetoothOn}
-			>
-				<Text style={styles.ctaButtonText}>{"Connect"}</Text>
-			</TouchableOpacity>
-			<DeviceModal
-				closeModal={hideModal}
-				visible={isModalVisible}
-				connectToPeripheral={connectToDevice}
-				devices={allDevices}
-			/>
+
+			{!connectedDevice && (
+				<>
+					<TouchableOpacity
+						onPress={openModal}
+						style={[
+							styles.ctaButton,
+							!isBluetoothOn && { backgroundColor: "#ccc" },
+						]}
+						disabled={!isBluetoothOn}
+					>
+						<Text style={styles.ctaButtonText}>{"Connect"}</Text>
+					</TouchableOpacity>
+					<DeviceModal
+						closeModal={hideModal}
+						visible={isModalVisible}
+						connectToPeripheral={connectToDevice}
+						devices={allDevices}
+					/>
+				</>
+			)}
 		</>
 	);
 }

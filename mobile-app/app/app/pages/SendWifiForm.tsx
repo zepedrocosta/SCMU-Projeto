@@ -6,7 +6,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRoutes } from "../../utils/routes";
 import { useStateContext } from "../../context/StateContext";
-import useBLE from "../../hooks/useBle";
 
 const schema = z.object({
 	ssid: z.string().min(1, "SSID is required"),
@@ -15,7 +14,17 @@ const schema = z.object({
 
 type WifiFormInput = z.infer<typeof schema>;
 
-export default function SendWifiForm() {
+interface SendWifiFormProps {
+	writeToDevice: (
+		serviceUUID: string,
+		characteristicUUID: string,
+		value: string
+	) => Promise<void>;
+}
+
+export default function SendWifiForm(props: SendWifiFormProps) {
+	const { writeToDevice } = props;
+
 	const {
 		handleSubmit,
 		formState: { errors, isSubmitting },
@@ -30,16 +39,14 @@ export default function SendWifiForm() {
 
 	const { user } = useStateContext();
 
-	const { writeToDevice } = useBLE();
-
 	const ssid = watch("ssid");
 	const password = watch("password");
 
 	const onSubmit = async (data: WifiFormInput) => {
 		try {
 			console.log("Sending WiFi data:", data);
-			const serviceUUID = "service-uuid";
-			const characteristicUUID = "characteristic-uuid";
+			const serviceUUID = "bd8db997-757f-44b7-ad11-b81515927ca8";
+			const characteristicUUID = "6e4fe646-a8f0-4892-8ef4-9ac94142da48";
 			const payload = {
 				...data,
 				//nickname: user.email,
