@@ -90,7 +90,6 @@ const AquariumHeader = ({
 		updateAquarium(data, {
 			onSuccess: () => {
 				setEditModalVisible(false);
-				router.gotoHome();
 			},
 			onError: () => {
 				setEditModalVisible(false);
