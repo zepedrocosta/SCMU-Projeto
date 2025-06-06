@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 @Setter
@@ -43,28 +44,33 @@ public class User extends DAO implements UserDetails, Serializable {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    private Set<Role> roles;
+    private Set<Role> roles = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @JsonIgnore
     @OneToMany(mappedBy = "user",  fetch = FetchType.LAZY)
-    private Set<Session> sessions;
+    private Set<Session> sessions = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
-    private Set<Aquarium> owns;
+    private Set<Aquarium> owns = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToMany(mappedBy = "managers", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    private Set<Aquarium> manages;
+    private Set<Aquarium> manages = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
-    private Set<Group> groups;
+    private Set<Group> groups = new HashSet<>();
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    private Set<Notification> notifications = new HashSet<>();
 
 
     @Override

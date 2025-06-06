@@ -8,6 +8,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 @Setter
@@ -41,18 +42,19 @@ public class Aquarium extends DAO implements Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "aquarium", cascade = CascadeType.MERGE)
-    private Set<SensorsSnapshot> values;
+    @OneToMany(mappedBy = "aquarium", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    private Set<SensorsSnapshot> values = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    private Set<User> managers;
+    private Set<User> managers = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToMany(mappedBy = "aquariums", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    private Set<Group> groups;
+    @JsonBackReference
+    private Set<Group> groups = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

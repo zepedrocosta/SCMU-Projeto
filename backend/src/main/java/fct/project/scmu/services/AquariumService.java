@@ -3,6 +3,7 @@ package fct.project.scmu.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fct.project.scmu.daos.*;
 import fct.project.scmu.dtos.forms.aquariums.EditAquariumForm;
+import fct.project.scmu.dtos.forms.aquariums.ManagerForm;
 import fct.project.scmu.dtos.forms.aquariums.ThresholdForm;
 import fct.project.scmu.dtos.responses.aquariums.*;
 import fct.project.scmu.repositories.*;
@@ -31,9 +32,10 @@ public class AquariumService {
     private final GroupsRepository groups;
     private final ThresholdRepository thresholds;
     private final ObjectMapper objectMapper;
+    private final NotificationRepository notifications;
 
     @Transactional
-    public SnapshotResponse storeSnapshot(SensorsSnapshot snapshot, String aquariumId) {
+    public SetSnapshotResponse storeSnapshot(SensorsSnapshot snapshot, String aquariumId) {
         var response = aquariums.findById(UUID.fromString(aquariumId));
         if (response.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
@@ -43,26 +45,62 @@ public class AquariumService {
 
         var threshold = aquarium.getThreshold();
         var exceedsThreshold = false;
+        List<String> params = new ArrayList<>();
 
         if (snapshot.getTemperature() < threshold.getMinTemperature() || snapshot.getTemperature() > threshold.getMaxTemperature()) {
             exceedsThreshold = true;
+            params.add("temperature");
+        }
+
+        if (!snapshot.isLdr()) {
+            exceedsThreshold = true;
+            params.add("ldr");
         }
 
         if (snapshot.getPh() < threshold.getMinPH() || snapshot.getPh() > threshold.getMaxPH()) {
             exceedsThreshold = true;
+            params.add("ph");
         }
 
         if (snapshot.getTds() < threshold.getMinTds() || snapshot.getTds() > threshold.getMaxTds()) {
             aquarium.setBombWorking(true);
             exceedsThreshold = true;
             aquariums.save(aquarium);
+            params.add("tds");
         }
 
         if (snapshot.getHeight() < threshold.getMinHeight() || snapshot.getHeight() > threshold.getMaxHeight()) {
             exceedsThreshold = true;
+            params.add("height");
         }
 
-        return new SnapshotResponse(aquarium.isBombWorking(), exceedsThreshold);
+        if (exceedsThreshold) {
+            var notification = new Notification();
+            notification.setMessage(String.join(", ", params));
+            var owner = aquarium.getOwner();
+            var managers = aquarium.getManagers();
+            notification.setUsers(new HashSet<>(Stream.concat(managers.stream(), Stream.of(owner)).toList()));
+            notification.setSnapshotId(snapshot.getId().toString());
+            notifications.save(notification);
+        }
+
+        return new SetSnapshotResponse(aquarium.isBombWorking(), exceedsThreshold);
+    }
+
+    public GetLastSnapshotResponse getLastSnapshot(String aquariumId) {
+        var res = aquariums.findById(UUID.fromString(aquariumId));
+        if (res.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        var aquarium = res.get();
+        var lastRes = snapshots.findFirstByAquariumOrderByCreatedDateDesc(aquarium);
+        if (lastRes.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+        var last = lastRes.get();
+        return new GetLastSnapshotResponse(last.getId().toString(), last.getTemperature(),
+                last.isLdr(), last.getPh(), last.getTds(), last.getHeight(), aquarium.isBombWorking());
     }
 
     @Async
@@ -99,7 +137,6 @@ public class AquariumService {
         PrivAquariumResponse aquariumResponse = objectMapper.convertValue(aquarium, PrivAquariumResponse.class);
         ThresholdResponse thresholdResponse = objectMapper.convertValue(res.get().getThreshold(), ThresholdResponse.class);
 
-        aquariumResponse.setOwnerUsername(aquarium.getOwner().getNickname());
         aquariumResponse.setThreshold(thresholdResponse);
         return Optional.of(aquariumResponse);
     }
@@ -148,7 +185,26 @@ public class AquariumService {
         principal.getGroups().add(group);
         groups.save(group);
         users.save(principal);
-        return objectMapper.convertValue(group, GroupsResponse.class);
+        return new GroupsResponse(group.getId().toString(), group.getName(), new ArrayList<>());
+    }
+
+    @Transactional
+    public Optional<Void> deleteGroup(String groupId) {
+        var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var groupRes = groups.findById(UUID.fromString(groupId));
+        if (groupRes.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        var group = groupRes.get();
+
+        if (!principal.getGroups().contains(group)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        principal.getGroups().remove(group);
+        groups.delete(group);
+        users.save(principal);
+        return Optional.empty();
     }
 
     public List<GroupsResponse> listGroups() {
@@ -259,6 +315,68 @@ public class AquariumService {
     }
 
     @Transactional
+    public List<String> addManager(ManagerForm form) {
+        var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var aquariumRes = aquariums.findById(UUID.fromString(form.getAquariumId()));
+        if (aquariumRes.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        var aquarium = aquariumRes.get();
+
+        if (!aquarium.getOwner().getId().equals(principal.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        var userRes = users.findByNickname(form.getNickname());
+        if (userRes.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        var user = userRes.get();
+
+        if (aquarium.getManagers().contains(user) || aquarium.getOwner().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
+
+        aquarium.getManagers().add(user);
+        aquariums.save(aquarium);
+
+        return aquarium.getManagers().stream()
+                .map(User::getNickname)
+                .toList();
+    }
+
+    @Transactional
+    public List<String> removeManager(ManagerForm form) {
+        var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var aquariumRes = aquariums.findById(UUID.fromString(form.getAquariumId()));
+        if (aquariumRes.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        var aquarium = aquariumRes.get();
+
+        if (!aquarium.getOwner().getId().equals(principal.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        var userRes = users.findByNickname(form.getNickname());
+        if (userRes.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        var user = userRes.get();
+
+        if (!aquarium.getManagers().contains(user)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        aquarium.getManagers().remove(user);
+        aquariums.save(aquarium);
+
+        return aquarium.getManagers().stream()
+                .map(User::getNickname)
+                .toList();
+    }
+
+
+    @Transactional
     public ThresholdResponse editThreshold(ThresholdForm form) {
         var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var aquarium = aquariums.findById(UUID.fromString(form.getAquariumId()));
@@ -283,6 +401,30 @@ public class AquariumService {
 
         thresholds.save(threshold);
         return objectMapper.convertValue(threshold, ThresholdResponse.class);
+    }
+
+    @Async
+    @Transactional
+    public Future<List<NotificationResponse>> fetchNotifications() {
+        var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        var l = notifications.findAllByUsersContaining(principal);
+
+        if (l.isEmpty())
+            return CompletableFuture.completedFuture(Collections.emptyList());
+
+        List<NotificationResponse> response = new ArrayList<>();
+        for (Notification notification : l) {
+            var nr = new NotificationResponse();
+            nr.setMessage(notification.getMessage());
+            nr.setCreatedDate(notification.getCreatedDate());
+            nr.setSnapshotId(notification.getSnapshotId());
+            response.add(nr);
+        }
+
+        notifications.markAllAsReadByUser(principal);
+
+        return CompletableFuture.completedFuture(response);
     }
 
     private Aquarium checkPermission(Optional<Aquarium> res) {

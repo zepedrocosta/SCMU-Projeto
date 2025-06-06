@@ -3,10 +3,7 @@ package fct.project.scmu.controllers;
 
 import fct.project.scmu.daos.Aquarium;
 import fct.project.scmu.daos.SensorsSnapshot;
-import fct.project.scmu.dtos.forms.aquariums.AquariumForm;
-import fct.project.scmu.dtos.forms.aquariums.EditAquariumForm;
-import fct.project.scmu.dtos.forms.aquariums.SensorSnapshotForm;
-import fct.project.scmu.dtos.forms.aquariums.ThresholdForm;
+import fct.project.scmu.dtos.forms.aquariums.*;
 import fct.project.scmu.dtos.responses.aquariums.*;
 import fct.project.scmu.services.AquariumService;
 import lombok.RequiredArgsConstructor;
@@ -27,13 +24,18 @@ public class AquariumController extends AbstractController{
     private final AquariumService aquariumService;
 
     @PostMapping("/snapshot")
-    public ResponseEntity<SnapshotResponse> storeSnapshot(@RequestBody SensorSnapshotForm form) {
+    public ResponseEntity<SetSnapshotResponse> storeSnapshot(@RequestBody SensorSnapshotForm form) {
         return ok(aquariumService.storeSnapshot(convert(form, SensorsSnapshot.class), form.getAquariumId()));
     }
 
+    @GetMapping("/snapshot/{aquariumId}")
+    public ResponseEntity<GetLastSnapshotResponse> getLastSnapshot(@PathVariable String aquariumId) {
+        return ok(aquariumService.getLastSnapshot(aquariumId));
+    }
+
     @SneakyThrows
-    @GetMapping("/snapshot")
-    public ResponseEntity<Page<SensorsSnapshot>> getSnapshots(@RequestParam String aquariumId,
+    @GetMapping("/snapshot/{aquariumId}/history") //TODO: REVIEW
+    public ResponseEntity<Page<SensorsSnapshot>> getSnapshots(@PathVariable String aquariumId,
                                                               @RequestParam(required = false) LocalDateTime date,
                                                               @RequestParam(defaultValue = "0") Integer page,
                                                               @RequestParam(defaultValue = "288") Integer size) {
@@ -45,8 +47,8 @@ public class AquariumController extends AbstractController{
         return ok(aquariumService.createAquarium(convert(form, Aquarium.class)));
     }
 
-    @GetMapping
-    public ResponseEntity<PrivAquariumResponse> getAquarium(@RequestParam String id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<PrivAquariumResponse> getAquarium(@PathVariable String id) {
         return ok(aquariumService.getAquarium(id));
     }
 
@@ -55,8 +57,8 @@ public class AquariumController extends AbstractController{
         return ok(aquariumService.updateAquarium(form));
     }
 
-    @DeleteMapping
-    public ResponseEntity<Void> deleteAquarium(@RequestParam String id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAquarium(@PathVariable String id) {
         return ok(aquariumService.deleteAquarium(id));
     }
 
@@ -85,31 +87,50 @@ public class AquariumController extends AbstractController{
         return ok(aquariumService.createGroup(groupName));
     }
 
+    @DeleteMapping("/groups/{groupId}")
+    public ResponseEntity<Void> deleteGroup(@PathVariable String groupId) {
+        return ok(aquariumService.deleteGroup(groupId));
+    }
+
     @GetMapping("/groups")
     public ResponseEntity<List<GroupsResponse>> listGroups() {
         return ok(aquariumService.listGroups());
     }
 
-    @PostMapping("/groups/aquariums")
-    public ResponseEntity<AquariumResponse> addAquariumToGroup(@RequestParam String groupId,
-                                                   @RequestParam String aquariumId) {
-        return ok(aquariumService.addAquariumToGroup(groupId, aquariumId));
+    @PostMapping("/groups/values")
+    public ResponseEntity<AquariumResponse> addAquariumToGroup(@RequestBody AquariumToGroupForm form) {
+        return ok(aquariumService.addAquariumToGroup(form.getGroupId(), form.getAquariumId()));
     }
 
-    @DeleteMapping("/groups/aquariums")
-    public ResponseEntity<Void> removeAquariumFromGroup(@RequestParam String groupId,
-                                                        @RequestParam String aquariumId) {
-        return ok(aquariumService.removeAquariumFromGroup(groupId, aquariumId));
+    @DeleteMapping("/groups/values")
+    public ResponseEntity<Void> removeAquariumFromGroup(@RequestBody AquariumToGroupForm form) {
+        return ok(aquariumService.removeAquariumFromGroup(form.getGroupId(), form.getAquariumId()));
     }
 
-    @GetMapping("/groups/aquariums")
-    public ResponseEntity<List<AquariumResponse>> getAquariumsInGroup(@RequestParam String groupId) {
+    @GetMapping("/groups/{groupId}")
+    public ResponseEntity<List<AquariumResponse>> getAquariumsInGroup(@PathVariable String groupId) {
         return ok(aquariumService.getAquariumsInGroup(groupId));
+    }
+
+    @PostMapping("/manage")
+    public ResponseEntity<List<String>> addManager(@RequestBody ManagerForm form) {
+        return ok(aquariumService.addManager(form));
+    }
+
+    @DeleteMapping("/manage")
+    public ResponseEntity<List<String>> removeManager(@RequestBody ManagerForm form) {
+        return ok(aquariumService.removeManager(form));
     }
 
     @PutMapping("/threshold")
     public ResponseEntity<ThresholdResponse> editThreshold(@RequestBody ThresholdForm form) {
         return ok(aquariumService.editThreshold(form));
+    }
+
+    @SneakyThrows
+    @GetMapping("/notifications")
+    public ResponseEntity<List<NotificationResponse>> fetchNotifications() {
+        return ok(aquariumService.fetchNotifications().get());
     }
 
 }

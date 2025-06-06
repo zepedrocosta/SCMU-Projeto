@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(doNotUseGetters = true)
-public class SnapshotResponse {
+public class SetSnapshotResponse {
 
     private boolean isBombWorking;
 

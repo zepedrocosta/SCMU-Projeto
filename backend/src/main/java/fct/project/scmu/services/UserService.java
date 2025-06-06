@@ -125,10 +125,4 @@ public class UserService {
         return users.save(u);
     }
 
-    //TODO: Implement this
-    @Transactional
-    public User changeEmail(String verifyHash) {
-        return null;
-    }
-
 }

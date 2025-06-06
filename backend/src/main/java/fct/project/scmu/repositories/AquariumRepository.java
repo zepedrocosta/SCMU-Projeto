@@ -13,6 +13,8 @@ import java.util.UUID;
 public interface AquariumRepository extends JpaRepository<Aquarium, UUID> {
     Optional<Aquarium> findByName(String name);
 
+    boolean existsByName(String name);
+
     void deleteAllByOwner(User owner);
 
     @Query("SELECT a FROM aquariums a WHERE a.name LIKE %:query% " +
