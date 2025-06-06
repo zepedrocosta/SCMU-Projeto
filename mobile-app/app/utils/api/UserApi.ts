@@ -13,6 +13,7 @@ export async function getUserInfo(userId: string): Promise<UserWithDefaults> {
 		id: userId,
 		name: "John Doe",
 		email: "some@gmail.com",
+		nickname: "johndoe",
 		defaults: {
 			darkMode: false,
 		},
@@ -28,6 +29,7 @@ export async function updateUserInfo(
 		id: userId,
 		name: body.name,
 		email: "some@gmail.com",
+		nickname: "johndoe",
 	};
 
 	return mockResponse;

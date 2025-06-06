@@ -10,12 +10,15 @@ import {
 import { Aquarium, EditAquarium, updateThresholdsRequest } from "../types/Aquarium";
 import EditAquariumForm from "./EditAquariumForm";
 import EditThresholdsForm from "./EditThresholdsForm";
+import ShareAquariumForm from "./ShareAquariumForm";
+import { User } from "../types/User";
 
 interface AquariumHeaderProps {
 	aquarium: Aquarium;
+	user: User;
 }
 
-export default function AquariumHeader({ aquarium }: AquariumHeaderProps) {
+export default function AquariumHeader({ aquarium, user }: AquariumHeaderProps) {
 	const router = useRoutes();
 
 	const { id: aquariumId, name, location, ownerUsername, createdDate } = aquarium;
@@ -27,6 +30,7 @@ export default function AquariumHeader({ aquarium }: AquariumHeaderProps) {
 	const [editModalVisible, setEditModalVisible] = useState(false);
 	const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 	const [editThresholdsModalVisible, seteditThresholdsModalVisible] = useState(false);
+	const [shareModalVisible, setShareModalVisible] = useState(false);
 
 	const { mutate: deleteAquarium } = useDeleteAquarium();
 	const { mutate: updateAquarium } = useEditAquarium();
@@ -98,32 +102,102 @@ export default function AquariumHeader({ aquarium }: AquariumHeaderProps) {
 							onPress={openMenu}
 						/>
 					}
+					contentStyle={{
+						borderRadius: 14,
+						backgroundColor: "#fff",
+						minWidth: 200,
+						elevation: 6,
+						paddingVertical: 4,
+					}}
 				>
+					{user.nickname === ownerUsername && (
+						<>
+							<Menu.Item
+								onPress={() => {
+									closeMenu();
+									setEditModalVisible(true);
+								}}
+								title="Customize"
+								leadingIcon="pencil"
+								titleStyle={{ fontWeight: "bold", color: "#1976d2" }}
+							/>
+							<Menu.Item
+								onPress={() => {
+									closeMenu();
+									seteditThresholdsModalVisible(true);
+								}}
+								title="Thresholds"
+								leadingIcon="cog"
+								titleStyle={{ color: "#1976d2", fontWeight: "bold" }}
+							/>
+							<View
+								style={{
+									height: 1,
+									backgroundColor: "#eee",
+									marginVertical: 4,
+								}}
+							/>
+						</>
+					)}
+
 					<Menu.Item
 						onPress={() => {
-							closeMenu();
-							setEditModalVisible(true);
+							router.gotoAquariumHistory(aquarium.id);
 						}}
-						title="Edit Aquarium"
-						leadingIcon="pencil"
+						title="History"
+						leadingIcon="history"
+						titleStyle={{ color: "#444", fontWeight: "bold" }}
 					/>
-					<Menu.Item
-						onPress={() => {
-							closeMenu();
-							seteditThresholdsModalVisible(true);
-						}}
-						title="Edit Thresholds"
-						leadingIcon="cog"
-					/>
-					<Menu.Item
-						onPress={() => {
-							closeMenu();
-							setDeleteModalVisible(true);
-						}}
-						title="Delete Aquarium"
-						leadingIcon="trash-can"
-						titleStyle={{ color: "#e53935" }}
-					/>
+
+					{user.nickname === ownerUsername && (
+						<>
+							<View
+								style={{
+									height: 1,
+									backgroundColor: "#eee",
+									marginVertical: 4,
+								}}
+							/>
+							<Menu.Item
+								onPress={() => {
+									closeMenu();
+									setShareModalVisible(true);
+								}}
+								title="Share"
+								leadingIcon="share"
+								titleStyle={{ fontWeight: "bold", color: "#000000" }}
+							/>
+						</>
+					)}
+
+					{user.nickname === ownerUsername && (
+						<>
+							<View
+								style={{
+									height: 1,
+									backgroundColor: "#eee",
+									marginVertical: 4,
+								}}
+							/>
+
+							<Menu.Item
+								onPress={() => {
+									closeMenu();
+									setDeleteModalVisible(true);
+								}}
+								title="Delete"
+								leadingIcon={() => (
+									<Avatar.Icon
+										icon="trash-can"
+										size={28}
+										color="#e53935"
+										style={{ backgroundColor: "transparent" }}
+									/>
+								)}
+								titleStyle={{ color: "#e53935", fontWeight: "bold" }}
+							/>
+						</>
+					)}
 				</Menu>
 			</View>
 
@@ -237,6 +311,36 @@ export default function AquariumHeader({ aquarium }: AquariumHeaderProps) {
 								onCancel={() => seteditThresholdsModalVisible(false)}
 							/>
 						</ScrollView>
+					</View>
+				</View>
+			</Modal>
+
+			{/* Share Aquarium Modal */}
+			<Modal
+				visible={shareModalVisible}
+				animationType="fade"
+				transparent={true}
+				onRequestClose={() => setShareModalVisible(false)}
+			>
+				<View style={styles.modalOverlay}>
+					<View style={styles.modalContent}>
+						<Text style={styles.modalTitle}>Share Aquarium with</Text>
+						<ScrollView style={{ maxHeight: deviceHeight * 0.8 }}>
+							<ShareAquariumForm
+								onSubmit={() => {
+									setShareModalVisible(false);
+								}}
+								aquariumId={aquariumId}
+								onCancel={() => setShareModalVisible(false)}
+							/>
+						</ScrollView>
+						<Button
+							mode="outlined"
+							onPress={() => setShareModalVisible(false)}
+							style={styles.modalButton}
+						>
+							Close
+						</Button>
 					</View>
 				</View>
 			</Modal>

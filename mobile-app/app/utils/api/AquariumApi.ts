@@ -3,6 +3,7 @@ import {
 	AquariumListResponse,
 	AquariumResponse,
 	EditAquarium,
+	ShareAquariumRequest,
 	ThresholdResponse,
 	updateThresholdsRequest,
 } from "../../types/Aquarium";
@@ -26,7 +27,7 @@ const mockResponse: AquariumResponse[] = [
 		location: "Living Room",
 		isBombWorking: true,
 		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "john_doe",
+		ownerUsername: "johndoe1",
 		threshold: {
 			minTemperature: 20,
 			maxTemperature: 28,
@@ -44,7 +45,7 @@ const mockResponse: AquariumResponse[] = [
 		location: "Lisbon",
 		isBombWorking: true,
 		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "john_doe",
+		ownerUsername: "johndoe",
 		threshold: {
 			minTemperature: 20,
 			maxTemperature: 28,
@@ -62,7 +63,7 @@ const mockResponse: AquariumResponse[] = [
 		location: "Kitchen",
 		isBombWorking: false,
 		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "john_doe",
+		ownerUsername: "johndoe",
 		threshold: {
 			minTemperature: 20,
 			maxTemperature: 28,
@@ -80,7 +81,7 @@ const mockResponse: AquariumResponse[] = [
 		location: "Bedroom",
 		isBombWorking: true,
 		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "john_doe",
+		ownerUsername: "johndoe",
 		threshold: {
 			minTemperature: 20,
 			maxTemperature: 28,
@@ -98,7 +99,7 @@ const mockResponse: AquariumResponse[] = [
 		location: "Office",
 		isBombWorking: true,
 		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "john_doe",
+		ownerUsername: "johndoe",
 		threshold: {
 			minTemperature: 20,
 			maxTemperature: 28,
@@ -116,7 +117,7 @@ const mockResponse: AquariumResponse[] = [
 		location: "Garage",
 		isBombWorking: false,
 		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "john_doe",
+		ownerUsername: "johndoe",
 		threshold: {
 			minTemperature: 20,
 			maxTemperature: 28,
@@ -134,7 +135,7 @@ const mockResponse: AquariumResponse[] = [
 		location: "Balcony",
 		isBombWorking: true,
 		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "john_doe",
+		ownerUsername: "johndoe",
 		threshold: {
 			minTemperature: 20,
 			maxTemperature: 28,
@@ -152,7 +153,7 @@ const mockResponse: AquariumResponse[] = [
 		location: "Garden",
 		isBombWorking: false,
 		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "john_doe",
+		ownerUsername: "johndoe",
 		threshold: {
 			minTemperature: 20,
 			maxTemperature: 28,
@@ -170,7 +171,7 @@ const mockResponse: AquariumResponse[] = [
 		location: "Patio",
 		isBombWorking: true,
 		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "john_doe",
+		ownerUsername: "johndoe",
 		threshold: {
 			minTemperature: 20,
 			maxTemperature: 28,
@@ -188,7 +189,7 @@ const mockResponse: AquariumResponse[] = [
 		location: "Veranda",
 		isBombWorking: false,
 		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "john_doe",
+		ownerUsername: "johndoe",
 		threshold: {
 			minTemperature: 20,
 			maxTemperature: 28,
@@ -233,6 +234,24 @@ export function mapToAquariumArrayResponse(aquariums: AquariumResponse[]): Aquar
 //TODO -> Define Flow in POST Aquarium
 // It will depend if the Aquarium already exists and this is just read only add
 // Or if it is a new Aquarium creation
+
+export async function shareAquarium(
+	shareAquariumRequest: ShareAquariumRequest
+): Promise<void> {
+	console.log("Sharing aquarium:", shareAquariumRequest);
+	// Simulate a successful share operation
+
+	// TODO uncomment when backend is ready
+	// return await axiosInstance
+	// 	.post(ENDPOINTS.SHARE_AQUARIUM, shareAquariumRequest)
+	// 	.then(() => {
+	// 		console.log("Aquarium shared successfully");
+	// 	})
+	// 	.catch((error) => {
+	// 		console.error("Error sharing aquarium:", error);
+	// 		throw error;
+	// 	});
+}
 
 //endregion
 

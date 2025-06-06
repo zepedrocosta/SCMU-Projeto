@@ -6,6 +6,7 @@ export const defaultUser: User = {
 	id: "0",
 	name: "",
 	email: "",
+	nickname: "",
 };
 
 export interface State {

@@ -61,3 +61,8 @@ export type EditAquarium = {
 	name: string;
 	location: string;
 };
+
+export type ShareAquariumRequest = {
+	username: string;
+	aquariumId: string;
+};

@@ -1,12 +1,11 @@
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import { Dimensions, View, StyleSheet, ScrollView } from "react-native";
 import { Text, Avatar, ActivityIndicator, IconButton } from "react-native-paper";
 import { useStateContext } from "../../../context/StateContext";
 import ThresholdBar from "../../../components/ThresholdBar";
 import { useChangeWaterPumpStatus } from "../../../utils/services/AquariumService";
 import AquariumHeader from "../../../components/AquariumHeader";
-import AquariumHistory from "../aquariumHistory/[id]";
 import { useRoutes } from "../../../utils/routes";
 
 // ####### WaterPump #######
@@ -200,7 +199,8 @@ export default function AquariumPage() {
 	const { id } = useLocalSearchParams();
 	const { aquariums } = useStateContext();
 	const aquarium = aquariums.find((aq) => aq.id === id);
-	const router = useRoutes();
+
+	const { user } = useStateContext();
 
 	const { mutate: changeWaterPumpStatus, isPending } = useChangeWaterPumpStatus();
 
@@ -225,27 +225,17 @@ export default function AquariumPage() {
 
 	return (
 		<View style={styles.container}>
-			<ScrollView
-				contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
-				keyboardShouldPersistTaps="handled"
-			>
-				<AquariumHeader aquarium={aquarium} />
+			<AquariumHeader user={user} aquarium={aquarium} />
+
+			{user.nickname === aquarium.ownerUsername && (
 				<BombStatus
 					isWorking={bombOn}
 					onToggle={handleToggleBomb}
 					isPending={isPending}
 				/>
+			)}
 
-				{/* History button */}
-				<IconButton
-					icon="history"
-					size={32}
-					style={{ marginLeft: 8 }}
-					onPress={() => router.gotoAquariumHistory(aquarium.id)}
-					accessibilityLabel="View metrics history"
-				/>
-				<ThresholdsSection threshold={aquarium.threshold} />
-			</ScrollView>
+			<ThresholdsSection threshold={aquarium.threshold} />
 		</View>
 	);
 }

@@ -209,6 +209,7 @@ export default function GroupDetail() {
 					</View>
 				</Modal>
 
+				{/* Edit Group Modal */}
 				<Modal
 					visible={editModalVisible}
 					transparent
@@ -218,7 +219,6 @@ export default function GroupDetail() {
 					<View style={styles.modalOverlay}>
 						<View style={styles.modalContent}>
 							<Text style={styles.modalTitle}>Edit Group Name</Text>
-							{/* Place edit group form here */}
 							<Button onPress={() => setEditModalVisible(false)}>Close</Button>
 						</View>
 					</View>

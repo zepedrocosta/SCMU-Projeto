@@ -5,15 +5,33 @@ import {
 	changeWaterPumpStatus,
 	deleteAquarium,
 	editAquarium,
+	shareAquarium,
 	updateThresholds,
 } from "../api/AquariumApi";
-import { EditAquarium, updateThresholdsRequest } from "../../types/Aquarium";
+import {
+	EditAquarium,
+	ShareAquariumRequest,
+	updateThresholdsRequest,
+} from "../../types/Aquarium";
+import { ShareAction } from "react-native";
 
 //region QUERIES
 
 //endregion
 
 //region MUTATIONS
+export function useShareAquarium() {
+	return useMutation({
+		mutationFn: (data: ShareAquariumRequest) => shareAquarium(data),
+		onError: (error) => {
+			console.error("Error changing water pump status:", error);
+		},
+		onSuccess: (aquariumId) => {
+			console.log(`Aquarium shared successfully with ID: ${aquariumId}`);
+		},
+	});
+}
+
 export function useChangeWaterPumpStatus() {
 	const { dispatch } = useStateContext();
 

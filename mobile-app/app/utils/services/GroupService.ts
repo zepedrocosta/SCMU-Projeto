@@ -8,7 +8,6 @@ import {
 } from "../api/GroupApi";
 import { useStateContext } from "../../context/StateContext";
 import { EVENTS } from "../../context/reducer";
-import { number } from "zod";
 
 //region QUERIES
 export function queryUserGroups() {
