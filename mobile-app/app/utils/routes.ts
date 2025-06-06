@@ -11,6 +11,7 @@ export const ROUTES = {
 	CONNECTIING: "/pages/connectingScreen",
 	GROUPS: "/pages/groups",
 	SEND_WIFI_FORM: "/pages/SendWifiForm",
+	HISTORIY: "/pages/aquariumHistory",
 };
 
 export const useRoutes = () => {
@@ -68,7 +69,12 @@ export const useRoutes = () => {
 		router.push(ROUTES.SEND_WIFI_FORM);
 	};
 
+	const gotoAquariumHistory = (aquariumId: string) => {
+		router.push(`${ROUTES.HISTORIY}/${aquariumId}`);
+	};
+
 	return {
+		expo: router,
 		gotoIndex,
 		gotoHome,
 		gotoAccount,
@@ -81,5 +87,6 @@ export const useRoutes = () => {
 		gotoGroups,
 		gotoGroup,
 		gotoSendWifiForm,
+		gotoAquariumHistory,
 	};
 };

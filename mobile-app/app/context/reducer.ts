@@ -9,7 +9,7 @@ export const EVENTS = {
 	SET_AQUARIUMS: "SET_AQUARIUMS",
 	SET_GROUPS: "SET_GROUPS",
 	SET_DEFAULTS: "SET_DEFAULTS",
-	// ADD_AQUARIUM: "ADD_AQUARIUM",
+	ADD_AQUARIUM: "ADD_AQUARIUM",
 	ADD_GROUP: "ADD_GROUP",
 	ADD_AQUARIUMS_TO_GROUP: "ADD_AQUARIUMS_TO_GROUP",
 	REMOVE_AQUARIUM: "REMOVE_AQUARIUM",
@@ -27,7 +27,7 @@ export type Action =
 	| { type: typeof EVENTS.SET_AQUARIUMS; payload: Aquarium[] }
 	| { type: typeof EVENTS.SET_GROUPS; payload: Group[] }
 	| { type: typeof EVENTS.SET_DEFAULTS; payload: UserDefaults }
-	// | { type: typeof EVENTS.ADD_AQUARIUM; payload: Aquarium }
+	| { type: typeof EVENTS.ADD_AQUARIUM; payload: Aquarium }
 	| { type: typeof EVENTS.ADD_GROUP; payload: Group }
 	| {
 			type: typeof EVENTS.ADD_AQUARIUMS_TO_GROUP;
@@ -84,8 +84,8 @@ export function reducer(state: State, action: Action): State {
 			return { ...state, groups: action.payload };
 		case EVENTS.SET_DEFAULTS:
 			return { ...state, defaults: action.payload };
-		// case EVENTS.ADD_AQUARIUM:
-		// 	return { ...state, aquariums: [...state.aquariums, action.payload] };
+		case EVENTS.ADD_AQUARIUM:
+			return { ...state, aquariums: [...state.aquariums, action.payload] };
 		case EVENTS.ADD_GROUP:
 			return { ...state, groups: [...state.groups, action.payload] };
 		case EVENTS.ADD_AQUARIUMS_TO_GROUP: {

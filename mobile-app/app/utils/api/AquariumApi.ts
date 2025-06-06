@@ -228,6 +228,14 @@ export function mapToAquariumArrayResponse(aquariums: AquariumResponse[]): Aquar
 	return aquariums.map((aquarium: AquariumResponse) => mapToAquariumResponse(aquarium));
 }
 
+//region POST
+
+//TODO -> Define Flow in POST Aquarium
+// It will depend if the Aquarium already exists and this is just read only add
+// Or if it is a new Aquarium creation
+
+//endregion
+
 //region GET
 export async function getAquariumById(aquariumId: string): Promise<Aquarium> {
 	const foundAquarium = mockResponse.find((aquarium) => aquarium.id === aquariumId);
@@ -262,6 +270,7 @@ export async function getUserAquariums(userId: string): Promise<Aquarium[]> {
 	// 		throw error;
 	// 	});
 }
+//eregion
 
 //region PUT
 export async function changeWaterPumpStatus(aquariumId: string): Promise<string> {
