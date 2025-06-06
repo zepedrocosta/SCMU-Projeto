@@ -48,6 +48,7 @@ public class Aquarium extends DAO implements Serializable {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @JsonBackReference
     private Set<User> managers = new HashSet<>();
 
     @ToString.Exclude
