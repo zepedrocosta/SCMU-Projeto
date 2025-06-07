@@ -28,6 +28,7 @@ export type Notification = {
 };
 
 export type NotificationNew = {
+	notificationId: string;
 	message: string;
 	createdDate: string;
 	snapshotId: string;
@@ -39,6 +40,7 @@ export type NotificationListResponse = {
 };
 
 export type NotificationResponse = {
+	id: string;
 	message: string;
 	createdDate: string;
 	snapshotId: string;

@@ -70,7 +70,7 @@ export type EditAquarium = {
 };
 
 export type ShareAquariumRequest = {
-	username: string;
+	nickname: string;
 	aquariumId: string;
 };
 
@@ -95,7 +95,7 @@ export type Snapshot = {
 };
 
 export type CreateAquariumRequest = {
-	macAddress: string;
+	esp: string;
 	name: string;
 	location: string;
 };

@@ -3,6 +3,7 @@ import { View, StyleSheet, FlatList } from "react-native";
 import { List, Text, Avatar } from "react-native-paper";
 import { useRoutes } from "../../utils/routes";
 import { useStateContext } from "../../context/StateContext";
+import { EVENTS } from "../../context/reducer";
 
 const metricsAux = [
 	{
@@ -51,12 +52,12 @@ function parseMetrics(message: string): string[] {
 }
 
 export default function NotificationsPage() {
-	const { aquariums } = useStateContext();
+	const { aquariums, dispatch } = useStateContext();
 	const router = useRoutes();
 
 	const notifications = aquariums.flatMap((aq) =>
 		aq.notifications.map((notif) => ({
-			id: aq.id + "-" + notif.createdDate,
+			id: notif.notificationId,
 			aquariumId: aq.id,
 			metrics: parseMetrics(notif.message),
 			unread: notif.unread,
@@ -116,7 +117,13 @@ export default function NotificationsPage() {
 				<View style={{ flex: 1 }} />
 				<Text
 					style={styles.link}
-					onPress={() => router.gotoSnapshot(notif.snapshotId)}
+					onPress={() => {
+						router.gotoSnapshot(notif.snapshotId);
+						dispatch({
+							type: EVENTS.MARK_AS_READ,
+							payload: notif.id,
+						});
+					}}
 				>
 					View snapshot
 				</Text>

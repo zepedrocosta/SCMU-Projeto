@@ -16,19 +16,23 @@ import {
 	Notification,
 	NotificationListResponse,
 	NotificationNew,
+	NotificationResponse,
 } from "../../types/Notification";
 import { axiosInstance, sleep, URL_PLACEHOLDER } from "./axiosConfig";
 
 const basePath = "/aquariums";
 
 const ENDPOINTS = {
-	AQUARIUM: basePath,
+	CREATE_AQUARIUM: basePath,
 	AQUARIUM_BY_ID: `/aquariums/${URL_PLACEHOLDER.AQUARIUM_ID}`,
 	USER_AQUARIUMS: `${basePath}/list`,
 	CHANGE_WATER_PUMP_STATUS: `${basePath}/bomb/?aquariumId=`,
 	UPDATE_THRESHOLDS: `${basePath}/threshold`,
 	UPDATE_AQUARIUM: basePath,
 	GET_LAST_SNAPSHOT: `${basePath}/snapshot/${URL_PLACEHOLDER.AQUARIUM_ID}`,
+	DELETE_AQUARIUM: `${basePath}/${URL_PLACEHOLDER.AQUARIUM_ID}`,
+	SHARE_AQUARIUM: `${basePath}/manage`,
+	FETCH_NOTIFICATIONS: `${basePath}/notifications`,
 };
 
 const mockSnapshot: Snapshot = {
@@ -265,27 +269,12 @@ export function mapToAquariumResponse(aquarium: AquariumResponse): Aquarium {
 		location: aquarium.location,
 		isBombWorking: aquarium.isBombWorking,
 		createdDate: aquarium.createdDate,
-		ownerUsername: aquarium.ownerUsername,
-		threshold: {
-			minTemperature: aquarium.threshold.minTemperature,
-			maxTemperature: aquarium.threshold.maxTemperature,
-			minPH: aquarium.threshold.minPH,
-			maxPH: aquarium.threshold.maxPH,
-			minTds: aquarium.threshold.minTds,
-			maxTds: aquarium.threshold.maxTds,
-			minHeight: aquarium.threshold.minHeight,
-			maxHeight: aquarium.threshold.maxHeight,
-		},
-		snapshot: {
-			snapshotId: aquarium.snapshot?.snapshotId || "",
-			temperature: aquarium.snapshot?.temperature || 0,
-			light: aquarium.snapshot?.light || false,
-			pH: aquarium.snapshot?.pH || 0,
-			tds: aquarium.snapshot?.tds || 0,
-			height: aquarium.snapshot?.height || 0,
-			isBombWorking: aquarium.snapshot?.isBombWorking || false,
-		},
-		notifications: aquarium.notifications,
+		ownerUsername: aquarium.ownerUsername
+			? aquarium.ownerUsername
+			: aquarium.createdBy || "Unknown",
+		threshold: aquarium.threshold ? aquarium.threshold : mockThreshold,
+		snapshot: mockSnapshot,
+		notifications: mockNotifications,
 	};
 }
 
@@ -298,122 +287,51 @@ export async function createAquarium(
 	createAquariumRequest: CreateAquariumRequest
 ): Promise<Aquarium> {
 	console.log("Creating aquarium:", createAquariumRequest);
-	const newAquarium: CreateAquariumResponse = {
-		id: Math.random().toString(36).substring(2, 15), // Simulate a unique ID
-		name: createAquariumRequest.name,
-		location: createAquariumRequest.location,
-		createdDate: new Date().toISOString(),
-		createdBy: "currentUser",
-	};
 
-	const aq: Aquarium = {
-		id: newAquarium.id,
-		name: newAquarium.name,
-		location: newAquarium.location,
-		isBombWorking: true,
-		createdDate: newAquarium.createdDate,
-		ownerUsername: newAquarium.createdBy,
-		threshold: mockThreshold,
-		snapshot: mockSnapshot,
-		notifications: mockNotifications,
-	};
-
-	return aq;
-
-	// TODO uncomment when backend is ready
-	// return await axiosInstance
-	// 	.post<AquariumResponse>(ENDPOINTS.AQUARIUM, createAquariumRequest)
-	// 	.then((response) => {
-	// 		console.log("Aquarium created successfully:", response.data);
-	// 		return mapToAquariumResponse(response.data);
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error creating aquarium:", error);
-	// 		throw error;
-	// 	});
+	return await axiosInstance
+		.post<AquariumResponse>(ENDPOINTS.CREATE_AQUARIUM, createAquariumRequest)
+		.then((response) => {
+			console.log("Aquarium created successfully:", response.data);
+			return mapToAquariumResponse(response.data);
+		})
+		.catch((error) => {
+			console.error("Error creating aquarium:", error);
+			throw error;
+		});
 }
 
 export async function shareAquarium(
 	shareAquariumRequest: ShareAquariumRequest
 ): Promise<void> {
 	console.log("Sharing aquarium:", shareAquariumRequest);
-	// Simulate a successful share operation
-
-	// TODO uncomment when backend is ready
-	// return await axiosInstance
-	// 	.post(ENDPOINTS.SHARE_AQUARIUM, shareAquariumRequest)
-	// 	.then(() => {
-	// 		console.log("Aquarium shared successfully");
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error sharing aquarium:", error);
-	// 		throw error;
-	// 	});
+	return await axiosInstance
+		.post(ENDPOINTS.SHARE_AQUARIUM, shareAquariumRequest)
+		.then(() => {
+			console.log("Aquarium shared successfully");
+		})
+		.catch((error) => {
+			console.error("Error sharing aquarium:", error);
+			throw error;
+		});
 }
 //endregion
-
-function generateRandomDate(): string {
-	const start = new Date(2023, 0, 1);
-	const end = new Date();
-	const randomDate = new Date(
-		start.getTime() + Math.random() * (end.getTime() - start.getTime())
-	);
-	return randomDate.toISOString();
-}
 
 //region GET
 export async function fetchAquariumsNotifications(
 	aquariumId: string,
 	timestamp: string
-): Promise<NotificationListResponse> {
+): Promise<NotificationResponse[]> {
 	console.log(`Fetching notifications for aquarium ${aquariumId} since ${timestamp}`);
-	const notifications: NotificationListResponse = {
-		notifications: [
-			{
-				message: "temp,ph",
-				createdDate: generateRandomDate(),
-				snapshotId: "1",
-			},
-			{
-				message: "temp,ph,tds",
-				createdDate: generateRandomDate(),
-				snapshotId: "2",
-			},
-			{
-				message: "tds,height",
-				createdDate: generateRandomDate(),
-				snapshotId: "3",
-			},
-		],
-	};
-
-	if (Math.random() < 0.5) {
-		notifications.notifications = [];
-	}
-
-	if (Math.random() < 0.9 && notifications.notifications.length > 0) {
-		const randomNotif =
-			notifications.notifications[
-				Math.floor(Math.random() * notifications.notifications.length)
-			];
-		notifications.notifications = randomNotif ? [randomNotif] : [];
-	}
-
-	notifications.notifications = (notifications.notifications || []).filter(Boolean);
-
-	return notifications;
-
-	// TODO uncomment when backend is ready
-	// return await axiosInstance
-	// 	.get<AquariumListResponse>(ENDPOINTS.AQUARIUM)
-	// 	.then((response) => {
-	// 		console.log("Fetched aquariums:", response.data);
-	// 		return response.data;
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error fetching aquariums:", error);
-	// 		throw error;
-	// 	});
+	return await axiosInstance
+		.get<NotificationResponse[]>(ENDPOINTS.FETCH_NOTIFICATIONS)
+		.then((response) => {
+			console.log("Fetched aquariums:", response.data);
+			return response.data;
+		})
+		.catch((error) => {
+			console.error("Error fetching aquariums:", error);
+			throw error;
+		});
 }
 
 export async function getAquariumById(aquariumId: string): Promise<Aquarium> {
@@ -421,7 +339,7 @@ export async function getAquariumById(aquariumId: string): Promise<Aquarium> {
 	const response = mapToAquariumResponse(foundAquarium || mockResponse[0]);
 	return response;
 
-	// TODO uncomment when backend is ready
+	// TODO TEST, currently not being used
 	// return await axiosInstance
 	// 	.get<AquariumResponse>(
 	// 		ENDPOINTS.AQUARIUM_BY_ID.replace(URL_PLACEHOLDER.AQUARIUM_ID, aquariumId)
@@ -435,76 +353,53 @@ export async function getAquariumById(aquariumId: string): Promise<Aquarium> {
 	// 	});
 }
 
-export async function getUserAquariums(userId: string): Promise<Aquarium[]> {
-	return mapToAquariumArrayResponse(mockResponse);
-
-	// TODO uncomment when backend is ready
-	// return await axiosInstance
-	// 	.get<AquariumResponse[]>(ENDPOINTS.USER_AQUARIUMS)
-	// 	.then((response) => {
-	// 		console.log("Fetched user aquariums:", response.data);
-	// 		return mapToAquariumArrayResponse(response.data);
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error fetching aquariums by user ID:", error);
-	// 		throw error;
-	// 	});
+export async function getUserAquariums(nickname: string): Promise<Aquarium[]> {
+	return await axiosInstance
+		.get<AquariumResponse[]>(ENDPOINTS.USER_AQUARIUMS)
+		.then((response) => {
+			console.log("Fetched user aquariums:", response.data);
+			return mapToAquariumArrayResponse(response.data);
+		})
+		.catch((error) => {
+			console.error("Error fetching aquariums by user ID:", error);
+			throw error;
+		});
 }
 
 export async function getLastAquariumSnapshot(aquariumId: string): Promise<Snapshot> {
-	const lastSnapshot: Snapshot[] = [
-		{
-			snapshotId: "1",
-			temperature: 2,
-			light: true,
-			pH: 2,
-			tds: 2,
-			height: 2,
-			isBombWorking: true,
-		},
-		{
-			snapshotId: "2",
-			temperature: 30,
-			light: true,
-			pH: 30,
-			tds: 30,
-			height: 30,
-			isBombWorking: false,
-		},
-		{
-			snapshotId: "3",
-			temperature: 50,
-			light: true,
-			pH: 50,
-			tds: 50,
-			height: 50,
-			isBombWorking: false,
-		},
-	];
-
-	return lastSnapshot[Math.floor(Math.random() * lastSnapshot.length)];
-
-	// TODO uncomment when backend is ready
-	// return await axiosInstance
-	// 	.get<LastSnapshotResponse>(
-	// 		ENDPOINTS.GET_LAST_SNAPSHOT.replace(URL_PLACEHOLDER.AQUARIUM_ID, aquariumId)
-	// 	)
-	// 	.then((response) => {
-	// 		console.log("Fetched aquarium last snapshot:", response.data);
-	// 		return {
-	// 			snapshotId: response.data.id,
-	// 			temperature: response.data.temperature,
-	// 			pH: response.data.pH,
-	// 			tds: response.data.tds,
-	// 			light: response.data.ldr,
-	// 			height: response.data.height,
-	// 			isBombWorking: response.data.isBombWorking,
-	// 		};
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error fetching aquarium snapshots:", error);
-	// 		throw error;
-	// 	});
+	return await axiosInstance
+		.get<LastSnapshotResponse>(
+			ENDPOINTS.GET_LAST_SNAPSHOT.replace(URL_PLACEHOLDER.AQUARIUM_ID, aquariumId)
+		)
+		.then((response) => {
+			console.log("Fetched aquarium last snapshot:", response.data);
+			return {
+				snapshotId: response.data.id,
+				temperature: response.data.temperature,
+				pH: response.data.pH,
+				tds: response.data.tds,
+				light: response.data.ldr,
+				height: response.data.height,
+				isBombWorking: response.data.isBombWorking,
+			};
+		})
+		.catch((error) => {
+			if (error.response && error.response.status === 404) {
+				console.warn("Snapshot not found, returning mock snapshot.");
+			} else {
+				console.error("Error fetching aquarium snapshots:", error);
+			}
+			// Return a mock snapshot in case of error or 404
+			return {
+				snapshotId: "0",
+				temperature: 0,
+				pH: 0,
+				tds: 0,
+				light: false,
+				height: 0,
+				isBombWorking: false,
+			};
+		});
 }
 //eregion
 
@@ -530,19 +425,19 @@ export async function changeWaterPumpStatus(aquariumId: string): Promise<string>
 
 export async function updateThresholds(updateThresholds: updateThresholdsRequest) {
 	console.log("Updating thresholds:", updateThresholds);
-	return updateThresholds;
 
-	// TODO uncomment when backend is ready
-	// return await axiosInstance
-	// 	.put<ThresholdResponse>(ENDPOINTS.UPDATE_THRESHOLDS, updateThresholds)
-	// 	.then((response) => {
-	// 		console.log("Thresholds updated successfully:", response.data);
-	// 		return response.data;
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error updating thresholds:", error);
-	// 		throw error;
-	// 	});
+	await axiosInstance
+		.put<ThresholdResponse>(ENDPOINTS.UPDATE_THRESHOLDS, updateThresholds)
+		.then((response) => {
+			console.log("Thresholds updated successfully:", response.data);
+			return response.data;
+		})
+		.catch((error) => {
+			console.error("Error updating thresholds:", error);
+			throw error;
+		});
+
+	return updateThresholds;
 }
 
 export async function editAquarium(editAquariumRequest: EditAquarium): Promise<EditAquarium> {
@@ -566,23 +461,21 @@ export async function editAquarium(editAquariumRequest: EditAquarium): Promise<E
 	// 		throw error;
 	// 	});
 }
-
 //endregion
 
 //region DELETE
 export async function deleteAquarium(aquariumId: string): Promise<string> {
 	console.log(`Deleting aquarium with ID: ${aquariumId}`);
-	return aquariumId;
+	await axiosInstance
+		.delete(ENDPOINTS.DELETE_AQUARIUM.replace(URL_PLACEHOLDER.AQUARIUM_ID, aquariumId))
+		.then(() => {
+			console.log(`Aquarium ${aquariumId} deleted successfully`);
+			return aquariumId;
+		})
+		.catch((error) => {
+			console.error("Error deleting aquarium:", error);
+			throw error;
+		});
 
-	// TODO uncomment when backend is ready
-	// return await axiosInstance
-	// 	.delete(ENDPOINTS.AQUARIUM_BY_ID.replace(URL_PLACEHOLDER.AQUARIUM_ID, aquariumId))
-	// 	.then(() => {
-	// 		console.log(`Aquarium ${aquariumId} deleted successfully`);
-	// 		return aquariumId;
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error deleting aquarium:", error);
-	// 		throw error;
-	// 	});
+	return aquariumId;
 }

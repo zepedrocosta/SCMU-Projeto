@@ -1,15 +1,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import {
-	View,
-	StyleSheet,
-	Image,
-	ScrollView,
-	KeyboardAvoidingView,
-	Platform,
-} from "react-native";
-import { TextInput, Button, Text, Card } from "react-native-paper";
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { TextInput, Button, Text, Card, Avatar } from "react-native-paper";
 import { useEffect, useState } from "react";
 import { useLogin } from "../utils/services/AuthService";
 import { useRoutes } from "../utils/routes";
@@ -62,7 +55,12 @@ export default function LoginPage() {
 				keyboardShouldPersistTaps="handled"
 			>
 				<View style={styles.container}>
-					<Image source={require("../assets/favicon.png")} style={styles.logo} />
+					<Avatar.Icon
+						icon="fishbowl"
+						size={100}
+						style={styles.avatar}
+						color="#fff"
+					/>
 
 					<Card style={styles.card}>
 						<Card.Title title="Login" />
@@ -149,6 +147,11 @@ const styles = StyleSheet.create({
 		paddingVertical: 8,
 		paddingHorizontal: 4,
 		elevation: 2,
+	},
+	avatar: {
+		alignSelf: "center",
+		marginBottom: 24,
+		backgroundColor: "#1976d2",
 	},
 	logo: {
 		width: 120,

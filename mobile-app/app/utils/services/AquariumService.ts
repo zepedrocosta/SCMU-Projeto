@@ -59,7 +59,8 @@ export function useGetAquariumNotifications(aquariumId: string, timestamp: strin
 				type: EVENTS.UPDATE_NOTIFICATIONS,
 				payload: {
 					aquariumId,
-					notification: query.data.notifications.map((notification) => ({
+					notification: query.data.map((notification) => ({
+						notificationId: notification.id,
 						message: notification.message,
 						createdDate: notification.createdDate,
 						snapshotId: notification.snapshotId,

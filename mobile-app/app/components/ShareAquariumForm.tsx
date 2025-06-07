@@ -36,7 +36,7 @@ export default function ShareAquariumForm({
 	const { mutate } = useShareAquarium();
 
 	const handleFormSubmit = (data: ShareAquariumInput) => {
-		mutate({ username: data.username, aquariumId });
+		mutate({ nickname: data.username, aquariumId });
 		onSubmit(data);
 	};
 
