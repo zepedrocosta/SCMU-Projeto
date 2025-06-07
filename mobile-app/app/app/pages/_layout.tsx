@@ -1,4 +1,4 @@
-import { Slot, useRouter } from "expo-router";
+import { Slot } from "expo-router";
 import BottomBar from "../../components/BottomBar";
 import { useStateContext } from "../../context/StateContext";
 import { useEffect } from "react";

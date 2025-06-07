@@ -6,7 +6,7 @@ export const ROUTES = {
 	ACCOUNT: "/pages/account",
 	AQUARIUM: "/pages/aquarium",
 	NOTIFICATIONS: "/pages/notifications",
-	REGISTER: "/pages/register",
+	REGISTER: "/register",
 	CONNECT_TO_ESP: "/pages/connectToEsp",
 	CONNECTIING: "/pages/connectingScreen",
 	GROUPS: "/pages/groups",

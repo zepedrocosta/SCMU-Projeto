@@ -5,7 +5,8 @@ import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from "re
 import { TextInput, Button, Text, Card } from "react-native-paper";
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { useRegister } from "../../utils/services/AuthService";
+import { useRegister } from "../utils/services/AuthService";
+import { useRoutes } from "../utils/routes";
 
 const registerSchema = z.object({
 	name: z.string().min(1, { message: "Name is required" }),
@@ -18,7 +19,7 @@ const registerSchema = z.object({
 type RegisterInput = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-	const router = useRouter();
+	const router = useRoutes();
 
 	const { mutate } = useRegister();
 
@@ -133,7 +134,7 @@ export default function RegisterPage() {
 							</Button>
 							<Button
 								mode="text"
-								onPress={() => router.replace("/")}
+								onPress={() => router.gotoIndex()}
 								style={{ marginTop: 8 }}
 							>
 								Already have an account? Login
