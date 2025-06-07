@@ -29,6 +29,7 @@ export type AquariumResponse = {
 	location: string;
 	isBombWorking: boolean;
 	createdDate: string;
+	createdBy?: string;
 	ownerUsername: string;
 	threshold: ThresholdResponse;
 	snapshot: Snapshot | null;

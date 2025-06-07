@@ -206,23 +206,21 @@ export default function AquariumPage() {
 	const { mutate: changeWaterPumpStatus, isPending } = useChangeWaterPumpStatus();
 
 	const { aquariums } = useStateContext();
-	const aquarium = aquariums.find((aq) => aq.id === id)!!;
-
 	const { user } = useStateContext();
 
-	if (!aquarium) {
-		return (
-			<View style={styles.container}>
-				<Text variant="titleLarge">Aquarium not found</Text>
-			</View>
-		);
-	}
+	const aquarium = aquariums.find((a) => a.id === id);
 
-	const [bombOn, setBombOn] = useState(aquarium.snapshot.isBombWorking);
+	// Always call hooks!
+	const [bombOn, setBombOn] = useState(aquarium?.snapshot?.isBombWorking ?? false);
 	useEffect(() => {
-		setBombOn(aquarium.snapshot.isBombWorking);
-	}, [aquarium.snapshot.isBombWorking]);
+		if (aquarium) {
+			setBombOn(aquarium.snapshot.isBombWorking);
+		}
+	}, [aquarium?.snapshot?.isBombWorking]);
 
+	if (!aquarium) {
+		return <Text>No aquarium found.</Text>;
+	}
 	const handleToggleBomb = (value: boolean) => {
 		if (user.nickname === aquarium.ownerUsername) {
 			changeWaterPumpStatus(id as string, {

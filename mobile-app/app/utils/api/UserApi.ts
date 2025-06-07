@@ -8,13 +8,12 @@ import { extractTokenFromResponse } from "./AuthApi";
 const basepath = "/users";
 
 const ENDPOINTS = {
-	USER: `${basepath}/${URL_PLACEHOLDER.USER_ID}`,
+	USER: `${basepath}/${URL_PLACEHOLDER.NICKNAME}`,
 	REGISTER: basepath,
 };
 
 // region POST
 export async function registerUser(body: RegisterRequest): Promise<RegisterResponse> {
-	//TODO - Uncomment the following code when the backend is ready
 	return axiosInstance
 		.post<RegisterResponse>(ENDPOINTS.REGISTER, body)
 		.then((response) => {
@@ -32,17 +31,35 @@ export async function registerUser(body: RegisterRequest): Promise<RegisterRespo
 
 //region GET
 export async function getUserInfo(userId: string): Promise<UserWithDefaults> {
-	const mockResponse: UserWithDefaults = {
-		id: userId,
-		name: "John Doe",
-		email: "some@gmail.com",
-		nickname: "johndoe",
-		defaults: {
-			darkMode: false,
-			receiveNotifications: true,
-		},
-	};
-	return mockResponse;
+	// const mockResponse: UserWithDefaults = {
+	// 	id: userId,
+	// 	name: "John Doe",
+	// 	email: "some@gmail.com",
+	// 	nickname: "johndoe",
+	// 	defaults: {
+	// 		darkMode: false,
+	// 		receiveNotifications: true,
+	// 	},
+	// };
+	// return mockResponse;
+	return axiosInstance
+		.get<UserWithDefaults>(ENDPOINTS.USER.replace(URL_PLACEHOLDER.NICKNAME, userId))
+		.then((response) => {
+			const user: UserWithDefaults = {
+				name: response.data.name,
+				email: response.data.email,
+				nickname: response.data.nickname,
+				defaults: response.data.defaults || {
+					darkMode: false,
+					receiveNotifications: true,
+				},
+			};
+			return user;
+		})
+		.catch((error) => {
+			console.error("Error fetching user info:", error);
+			throw error;
+		});
 }
 
 export async function updateUserInfo(
@@ -50,7 +67,6 @@ export async function updateUserInfo(
 	body: UserUpdateRequest
 ): Promise<UserResponse> {
 	const mockResponse: UserResponse = {
-		id: userId,
 		name: body.name,
 		email: "some@gmail.com",
 		nickname: "johndoe",
@@ -60,7 +76,7 @@ export async function updateUserInfo(
 
 	// TODO uncomment when backend is ready
 	return axiosInstance
-		.put<UserResponse>(ENDPOINTS.USER.replace(URL_PLACEHOLDER.USER_ID, userId), body)
+		.put<UserResponse>(ENDPOINTS.USER.replace(URL_PLACEHOLDER.NICKNAME, userId), body)
 		.then((response) => {
 			return response.data;
 		})

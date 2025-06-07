@@ -12,6 +12,7 @@ import EditAquariumForm from "./EditAquariumForm";
 import EditThresholdsForm from "./EditThresholdsForm";
 import ShareAquariumForm from "./ShareAquariumForm";
 import { User } from "../types/User";
+import { createIconSetFromFontello } from "react-native-vector-icons";
 
 interface AquariumHeaderProps {
 	aquarium: Aquarium;
@@ -70,6 +71,9 @@ export default function AquariumHeader({ aquarium, user }: AquariumHeaderProps) 
 		seteditThresholdsModalVisible(false);
 	};
 
+	console.log("User nickname:", user.email);
+	console.log("Aquarium owner username:", ownerUsername);
+
 	const dateObj = new Date(createdDate);
 	const formattedDate = dateObj.toLocaleDateString("en-US", {
 		day: "2-digit",
@@ -110,7 +114,7 @@ export default function AquariumHeader({ aquarium, user }: AquariumHeaderProps) 
 						paddingVertical: 4,
 					}}
 				>
-					{user.nickname === ownerUsername && (
+					{user.email === ownerUsername && (
 						<>
 							<Menu.Item
 								onPress={() => {
@@ -139,7 +143,6 @@ export default function AquariumHeader({ aquarium, user }: AquariumHeaderProps) 
 							/>
 						</>
 					)}
-
 					<Menu.Item
 						onPress={() => {
 							router.gotoAquariumHistory(aquarium.id);
@@ -148,8 +151,7 @@ export default function AquariumHeader({ aquarium, user }: AquariumHeaderProps) 
 						leadingIcon="history"
 						titleStyle={{ color: "#444", fontWeight: "bold" }}
 					/>
-
-					{user.nickname === ownerUsername && (
+					{user.email === ownerUsername && (
 						<>
 							<View
 								style={{
@@ -170,7 +172,7 @@ export default function AquariumHeader({ aquarium, user }: AquariumHeaderProps) 
 						</>
 					)}
 
-					{user.nickname === ownerUsername && (
+					{user.email === ownerUsername && (
 						<>
 							<View
 								style={{
