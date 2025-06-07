@@ -51,7 +51,7 @@
 #define OLED_RESET -1    // Reset pin # (or -1 if sharing Arduino reset pin)
 
 #define DIST_ULTRA_TO_GROUND 21 // Distance from the ultrasonic sensor to the ground in cm
-#define WIFI_BT_TIMEOUT 30000   // Bluetooth and Wi-Fi connection timeout in milliseconds (30 seconds)
+#define WIFI_BT_TIMEOUT 180000  // Bluetooth and Wi-Fi connection timeout in milliseconds (3 minutes)
 
 #define SERVICE_UUID "bd8db997-757f-44b7-ad11-b81515927ca8"        // UUID for the BLE service
 #define CHARACTERISTIC_UUID "6e4fe646-a8f0-4892-8ef4-9ac94142da48" // UUID for the BLE characteristic
@@ -181,7 +181,7 @@ void connectToWiFi(String &ssid, String &password)
 
   while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < WIFI_BT_TIMEOUT)
   {
-    delay(500);
+    delay(3000);
     Serial.print(".");
   }
 
@@ -205,8 +205,9 @@ void btConnect()
 
   BLECharacteristic *pCharacteristic = pService->createCharacteristic(
       CHARACTERISTIC_UUID,
-      BLECharacteristic::PROPERTY_WRITE);
+      BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
 
+  pCharacteristic->addDescriptor(new BLE2902());
   pCharacteristic->setCallbacks(new CredentialsCallback());
 
   pService->start();
@@ -221,12 +222,11 @@ void btConnect()
 
   while (!credentialsReceivedBT && millis() - startAttemptTime < WIFI_BT_TIMEOUT)
   {
-    delay(500);
+    delay(3000);
     Serial.print(".");
   }
 
   // Stop BLE once credentials are received
-  Serial.println("Credentials received, stopping BLE...");
   pAdvertising->stop();
   pServer->removeService(pService);
   BLEDevice::deinit(true);
