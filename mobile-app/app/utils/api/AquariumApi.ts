@@ -3,7 +3,9 @@ import {
 	AquariumListResponse,
 	AquariumResponse,
 	EditAquarium,
+	LastSnapshotResponse,
 	ShareAquariumRequest,
+	Snapshot,
 	ThresholdResponse,
 	updateThresholdsRequest,
 } from "../../types/Aquarium";
@@ -18,6 +20,17 @@ const ENDPOINTS = {
 	CHANGE_WATER_PUMP_STATUS: `${basePath}/bomb/?aquariumId=`,
 	UPDATE_THRESHOLDS: `${basePath}/threshold`,
 	UPDATE_AQUARIUM: basePath,
+	GET_LAST_SNAPSHOT: `${basePath}/snapshot/${URL_PLACEHOLDER.AQUARIUM_ID}`,
+};
+
+const mockSnapshot: Snapshot = {
+	snapshotId: "",
+	temperature: 0,
+	light: false,
+	pH: 0,
+	tds: 0,
+	height: 0,
+	isBombWorking: false,
 };
 
 const mockResponse: AquariumResponse[] = [
@@ -38,6 +51,7 @@ const mockResponse: AquariumResponse[] = [
 			minHeight: 30,
 			maxHeight: 60,
 		},
+		snapshot: mockSnapshot,
 	},
 	{
 		id: "2",
@@ -56,6 +70,7 @@ const mockResponse: AquariumResponse[] = [
 			minHeight: 30,
 			maxHeight: 60,
 		},
+		snapshot: mockSnapshot,
 	},
 	{
 		id: "3",
@@ -74,6 +89,7 @@ const mockResponse: AquariumResponse[] = [
 			minHeight: 30,
 			maxHeight: 60,
 		},
+		snapshot: mockSnapshot,
 	},
 	{
 		id: "4",
@@ -92,6 +108,7 @@ const mockResponse: AquariumResponse[] = [
 			minHeight: 30,
 			maxHeight: 60,
 		},
+		snapshot: mockSnapshot,
 	},
 	{
 		id: "5",
@@ -110,6 +127,7 @@ const mockResponse: AquariumResponse[] = [
 			minHeight: 30,
 			maxHeight: 60,
 		},
+		snapshot: mockSnapshot,
 	},
 	{
 		id: "6",
@@ -128,6 +146,7 @@ const mockResponse: AquariumResponse[] = [
 			minHeight: 30,
 			maxHeight: 60,
 		},
+		snapshot: mockSnapshot,
 	},
 	{
 		id: "7",
@@ -146,6 +165,7 @@ const mockResponse: AquariumResponse[] = [
 			minHeight: 30,
 			maxHeight: 60,
 		},
+		snapshot: mockSnapshot,
 	},
 	{
 		id: "8",
@@ -164,6 +184,7 @@ const mockResponse: AquariumResponse[] = [
 			minHeight: 30,
 			maxHeight: 60,
 		},
+		snapshot: mockSnapshot,
 	},
 	{
 		id: "9",
@@ -182,6 +203,7 @@ const mockResponse: AquariumResponse[] = [
 			minHeight: 30,
 			maxHeight: 60,
 		},
+		snapshot: mockSnapshot,
 	},
 	{
 		id: "10",
@@ -200,11 +222,12 @@ const mockResponse: AquariumResponse[] = [
 			minHeight: 30,
 			maxHeight: 60,
 		},
+		snapshot: mockSnapshot,
 	},
 ];
 
 // Helper functions to map AquariumResponse to Aquarium type
-export function mapToAquariumResponse(aquarium: AquariumResponse): AquariumResponse {
+export function mapToAquariumResponse(aquarium: AquariumResponse): Aquarium {
 	return {
 		id: aquarium.id,
 		name: aquarium.name,
@@ -221,6 +244,15 @@ export function mapToAquariumResponse(aquarium: AquariumResponse): AquariumRespo
 			maxTds: aquarium.threshold.maxTds,
 			minHeight: aquarium.threshold.minHeight,
 			maxHeight: aquarium.threshold.maxHeight,
+		},
+		snapshot: {
+			snapshotId: aquarium.snapshot?.snapshotId || "",
+			temperature: aquarium.snapshot?.temperature || 0,
+			light: aquarium.snapshot?.light || false,
+			pH: aquarium.snapshot?.pH || 0,
+			tds: aquarium.snapshot?.tds || 0,
+			height: aquarium.snapshot?.height || 0,
+			isBombWorking: aquarium.snapshot?.isBombWorking || false,
 		},
 	};
 }
@@ -252,26 +284,26 @@ export async function shareAquarium(
 	// 		throw error;
 	// 	});
 }
-
 //endregion
 
 //region GET
 export async function getAquariumById(aquariumId: string): Promise<Aquarium> {
 	const foundAquarium = mockResponse.find((aquarium) => aquarium.id === aquariumId);
-	return foundAquarium || mockResponse[0];
+	const response = mapToAquariumResponse(foundAquarium || mockResponse[0]);
+	return response;
 
 	// TODO uncomment when backend is ready
-	return await axiosInstance
-		.get<AquariumResponse>(
-			ENDPOINTS.AQUARIUM_BY_ID.replace(URL_PLACEHOLDER.AQUARIUM_ID, aquariumId)
-		)
-		.then((response) => {
-			return response.data;
-		})
-		.catch((error) => {
-			console.error("Error fetching aquarium by ID:", error);
-			throw error;
-		});
+	// return await axiosInstance
+	// 	.get<AquariumResponse>(
+	// 		ENDPOINTS.AQUARIUM_BY_ID.replace(URL_PLACEHOLDER.AQUARIUM_ID, aquariumId)
+	// 	)
+	// 	.then((response) => {
+	// 		return response.data;
+	// 	})
+	// 	.catch((error) => {
+	// 		console.error("Error fetching aquarium by ID:", error);
+	// 		throw error;
+	// 	});
 }
 
 export async function getUserAquariums(userId: string): Promise<Aquarium[]> {
@@ -289,6 +321,63 @@ export async function getUserAquariums(userId: string): Promise<Aquarium[]> {
 	// 		throw error;
 	// 	});
 }
+
+export async function getLastAquariumSnapshot(aquariumId: string): Promise<Snapshot> {
+	const lastSnapshot: Snapshot[] = [
+		{
+			snapshotId: "1",
+			temperature: 2,
+			light: true,
+			pH: 2,
+			tds: 2,
+			height: 2,
+			isBombWorking: true,
+		},
+		{
+			snapshotId: "2",
+			temperature: 30,
+			light: true,
+			pH: 30,
+			tds: 30,
+			height: 30,
+			isBombWorking: false,
+		},
+		{
+			snapshotId: "3",
+			temperature: 50,
+			light: true,
+			pH: 50,
+			tds: 50,
+			height: 50,
+			isBombWorking: false,
+		},
+	];
+
+	return lastSnapshot[Math.floor(Math.random() * lastSnapshot.length)];
+
+	// TODO uncomment when backend is ready
+	// return await axiosInstance
+	// 	.get<LastSnapshotResponse>(
+	// 		ENDPOINTS.GET_LAST_SNAPSHOT.replace(URL_PLACEHOLDER.AQUARIUM_ID, aquariumId)
+	// 	)
+	// 	.then((response) => {
+	// 		console.log("Fetched aquarium last snapshot:", response.data);
+	// 		return {
+	// 			snapshotId: response.data.id,
+	// 			temperature: response.data.temperature,
+	// 			pH: response.data.pH,
+	// 			tds: response.data.tds,
+	// 			light: response.data.ldr,
+	// 			height: response.data.height,
+	// 			isBombWorking: response.data.isBombWorking,
+	// 		};
+	// 	})
+	// 	.catch((error) => {
+	// 		console.error("Error fetching aquarium snapshots:", error);
+	// 		throw error;
+	// 	});
+}
+
 //eregion
 
 //region PUT

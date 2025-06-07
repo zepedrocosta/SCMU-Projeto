@@ -6,6 +6,7 @@ export type Aquarium = {
 	createdDate: string;
 	ownerUsername: string;
 	threshold: ThresholdResponse;
+	snapshot: Snapshot;
 };
 
 export type ThresholdResponse = {
@@ -27,6 +28,7 @@ export type AquariumResponse = {
 	createdDate: string;
 	ownerUsername: string;
 	threshold: ThresholdResponse;
+	snapshot: Snapshot | null;
 };
 
 export type AquariumListResponse = {
@@ -65,4 +67,24 @@ export type EditAquarium = {
 export type ShareAquariumRequest = {
 	username: string;
 	aquariumId: string;
+};
+
+export type LastSnapshotResponse = {
+	id: string;
+	temperature: number;
+	ldr: boolean;
+	pH: number;
+	tds: number;
+	height: number;
+	isBombWorking: boolean;
+};
+
+export type Snapshot = {
+	snapshotId: string;
+	temperature: number;
+	pH: number;
+	tds: number;
+	light: boolean;
+	height: number;
+	isBombWorking: boolean;
 };

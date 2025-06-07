@@ -5,6 +5,7 @@ import {
 	changeWaterPumpStatus,
 	deleteAquarium,
 	editAquarium,
+	getLastAquariumSnapshot,
 	shareAquarium,
 	updateThresholds,
 } from "../api/AquariumApi";
@@ -13,10 +14,32 @@ import {
 	ShareAquariumRequest,
 	updateThresholdsRequest,
 } from "../../types/Aquarium";
-import { ShareAction } from "react-native";
+import { useEffect } from "react";
 
 //region QUERIES
+export function useGetLastAquariumSnapshot(aquariumId: string) {
+	const { dispatch } = useStateContext();
 
+	const query = useQuery({
+		queryKey: ["lastAquariumSnapshot", aquariumId],
+		queryFn: () => getLastAquariumSnapshot(aquariumId),
+		refetchInterval: 10000,
+	});
+
+	useEffect(() => {
+		if (query.data) {
+			dispatch({
+				type: EVENTS.UPDATE_AQUARIUM_SNAPSHOT,
+				payload: {
+					aquariumId,
+					snapshot: query.data,
+				},
+			});
+		}
+	}, [query.data, aquariumId, dispatch]);
+
+	return query;
+}
 //endregion
 
 //region MUTATIONS
@@ -115,3 +138,4 @@ export function useEditAquarium() {
 		},
 	});
 }
+//endregion

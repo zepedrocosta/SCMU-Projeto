@@ -18,6 +18,7 @@ export const EVENTS = {
 	CHANGE_WATER_PUMP_STATUS: "CHANGE_WATER_PUMP_STATUS",
 	UPDATE_THRESHOLDS: "UPDATE_THRESHOLDS",
 	UPDATE_AQUARIUM: "UPDATE_AQUARIUM",
+	UPDATE_AQUARIUM_SNAPSHOT: "UPDATE_AQUARIUM_SNAPSHOT",
 	CLEAR_USER: "CLEAR_USER",
 	LOAD_STATE: "LOAD_STATE",
 } as const;
@@ -71,6 +72,21 @@ export type Action =
 			};
 	  }
 	| { type: typeof EVENTS.UPDATE_AQUARIUM; payload: EditAquarium }
+	| {
+			type: typeof EVENTS.UPDATE_AQUARIUM_SNAPSHOT;
+			payload: {
+				aquariumId: string;
+				snapshot: {
+					snapshotId: string;
+					temperature: number;
+					light: boolean;
+					pH: number;
+					tds: number;
+					height: number;
+					isBombWorking: boolean;
+				};
+			};
+	  }
 	| { type: typeof EVENTS.CLEAR_USER }
 	| { type: typeof EVENTS.LOAD_STATE; payload: State };
 
@@ -191,6 +207,19 @@ export function reducer(state: State, action: Action): State {
 					return {
 						...aquarium,
 						...updatedAquarium,
+					};
+				}
+				return aquarium;
+			});
+			return { ...state, aquariums: updatedAquariums };
+		}
+		case EVENTS.UPDATE_AQUARIUM_SNAPSHOT: {
+			const { aquariumId, snapshot } = action.payload;
+			const updatedAquariums = state.aquariums.map((aquarium) => {
+				if (aquarium.id === aquariumId) {
+					return {
+						...aquarium,
+						snapshot: snapshot,
 					};
 				}
 				return aquarium;

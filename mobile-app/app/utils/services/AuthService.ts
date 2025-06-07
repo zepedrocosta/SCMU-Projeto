@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { LoginRequest, RegisterRequest } from "../../types/Auth";
 import { authenticateUser, logoutUser, registerUser } from "../api/AuthApi";
-import { getUserAquariums } from "../api/AquariumApi";
+import { getLastAquariumSnapshot, getUserAquariums } from "../api/AquariumApi";
 import { getUserInfo } from "../api/UserApi";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useStateContext } from "../../context/StateContext";
@@ -50,6 +50,22 @@ export function useLogin() {
 					dispatch({ type: EVENTS.SET_AQUARIUMS, payload: [] });
 					console.log("No aquariums found for user");
 				}
+
+				userAquariums.forEach((aquarium) => {
+					getLastAquariumSnapshot(aquarium.id)
+						.then((snapshot) => {
+							dispatch({
+								type: EVENTS.UPDATE_AQUARIUM_SNAPSHOT,
+								payload: { aquariumId: aquarium.id, snapshot },
+							});
+						})
+						.catch((error) => {
+							console.error(
+								`Failed to fetch snapshot for aquarium ${aquarium.id}`,
+								error
+							);
+						});
+				});
 
 				if (userGroups) {
 					const mappedGroups = mapAquariumsToGroups(userAquariums, userGroups);

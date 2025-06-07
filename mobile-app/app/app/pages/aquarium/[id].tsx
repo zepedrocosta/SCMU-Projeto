@@ -4,9 +4,12 @@ import { Dimensions, View, StyleSheet, ScrollView } from "react-native";
 import { Text, Avatar, ActivityIndicator, IconButton } from "react-native-paper";
 import { useStateContext } from "../../../context/StateContext";
 import ThresholdBar from "../../../components/ThresholdBar";
-import { useChangeWaterPumpStatus } from "../../../utils/services/AquariumService";
+import {
+	useChangeWaterPumpStatus,
+	useGetLastAquariumSnapshot,
+} from "../../../utils/services/AquariumService";
 import AquariumHeader from "../../../components/AquariumHeader";
-import { useRoutes } from "../../../utils/routes";
+import { Snapshot } from "../../../types/Aquarium";
 
 // ####### WaterPump #######
 const BombStatus = ({
@@ -106,7 +109,13 @@ const ThresholdBarWithLabels = ({
 	);
 };
 
-const ThresholdsSection = ({ threshold }: { threshold: any }) => {
+const ThresholdsSection = ({
+	threshold,
+	snapshot,
+}: {
+	threshold: any;
+	snapshot: Snapshot;
+}) => {
 	const screenWidth = Dimensions.get("window").width;
 	const horizontalPadding = 32;
 	const spacing = 12;
@@ -122,7 +131,7 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 			label: "Temp",
 			min: threshold?.minTemperature,
 			max: threshold?.maxTemperature,
-			value: 38,
+			value: snapshot.temperature,
 			unit: "°C",
 		},
 		{
@@ -133,7 +142,7 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 			label: "pH",
 			min: threshold?.minPH,
 			max: threshold?.maxPH,
-			value: 7.5,
+			value: snapshot.pH,
 		},
 		{
 			key: "tds",
@@ -143,7 +152,7 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 			label: "TDS",
 			min: threshold?.minTds,
 			max: threshold?.maxTds,
-			value: 460,
+			value: snapshot.tds,
 			unit: "ppm",
 		},
 		{
@@ -154,7 +163,7 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 			label: "Height",
 			min: threshold?.minHeight,
 			max: threshold?.maxHeight,
-			value: 31,
+			value: snapshot.height,
 			unit: "cm",
 		},
 		{
@@ -165,7 +174,7 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 			label: "Light",
 			min: threshold?.minLight || 0,
 			max: threshold?.maxLight || 1000,
-			value: 500,
+			value: snapshot.light ? 1000 : 0,
 			unit: "lux",
 		},
 	];
@@ -197,14 +206,22 @@ const ThresholdsSection = ({ threshold }: { threshold: any }) => {
 
 export default function AquariumPage() {
 	const { id } = useLocalSearchParams();
+	const { mutate: changeWaterPumpStatus, isPending } = useChangeWaterPumpStatus();
+
 	const { aquariums } = useStateContext();
-	const aquarium = aquariums.find((aq) => aq.id === id);
+	const aquarium = aquariums.find((aq) => aq.id === id)!!;
 
 	const { user } = useStateContext();
 
-	const { mutate: changeWaterPumpStatus, isPending } = useChangeWaterPumpStatus();
+	if (!aquarium) {
+		return (
+			<View style={styles.container}>
+				<Text variant="titleLarge">Aquarium not found</Text>
+			</View>
+		);
+	}
 
-	const [bombOn, setBombOn] = useState(aquarium?.isBombWorking ?? false);
+	const [bombOn, setBombOn] = useState(aquarium.snapshot.isBombWorking);
 
 	const handleToggleBomb = (value: boolean) => {
 		changeWaterPumpStatus(id as string, {
@@ -214,14 +231,6 @@ export default function AquariumPage() {
 			},
 		});
 	};
-
-	if (!aquarium) {
-		return (
-			<View style={styles.container}>
-				<Text variant="titleLarge">Aquarium not found</Text>
-			</View>
-		);
-	}
 
 	return (
 		<View style={styles.container}>
@@ -235,7 +244,7 @@ export default function AquariumPage() {
 				/>
 			)}
 
-			<ThresholdsSection threshold={aquarium.threshold} />
+			<ThresholdsSection threshold={aquarium.threshold} snapshot={aquarium.snapshot} />
 		</View>
 	);
 }
