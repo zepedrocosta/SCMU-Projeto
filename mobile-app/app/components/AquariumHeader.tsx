@@ -165,7 +165,7 @@ export default function AquariumHeader({ aquarium, user }: AquariumHeaderProps) 
 								}}
 								title="Share"
 								leadingIcon="share"
-								titleStyle={{ fontWeight: "bold", color: "#000000" }}
+								titleStyle={{ fontWeight: "bold", color: "#444" }}
 							/>
 						</>
 					)}
@@ -275,13 +275,16 @@ export default function AquariumHeader({ aquarium, user }: AquariumHeaderProps) 
 				<View style={styles.modalOverlay}>
 					<View style={styles.modalContent}>
 						<Text style={styles.modalTitle}>Edit Aquarium</Text>
-						<EditAquariumForm
-							name={name}
-							location={location}
-							onSubmit={(data: { name: string; location: string }) =>
-								handleEditAquarium({ id: aquariumId, ...data })
-							}
-						/>
+						<ScrollView style={{ maxHeight: deviceHeight * 0.8 }}>
+							<EditAquariumForm
+								name={name}
+								location={location}
+								onSubmit={(data: { name: string; location: string }) =>
+									handleEditAquarium({ id: aquariumId, ...data })
+								}
+								onCancel={() => setEditModalVisible(false)}
+							/>
+						</ScrollView>
 						<Button
 							mode="outlined"
 							onPress={() => setEditModalVisible(false)}

@@ -1,13 +1,10 @@
-import { router, useLocalSearchParams } from "expo-router";
-import React, { use, useEffect, useState } from "react";
-import { Dimensions, View, StyleSheet, ScrollView } from "react-native";
-import { Text, Avatar, ActivityIndicator, IconButton } from "react-native-paper";
+import { useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import { Dimensions, View, StyleSheet } from "react-native";
+import { Text, Avatar, ActivityIndicator } from "react-native-paper";
 import { useStateContext } from "../../../context/StateContext";
 import ThresholdBar from "../../../components/ThresholdBar";
-import {
-	useChangeWaterPumpStatus,
-	useGetLastAquariumSnapshot,
-} from "../../../utils/services/AquariumService";
+import { useChangeWaterPumpStatus } from "../../../utils/services/AquariumService";
 import AquariumHeader from "../../../components/AquariumHeader";
 import { Snapshot } from "../../../types/Aquarium";
 
@@ -227,25 +224,25 @@ export default function AquariumPage() {
 	}, [aquarium.snapshot.isBombWorking]);
 
 	const handleToggleBomb = (value: boolean) => {
-		changeWaterPumpStatus(id as string, {
-			onSuccess: () => {
-				console.log(`Water pump status for aquarium ${id} changed to ${value}`);
-				setBombOn(value);
-			},
-		});
+		if (user.nickname === aquarium.ownerUsername) {
+			changeWaterPumpStatus(id as string, {
+				onSuccess: () => {
+					console.log(`Water pump status for aquarium ${id} changed to ${value}`);
+					setBombOn(value);
+				},
+			});
+		} else {
+			console.warn(
+				"You are not the owner of this aquarium, cannot change water pump status."
+			);
+		}
 	};
 
 	return (
 		<View style={styles.container}>
 			<AquariumHeader user={user} aquarium={aquarium} />
 
-			{user.nickname === aquarium.ownerUsername && (
-				<BombStatus
-					isWorking={bombOn}
-					onToggle={handleToggleBomb}
-					isPending={isPending}
-				/>
-			)}
+			<BombStatus isWorking={bombOn} onToggle={handleToggleBomb} isPending={isPending} />
 
 			<ThresholdsSection threshold={aquarium.threshold} snapshot={aquarium.snapshot} />
 		</View>

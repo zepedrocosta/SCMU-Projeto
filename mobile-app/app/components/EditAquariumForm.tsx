@@ -16,10 +16,12 @@ export default function EditAquariumForm({
 	name,
 	location,
 	onSubmit,
+	onCancel,
 }: {
 	name: string;
 	location: string;
 	onSubmit: (data: EditAquariumInput) => void;
+	onCancel: () => void;
 }) {
 	const {
 		handleSubmit,
@@ -28,14 +30,14 @@ export default function EditAquariumForm({
 		watch,
 	} = useForm<EditAquariumInput>({
 		resolver: zodResolver(schema),
-		defaultValues: { name, location }, // Use props as initial values
+		defaultValues: { name, location },
 	});
 
 	const watchedName = watch("name");
 	const watchedLocation = watch("location");
 
 	return (
-		<View style={styles.container}>
+		<View style={styles.modalContent}>
 			<TextInput
 				label="Aquarium Name"
 				value={watchedName}
@@ -45,7 +47,13 @@ export default function EditAquariumForm({
 				style={styles.input}
 				autoFocus
 			/>
-			{errors.name && <Text style={styles.errorText}>{errors.name.message}</Text>}
+			<View style={styles.errorContainer}>
+				{errors.name ? (
+					<Text style={styles.errorText}>{errors.name.message}</Text>
+				) : (
+					<Text style={styles.errorPlaceholder}> </Text>
+				)}
+			</View>
 
 			<TextInput
 				label="Aquarium Location"
@@ -55,38 +63,78 @@ export default function EditAquariumForm({
 				error={!!errors.location}
 				style={styles.input}
 			/>
-			{errors.location && (
-				<Text style={styles.errorText}>{errors.location.message}</Text>
-			)}
+			<View style={styles.errorContainer}>
+				{errors.location ? (
+					<Text style={styles.errorText}>{errors.location.message}</Text>
+				) : (
+					<Text style={styles.errorPlaceholder}> </Text>
+				)}
+			</View>
 
-			<Button
-				mode="contained"
-				onPress={handleSubmit(onSubmit)}
-				loading={isSubmitting}
-				style={styles.button}
-				disabled={isSubmitting}
-			>
-				Save
-			</Button>
+			<View style={styles.buttonRow}>
+				<Button
+					mode="outlined"
+					onPress={onCancel}
+					style={styles.modalButton}
+					disabled={isSubmitting}
+				>
+					Cancel
+				</Button>
+				<Button
+					mode="contained"
+					onPress={handleSubmit(onSubmit)}
+					loading={isSubmitting}
+					style={[styles.modalButton, { marginLeft: 8 }]}
+					disabled={isSubmitting}
+				>
+					Save
+				</Button>
+			</View>
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
-	container: {
-		padding: 16,
+	modalContent: {
+		backgroundColor: "#fff",
+		borderRadius: 16,
+		padding: 24,
 		width: "100%",
+		alignItems: "stretch",
+		justifyContent: "flex-start",
+	},
+	modalTitle: {
+		fontSize: 20,
+		fontWeight: "bold",
+		marginBottom: 16,
+		textAlign: "center",
 	},
 	input: {
-		marginBottom: 8,
+		marginBottom: 2,
+		backgroundColor: "#fff",
 	},
-	button: {
-		marginTop: 8,
-		borderRadius: 8,
+	errorContainer: {
+		minHeight: 18,
+		marginBottom: 8,
 	},
 	errorText: {
 		color: "#e53935",
-		marginBottom: 4,
+		fontSize: 13,
 		marginLeft: 2,
+	},
+	errorPlaceholder: {
+		color: "transparent",
+		fontSize: 13,
+		marginLeft: 2,
+	},
+	buttonRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		marginTop: 24,
+		width: "100%",
+	},
+	modalButton: {
+		flex: 1,
+		marginHorizontal: 0,
 	},
 });

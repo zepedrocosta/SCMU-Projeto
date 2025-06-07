@@ -40,7 +40,7 @@ export default function RegisterPage() {
 
 	const onSubmit = (data: RegisterInput) => {
 		console.log("Register data:", data);
-		mutate(data, {});
+		mutate(data);
 	};
 
 	return (
