@@ -14,15 +14,12 @@ import java.util.Set;
 @ToString(doNotUseGetters = true)
 @EqualsAndHashCode(doNotUseGetters = true, callSuper = true)
 @Entity(name = "notifications")
-@SQLRestriction("is_deleted = false AND is_read = false")
+@SQLRestriction("is_deleted = false")
 @SQLDelete(sql = "UPDATE notifications SET is_deleted = true WHERE id = ?")
 public class Notification extends DAO {
 
     @Column(nullable = false)
     private String message;
-
-    @Column(nullable = false)
-    private boolean isRead = false;
 
     @Column
     private boolean isDeleted = false;

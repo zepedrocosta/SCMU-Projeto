@@ -134,8 +134,15 @@ public class AquariumController extends AbstractController{
 
     @SneakyThrows
     @GetMapping("/notifications")
-    public ResponseEntity<List<NotificationResponse>> fetchNotifications() {
-        return ok(aquariumService.fetchNotifications().get());
+    public ResponseEntity<List<NotificationResponse>> fetchNotifications(@RequestParam(defaultValue = "N/A") String startDate) {
+        LocalDateTime date;
+        if (startDate.equals("N/A"))
+            date = LocalDateTime.now().minusDays(1);
+        else
+            date = LocalDateTime.parse(startDate);
+
+        var token = new TypeToken<List<NotificationResponse>>(){}.getType();
+        return ok(aquariumService.fetchNotifications(date).get(), token);
     }
 
 }

@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 @ToString(doNotUseGetters = true)
 public class NotificationResponse {
 
+    private String id;
+
     private String message;
 
     private LocalDateTime createdDate;

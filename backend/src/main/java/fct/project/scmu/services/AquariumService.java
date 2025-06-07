@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -78,9 +79,14 @@ public class AquariumService {
             notification.setMessage(String.join(", ", params));
             var owner = aquarium.getOwner();
             var managers = aquarium.getManagers();
-            notification.setUsers(new HashSet<>(Stream.concat(managers.stream(), Stream.of(owner)).toList()));
+            var totalUsers = new HashSet<>(Stream.concat(managers.stream(), Stream.of(owner)).toList());
+            notification.setUsers(totalUsers);
             notification.setSnapshotId(snapshot.getId().toString());
             notifications.save(notification);
+            for (var user : totalUsers) {
+                user.getNotifications().add(notification);
+                users.save(user);
+            }
         }
 
         return new SetSnapshotResponse(aquarium.isBombWorking(), exceedsThreshold);
@@ -210,7 +216,7 @@ public class AquariumService {
         }
         var aquarium = aquariumRes.get();
 
-        if (!aquarium.getOwner().getId().equals(principal.getId())) {
+        if (!aquariums.existsByIdAndOwner(aquarium.getId(), principal)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
@@ -387,26 +393,11 @@ public class AquariumService {
 
     @Async
     @Transactional
-    public Future<List<NotificationResponse>> fetchNotifications() {
+    public Future<List<Notification>> fetchNotifications(LocalDateTime startDate) {
         var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        var l = notifications.findAllByUsersContaining(principal);
-
-        if (l.isEmpty())
-            return CompletableFuture.completedFuture(Collections.emptyList());
-
-        List<NotificationResponse> response = new ArrayList<>();
-        for (Notification notification : l) {
-            var nr = new NotificationResponse();
-            nr.setMessage(notification.getMessage());
-            nr.setCreatedDate(notification.getCreatedDate());
-            nr.setSnapshotId(notification.getSnapshotId());
-            response.add(nr);
-        }
-
-        notifications.markAllAsReadByUser(principal);
-
-        return CompletableFuture.completedFuture(response);
+        var res = notifications.fetch(principal.getId(), startDate);
+        return CompletableFuture.completedFuture(res);
     }
 
     private Aquarium checkPermission(Optional<Aquarium> res) {
