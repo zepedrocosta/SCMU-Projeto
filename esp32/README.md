@@ -23,20 +23,6 @@
   - SCL: GPIO 22
 - Water Pump: GPIO 19 - **3.3V**
 
-## Secrets
-
-All sensitive information is stored in a separate file called `secrets.h`. You can create this file by copying the template provided below.
-
-```cpp
-#ifndef SECRETS_H
-
-#define SECRETS_H
-
-const char* serverUrl = "YOUR_SERVER_URL";
-
-#endif
-```
-
 ## Sensors checklist
 
 - [x] Temperature Sensor

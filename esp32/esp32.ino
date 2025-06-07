@@ -24,7 +24,6 @@
 
 #include <Preferences.h>
 
-#include <secrets.h>
 #include <pitches.h>
 #include <CredentialsCallback.h>
 
@@ -56,6 +55,8 @@
 #define SERVICE_UUID "bd8db997-757f-44b7-ad11-b81515927ca8"        // UUID for the BLE service
 #define CHARACTERISTIC_UUID "6e4fe646-a8f0-4892-8ef4-9ac94142da48" // UUID for the BLE characteristic
 
+#define SERVER_ENDPOINT "https://scmu.zepedrocosta.com/rest/aquariums/snapshot" // Server endpoint for sending data
+
 OneWire oneWire(TEMPERATURE_SENSOR);
 DallasTemperature sensors(&oneWire);
 
@@ -76,9 +77,9 @@ bool hasWiFi = false;                // Flag to indicate if Wi-Fi is connected
 bool hasDisplay = false;             // Flag to indicate if OLED display is connected
 bool credentialsReceivedBT = false;  // Flag to indicate if credentials were received via Bluetooth
 bool isBombWorking = false;          // Flag to indicate if the bomb is working
-bool areValuesNormal = false;        // Flag to indicate if the values are normal
+bool areValuesNormal = true;         // Flag to indicate if the values are normal
 
-int melody[] = {
+int nokiaMelody[] = {
     NOTE_E5, NOTE_D5, NOTE_FS4, NOTE_GS4,
     NOTE_CS5, NOTE_B4, NOTE_D4, NOTE_E4,
     NOTE_B4, NOTE_A4, NOTE_CS4, NOTE_E4,
@@ -97,7 +98,7 @@ void setup()
 
   Serial.println("Initializing SCMU project!\n");
 
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) // Address 0x3D for 128x64
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
   {
     Serial.println("SSD1306 allocation failed");
     Serial.println("Check if the display is connected correctly");
@@ -106,6 +107,7 @@ void setup()
   {
     Serial.println("OLED display connected!\n");
     hasDisplay = true;
+    display.setRotation(2); // Rotate display to match the orientation
   }
 
   xTaskCreatePinnedToCore(setupTask, "SetupTask", 10000, NULL, 1, &setupTaskHandle, 0);
@@ -140,7 +142,6 @@ bool getWiFiInfo(String &ssid, String &password)
 
   preferences.clear(); // Uncomment this line to clear all stored WiFi credentials
 
-  // Check if SSID is already stored
   ssid = preferences.getString("ssid", "");
   password = preferences.getString("pass", "");
 
@@ -159,7 +160,7 @@ bool getWiFiInfo(String &ssid, String &password)
 
     if (ssid == "" || password == "")
     {
-      Serial.println("No WiFi credentials received via Bluetooth.");
+      Serial.println("No WiFi credentials received via Bluetooth.\n\n");
       return false; // No credentials received
     }
     // Save them to NVS
@@ -198,7 +199,6 @@ void connectToWiFi(String &ssid, String &password)
 
 void btConnect()
 {
-  // Initialize BLE
   BLEDevice::init("SmartAquarium");
   BLEServer *pServer = BLEDevice::createServer();
   BLEService *pService = pServer->createService(SERVICE_UUID);
@@ -216,7 +216,7 @@ void btConnect()
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->start();
 
-  Serial.println("ESP32 is now advertising...");
+  Serial.print("ESP32 is now advertising...");
 
   unsigned long startAttemptTime = millis();
 
@@ -226,12 +226,11 @@ void btConnect()
     Serial.print(".");
   }
 
-  // Stop BLE once credentials are received
   pAdvertising->stop();
   pServer->removeService(pService);
   BLEDevice::deinit(true);
 
-  Serial.println("BLE shut down!");
+  Serial.println("\nBLE shut down!\n");
 }
 
 void initializationTask(void *parameter)
@@ -352,20 +351,18 @@ int readDepth()
 
 float readPh()
 {
-  // float calibration_value = 0;
+  float calibration_value = 9.8;
 
-  // for (int i = 0; i < SAMPLES_PH; i++)
-  // {
-  //   pH_buf[i] = analogRead(PH_SENSOR);
-  //   delay(30);
-  // }
+  for (int i = 0; i < SAMPLES_PH; i++)
+  {
+    pH_buf[i] = analogRead(PH_SENSOR);
+    delay(30);
+  }
 
-  // int medianValue = getMedianNum(pH_buf, SAMPLES_PH);
+  int medianValue = getMedianNum(pH_buf, SAMPLES_PH);
 
-  // float volt = (float)medianValue * VREF / 4096.0 / 6;
-  // float pH = -5.70 * volt + calibration_value;
-
-  float pH = 7.0; // Placeholder value for pH
+  float volt = (float)medianValue * VREF / 4096.0 / 6;
+  float pH = -5.70 * volt + calibration_value;
 
   Serial.print("pH: ");
   Serial.println(pH);
@@ -392,7 +389,7 @@ void sendData(float temperature, float tds, int ldr, int depth, float pH)
     Serial.println(jsonStr);
 
     HTTPClient http;
-    http.begin(serverUrl);
+    http.begin(SERVER_ENDPOINT);
     http.addHeader("Content-Type", "application/json");
 
     int httpResponseCode = http.POST(jsonStr);
@@ -505,17 +502,15 @@ void showInitialization()
   int cy = (SCREEN_HEIGHT / 2) + 10;
   int r = 12;
 
-  // Draw spinner base
   display.drawCircle(cx, cy, r, SSD1306_WHITE);
 
-  // Draw rotating line
   float x = cx + r * cos(angle);
   float y = cy + r * sin(angle);
   display.drawLine(cx, cy, (int)x, (int)y, SSD1306_WHITE);
 
   display.display();
 
-  angle += 0.2; // adjust for speed
+  angle += 0.2;
   if (angle > 2 * PI)
     angle = 0;
 
@@ -568,9 +563,6 @@ int getMedianNum(int bArray[], int iFilterLen)
 
 long microsecondsToCentimeters(long microseconds)
 {
-  // The speed of sound is 340 m/s or 29 microseconds per centimeter.
-  // The ping travels out and back, so to find the distance of the
-  // object we take half of the distance travelled.
   return (microseconds / 29.1) / 2;
 }
 
@@ -578,12 +570,11 @@ void controlWaterPump()
 {
   if (isBombWorking)
   {
-    Serial.println("Bomb is working, turning on water pump...");
+    Serial.println("Water pump ON!");
     digitalWrite(WATER_PUMP_PIN, HIGH);
   }
   else
   {
-    Serial.println("Bomb is not working, turning off water pump...");
     digitalWrite(WATER_PUMP_PIN, LOW);
   }
 }
@@ -594,13 +585,9 @@ void singNokia()
 
   for (int note = 0; note < size; note++)
   {
-    // to calculate the note duration, take one second divided by the note type.
-    // e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
     int duration = 1000 / durations[note];
-    tone(BUZZER_PIN, melody[note], duration);
+    tone(BUZZER_PIN, nokiaMelody[note], duration);
 
-    // to distinguish the notes, set a minimum time between them.
-    // the note's duration + 30% seems to work well:
     int pauseBetweenNotes = duration * 1.30;
     delay(pauseBetweenNotes);
 
