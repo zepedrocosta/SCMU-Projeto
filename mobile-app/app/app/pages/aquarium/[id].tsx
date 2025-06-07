@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import React, { use, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { Dimensions, View, StyleSheet, ScrollView } from "react-native";
 import { Text, Avatar, ActivityIndicator, IconButton } from "react-native-paper";
 import { useStateContext } from "../../../context/StateContext";
@@ -222,6 +222,9 @@ export default function AquariumPage() {
 	}
 
 	const [bombOn, setBombOn] = useState(aquarium.snapshot.isBombWorking);
+	useEffect(() => {
+		setBombOn(aquarium.snapshot.isBombWorking);
+	}, [aquarium.snapshot.isBombWorking]);
 
 	const handleToggleBomb = (value: boolean) => {
 		changeWaterPumpStatus(id as string, {
