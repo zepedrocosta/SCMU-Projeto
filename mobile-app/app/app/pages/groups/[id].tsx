@@ -30,8 +30,6 @@ export default function GroupDetail() {
 	const openMenu = () => setMenuVisible(true);
 	const closeMenu = () => setMenuVisible(false);
 
-	const [editModalVisible, setEditModalVisible] = useState(false);
-
 	const [groupAquariums, setGroupAquariums] = useState<Aquarium[]>(group.aquariums || []);
 
 	const { mutate: addAquariumsToGroup } = useAddAquariumsToGroup();
@@ -164,22 +162,6 @@ export default function GroupDetail() {
 					<Menu.Item
 						onPress={() => {
 							closeMenu();
-							setEditModalVisible(true);
-						}}
-						title="Edit Group Name"
-						leadingIcon="pencil"
-						titleStyle={{ fontWeight: "bold", color: "#444" }}
-					/>
-					<View
-						style={{
-							height: 1,
-							backgroundColor: "#eee",
-							marginVertical: 4,
-						}}
-					/>
-					<Menu.Item
-						onPress={() => {
-							closeMenu();
 							setDeleteModalVisible(true);
 						}}
 						title="Delete Group"
@@ -227,21 +209,6 @@ export default function GroupDetail() {
 									Delete
 								</Button>
 							</View>
-						</View>
-					</View>
-				</Modal>
-
-				{/* Edit Group Modal */}
-				<Modal
-					visible={editModalVisible}
-					transparent
-					animationType="fade"
-					onRequestClose={() => setEditModalVisible(false)}
-				>
-					<View style={styles.modalOverlay}>
-						<View style={styles.modalContent}>
-							<Text style={styles.modalTitle}>Edit Group Name</Text>
-							<Button onPress={() => setEditModalVisible(false)}>Close</Button>
 						</View>
 					</View>
 				</Modal>
