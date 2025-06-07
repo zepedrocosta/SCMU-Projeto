@@ -1,9 +1,6 @@
-import { jwtDecode } from "jwt-decode";
 import { RegisterRequest, RegisterResponse } from "../../types/Auth";
-import { Token } from "../../types/Token";
-import { User, UserResponse, UserUpdateRequest, UserWithDefaults } from "../../types/User";
+import { UserWithDefaults } from "../../types/User";
 import { axiosInstance, URL_PLACEHOLDER } from "./axiosConfig";
-import { extractTokenFromResponse } from "./AuthApi";
 
 const basepath = "/users";
 
@@ -31,17 +28,6 @@ export async function registerUser(body: RegisterRequest): Promise<RegisterRespo
 
 //region GET
 export async function getUserInfo(userId: string): Promise<UserWithDefaults> {
-	// const mockResponse: UserWithDefaults = {
-	// 	id: userId,
-	// 	name: "John Doe",
-	// 	email: "some@gmail.com",
-	// 	nickname: "johndoe",
-	// 	defaults: {
-	// 		darkMode: false,
-	// 		receiveNotifications: true,
-	// 	},
-	// };
-	// return mockResponse;
 	return axiosInstance
 		.get<UserWithDefaults>(ENDPOINTS.USER.replace(URL_PLACEHOLDER.NICKNAME, userId))
 		.then((response) => {
@@ -61,40 +47,3 @@ export async function getUserInfo(userId: string): Promise<UserWithDefaults> {
 			throw error;
 		});
 }
-
-export async function updateUserInfo(
-	userId: string,
-	body: UserUpdateRequest
-): Promise<UserResponse> {
-	const mockResponse: UserResponse = {
-		name: body.name,
-		email: "some@gmail.com",
-		nickname: "johndoe",
-	};
-
-	return mockResponse;
-
-	// TODO uncomment when backend is ready
-	return axiosInstance
-		.put<UserResponse>(ENDPOINTS.USER.replace(URL_PLACEHOLDER.NICKNAME, userId), body)
-		.then((response) => {
-			return response.data;
-		})
-		.catch((error) => {
-			console.error("Error updating user info:", error);
-			throw error;
-		});
-}
-
-// TODO uncomment when backend is ready
-// export async function getUserInfo(userId: string): Promise<UserWithDefaults> {
-// 	return axiosInstance
-// 		.get<UserWithDefaults>(ENDPOINTS.USER.replace(URL_PLACEHOLDER.USER_ID, userId))
-// 		.then((response) => {
-// 			return response.data;
-// 		})
-// 		.catch((error) => {
-// 			console.error("Error fetching user info:", error);
-// 			throw error;
-// 		});
-// }
