@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, TouchableOpacity, ViewBase } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
 import { useRoutes } from "../../utils/routes";
 import useBLE from "../../hooks/useBle";
 import DeviceModal from "../../components/DeviceConnectionModal";
 import { useIsFocused } from "@react-navigation/native";
-import { useStateContext } from "../../context/StateContext";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { read } from "fs";
-import { CreateAquariumRequest } from "../../types/Aquarium";
 
 const schema = z.object({
 	ssid: z.string().min(1, "SSID is required"),
@@ -97,6 +94,7 @@ export default function ConnectToDevicePage() {
 					return response;
 				}
 			);
+			// const macAddress = "hello";
 
 			if (!macAddress) {
 				console.error("Failed to read MAC address from device");
@@ -114,7 +112,7 @@ export default function ConnectToDevicePage() {
 			<View style={styles.titleWrapper}>
 				{isBluetoothOn === undefined || !isBluetoothOn ? (
 					<Text style={styles.text}>Please turn on Bluetooth </Text>
-				) : connectedDevice ? (
+				) : !connectedDevice ? (
 					// This is when the device is connected
 					<View style={styles.container2}>
 						<TextInput
@@ -202,6 +200,8 @@ const styles = StyleSheet.create({
 	},
 	container: {
 		flex: 1,
+		padding: 24,
+
 		backgroundColor: "#f2f2f2",
 	},
 	container2: {

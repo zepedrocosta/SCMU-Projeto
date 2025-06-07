@@ -280,7 +280,7 @@ export async function createAquarium(
 ): Promise<Aquarium> {
 	console.log("Creating aquarium:", createAquariumRequest);
 	const newAquarium: CreateAquariumResponse = {
-		id: "new-id",
+		id: Math.random().toString(36).substring(2, 15), // Simulate a unique ID
 		name: createAquariumRequest.name,
 		location: createAquariumRequest.location,
 		createdDate: new Date().toISOString(),

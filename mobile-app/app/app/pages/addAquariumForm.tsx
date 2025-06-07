@@ -61,8 +61,14 @@ export default function AddAquariumForm() {
 
 	return (
 		<View style={styles.container}>
+			<Text
+				variant="headlineLarge"
+				style={{ marginBottom: 30, marginTop: 40, textAlign: "center" }}
+			>
+				Create Aquarium
+			</Text>
 			<TextInput
-				label="Group Name"
+				label="Name"
 				value={name}
 				onChangeText={(text) => setValue("name", text)}
 				mode="outlined"
@@ -100,7 +106,7 @@ export default function AddAquariumForm() {
 					style={styles.button}
 					disabled={isSubmitting}
 				>
-					Add Group
+					Create Aquarium
 				</Button>
 			</View>
 		</View>
@@ -109,6 +115,7 @@ export default function AddAquariumForm() {
 
 const styles = StyleSheet.create({
 	container: {
+		flex: 1,
 		padding: 16,
 		width: "100%",
 	},

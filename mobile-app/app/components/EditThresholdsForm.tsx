@@ -15,8 +15,6 @@ const schema = z.object({
 	maxTds: z.coerce.number().min(0),
 	minHeight: z.coerce.number().min(0),
 	maxHeight: z.coerce.number().min(0),
-	minLight: z.coerce.number().min(0),
-	maxLight: z.coerce.number().min(0),
 });
 
 type EditThresholdsInput = z.infer<typeof schema>;
@@ -51,8 +49,6 @@ export default function EditThresholdsForm({
 		{ name: "maxTds", label: "Max TDS (ppm)" },
 		{ name: "minHeight", label: "Min Height (cm)" },
 		{ name: "maxHeight", label: "Max Height (cm)" },
-		{ name: "minLight", label: "Min Light (lux)" },
-		{ name: "maxLight", label: "Max Light (lux)" },
 	];
 
 	const handleFormSubmit = (data: EditThresholdsInput) => {

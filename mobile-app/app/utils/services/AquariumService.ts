@@ -53,6 +53,7 @@ export function useCreateAquarium() {
 			console.error("Error creating aquarium:", error);
 		},
 		onSuccess: (data) => {
+			console.log("Aquarium created successfully service:", data);
 			dispatch({
 				type: EVENTS.ADD_AQUARIUM,
 				payload: data,
