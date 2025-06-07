@@ -8,6 +8,7 @@ import fct.project.scmu.dtos.responses.aquariums.*;
 import fct.project.scmu.repositories.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -167,13 +168,9 @@ public class AquariumService {
     }
 
     @Transactional
-    public GroupsResponse createGroup(String groupName) {
+    public Group createGroup(String groupName) {
         var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var group = new Group(groupName, false, new HashSet<>(), principal);
-        principal.getGroups().add(group);
-        groups.save(group);
-        users.save(principal);
-        return new GroupsResponse(group.getId().toString(), group.getName(), new ArrayList<>());
+        return groups.save(new Group(groupName, false, new HashSet<>(), principal));
     }
 
     @Transactional
@@ -185,25 +182,17 @@ public class AquariumService {
         }
         var group = groupRes.get();
 
-        if (!principal.getGroups().contains(group)) {
+        if (!group.getOwner().getId().equals(principal.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        principal.getGroups().remove(group);
         groups.delete(group);
-        users.save(principal);
         return Optional.empty();
     }
 
-    public List<GroupsResponse> listGroups() {
+    public List<Group> listGroups() {
         var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var groups = principal.getGroups();
-        List<GroupsResponse> response = new ArrayList<>();
-        for (Group group : groups) {
-            List<String> aquariums = group.getAquariums().stream().map(Aquarium::getName).toList();
-            response.add(new GroupsResponse(group.getId().toString(), group.getName(), aquariums));
-        }
-        return response;
+        return groups.findAllByOwner(principal);
     }
 
     @Async
@@ -246,8 +235,12 @@ public class AquariumService {
         }
         var aquarium = aquariumRes.get();
 
-        if (!principal.getGroups().contains(group)) {
+        if (!groups.existsByIdAndOwner(group.getId(), principal)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        if (group.getAquariums().contains(aquarium)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
 
         group.getAquariums().add(aquarium);
@@ -272,8 +265,12 @@ public class AquariumService {
         }
         var aquarium = aquariumRes.get();
 
-        if (!principal.getGroups().contains(group)) {
+        if (!groups.existsByIdAndOwner(group.getId(), principal)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        if (!group.getAquariums().contains(aquarium)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
         group.getAquariums().remove(aquarium);
@@ -292,7 +289,7 @@ public class AquariumService {
         }
         var group = groupRes.get();
 
-        if (!principal.getGroups().contains(group)) {
+        if (!groups.existsByIdAndOwner(group.getId(), principal)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
@@ -308,7 +305,7 @@ public class AquariumService {
         }
         var aquarium = aquariumRes.get();
 
-        if (!aquarium.getOwner().getId().equals(principal.getId())) {
+        if (!aquariums.existsByIdAndOwner(aquarium.getId(), principal)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
@@ -318,7 +315,7 @@ public class AquariumService {
         }
         var user = userRes.get();
 
-        if (aquarium.getManagers().contains(user) || aquarium.getOwner().getId().equals(user.getId())) {
+        if (aquariums.isUserManagerOrOwner(aquarium, user)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
 
@@ -339,7 +336,7 @@ public class AquariumService {
         }
         var aquarium = aquariumRes.get();
 
-        if (!aquarium.getOwner().getId().equals(principal.getId())) {
+        if (!aquariums.existsByIdAndOwner(aquarium.getId(), principal)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
@@ -370,7 +367,7 @@ public class AquariumService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-        if (!aquarium.get().getOwner().getId().equals(principal.getId())) {
+        if (!aquariums.existsByIdAndOwner(aquarium.get().getId(), principal)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
@@ -420,7 +417,7 @@ public class AquariumService {
         var aquarium = res.get();
         var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (!aquarium.getOwner().getId().equals(principal.getId()))
+        if (!aquariums.existsByIdAndOwner(aquarium.getId(), principal))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
         return aquarium;

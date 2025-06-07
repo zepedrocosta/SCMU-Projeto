@@ -58,6 +58,6 @@ public class Threshold {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToOne(mappedBy = "values")
+    @OneToOne
     private SensorsSnapshot values;
 }

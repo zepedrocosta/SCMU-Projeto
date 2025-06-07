@@ -87,7 +87,7 @@ public class AquariumController extends AbstractController{
 
     @PostMapping("/groups")
     public ResponseEntity<GroupsResponse> createGroup(@RequestParam String groupName) {
-        return ok(aquariumService.createGroup(groupName));
+        return ok(aquariumService.createGroup(groupName), GroupsResponse.class);
     }
 
     @DeleteMapping("/groups/{groupId}")
@@ -97,7 +97,8 @@ public class AquariumController extends AbstractController{
 
     @GetMapping("/groups")
     public ResponseEntity<List<GroupsResponse>> listGroups() {
-        return ok(aquariumService.listGroups());
+        var token = new TypeToken<List<GroupsResponse>>(){}.getType();
+        return ok(aquariumService.listGroups(), token);
     }
 
     @PostMapping("/groups/values")

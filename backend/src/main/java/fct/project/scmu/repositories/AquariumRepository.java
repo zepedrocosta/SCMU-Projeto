@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +17,14 @@ public interface AquariumRepository extends JpaRepository<Aquarium, UUID> {
 
     boolean existsByName(String name);
 
+    boolean existsByIdAndOwner(UUID aquariumId, User owner);
+
     void deleteAllByOwner(User owner);
+
+    @Query("SELECT COUNT(a) > 0 FROM aquariums a LEFT JOIN a.managers m " +
+            "WHERE a = :aquarium AND (m = :user OR a.owner = :user)")
+    boolean isUserManagerOrOwner(@Param("aquarium") Aquarium aquarium, @Param("user") User user);
+
 
     @Query("SELECT a FROM aquariums a WHERE a.name LIKE %:query% " +
             "OR a.location LIKE %:query% OR a.owner.nickname LIKE %:query% ")
