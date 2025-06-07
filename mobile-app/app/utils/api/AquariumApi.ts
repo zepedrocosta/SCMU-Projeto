@@ -1,3 +1,4 @@
+import { createIconSetFromFontello } from "react-native-vector-icons";
 import {
 	Aquarium,
 	AquariumListResponse,
@@ -256,10 +257,6 @@ const mockResponse: AquariumResponse[] = [
 	},
 ];
 
-function parseMetrics(message: string): string[] {
-	return message.split(",").map((metric) => metric.trim());
-}
-
 // Helper functions to map AquariumResponse to Aquarium type
 export function mapToAquariumResponse(aquarium: AquariumResponse): Aquarium {
 	return {
@@ -355,30 +352,54 @@ export async function shareAquarium(
 }
 //endregion
 
+function generateRandomDate(): string {
+	const start = new Date(2023, 0, 1);
+	const end = new Date();
+	const randomDate = new Date(
+		start.getTime() + Math.random() * (end.getTime() - start.getTime())
+	);
+	return randomDate.toISOString();
+}
+
 //region GET
 export async function fetchAquariumsNotifications(
 	aquariumId: string,
 	timestamp: string
 ): Promise<NotificationListResponse> {
+	console.log(`Fetching notifications for aquarium ${aquariumId} since ${timestamp}`);
 	const notifications: NotificationListResponse = {
 		notifications: [
 			{
 				message: "temp,ph",
-				createdDate: "2024-01-01T00:00:00Z",
+				createdDate: generateRandomDate(),
 				snapshotId: "1",
 			},
 			{
 				message: "temp,ph,tds",
-				createdDate: "2024-01-02T00:00:00Z",
+				createdDate: generateRandomDate(),
 				snapshotId: "2",
 			},
 			{
 				message: "tds,height",
-				createdDate: "2024-01-03T00:00:00Z",
+				createdDate: generateRandomDate(),
 				snapshotId: "3",
 			},
 		],
 	};
+
+	if (Math.random() < 0.5) {
+		notifications.notifications = [];
+	}
+
+	if (Math.random() < 0.9 && notifications.notifications.length > 0) {
+		const randomNotif =
+			notifications.notifications[
+				Math.floor(Math.random() * notifications.notifications.length)
+			];
+		notifications.notifications = randomNotif ? [randomNotif] : [];
+	}
+
+	notifications.notifications = (notifications.notifications || []).filter(Boolean);
 
 	return notifications;
 

@@ -48,9 +48,9 @@ export function useGetAquariumNotifications(aquariumId: string, timestamp: strin
 	const { dispatch } = useStateContext();
 
 	const query = useQuery({
-		queryKey: ["aquariumNotifications", aquariumId, timestamp],
+		queryKey: ["aquariumNotifications", aquariumId],
 		queryFn: () => fetchAquariumsNotifications(aquariumId, timestamp),
-		refetchInterval: 30000,
+		refetchInterval: 60000,
 	});
 
 	useEffect(() => {

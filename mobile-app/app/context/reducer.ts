@@ -251,7 +251,7 @@ export function reducer(state: State, action: Action): State {
 				if (aquarium.id === aquariumId) {
 					return {
 						...aquarium,
-						notifications: notification,
+						notifications: [...(aquarium.notifications || []), ...notification],
 					};
 				}
 				return aquarium;

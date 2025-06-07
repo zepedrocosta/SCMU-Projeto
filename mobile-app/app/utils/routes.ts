@@ -5,6 +5,7 @@ export const ROUTES = {
 	HOME: "/pages/home",
 	ACCOUNT: "/pages/account",
 	AQUARIUM: "/pages/aquarium",
+	SNAPSHOT: "/pages/snapshot",
 	NOTIFICATIONS: "/pages/notifications",
 	REGISTER: "/register",
 	CONNECT_TO_ESP: "/pages/connectToEsp",
@@ -43,8 +44,8 @@ export const useRoutes = () => {
 		router.push(ROUTES.NOTIFICATIONS);
 	};
 
-	const gotoNotification = (notificationId: string) => {
-		router.push(`${ROUTES.NOTIFICATIONS}/${notificationId}`);
+	const gotoSnapshot = (snapshotId: string) => {
+		router.push(`${ROUTES.SNAPSHOT}/${snapshotId}`);
 	};
 
 	const gotoRegister = () => {
@@ -90,7 +91,6 @@ export const useRoutes = () => {
 		gotoAccount,
 		gotoAquarium,
 		gotoNotifications,
-		gotoNotification,
 		gotoRegister,
 		gotoConnectToEsp,
 		gotoConnectingScreen,
@@ -100,5 +100,6 @@ export const useRoutes = () => {
 		gotoAquariumHistory,
 		gotoAddAquariumForm,
 		gotoDefineAquariumThresholds,
+		gotoSnapshot,
 	};
 };

@@ -14,7 +14,8 @@ function AquariumSnapshotFetcher({ aquariumId }: { aquariumId: string }) {
 }
 
 function AquariumNotificationsFetcher({ aquariumId }: { aquariumId: string }) {
-	useGetAquariumNotifications(aquariumId, new Date().toISOString());
+	const date = new Date().toISOString();
+	useGetAquariumNotifications(aquariumId, date);
 	return null;
 }
 
