@@ -22,5 +22,6 @@ export const initialState: State = {
 	groups: [],
 	defaults: {
 		darkMode: false,
+		receiveNotifications: true,
 	},
 };

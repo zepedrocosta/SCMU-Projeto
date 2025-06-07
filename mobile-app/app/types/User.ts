@@ -14,6 +14,7 @@ export type UserResponse = {
 
 export interface UserDefaults {
 	darkMode: boolean;
+	receiveNotifications: boolean;
 }
 
 export interface UserWithDefaults extends User {

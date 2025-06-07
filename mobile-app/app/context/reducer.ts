@@ -19,6 +19,7 @@ export const EVENTS = {
 	UPDATE_THRESHOLDS: "UPDATE_THRESHOLDS",
 	UPDATE_AQUARIUM: "UPDATE_AQUARIUM",
 	UPDATE_AQUARIUM_SNAPSHOT: "UPDATE_AQUARIUM_SNAPSHOT",
+	CHANGE_NOTIFICATIONS_STATUS: "CHANGE_NOTIFICATIONS_STATUS",
 	CLEAR_USER: "CLEAR_USER",
 	LOAD_STATE: "LOAD_STATE",
 } as const;
@@ -87,6 +88,7 @@ export type Action =
 				};
 			};
 	  }
+	| { type: typeof EVENTS.CHANGE_NOTIFICATIONS_STATUS; payload: boolean }
 	| { type: typeof EVENTS.CLEAR_USER }
 	| { type: typeof EVENTS.LOAD_STATE; payload: State };
 
@@ -226,6 +228,14 @@ export function reducer(state: State, action: Action): State {
 			});
 			return { ...state, aquariums: updatedAquariums };
 		}
+		case EVENTS.CHANGE_NOTIFICATIONS_STATUS: {
+			const receiveNotifications = action.payload;
+			const updatedDefaults = {
+				...state.defaults,
+				receiveNotifications,
+			};
+			return { ...state, defaults: updatedDefaults };
+		}
 		case EVENTS.CLEAR_USER: {
 			AsyncStorage.removeItem("accessToken");
 			return {
@@ -233,10 +243,9 @@ export function reducer(state: State, action: Action): State {
 				user: defaultUser,
 				aquariums: [],
 				groups: [],
-				defaults: { darkMode: false },
+				defaults: { darkMode: false, receiveNotifications: true },
 			};
 		}
-
 		case EVENTS.LOAD_STATE:
 			return { ...action.payload };
 		default:

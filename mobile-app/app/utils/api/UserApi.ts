@@ -16,6 +16,7 @@ export async function getUserInfo(userId: string): Promise<UserWithDefaults> {
 		nickname: "johndoe",
 		defaults: {
 			darkMode: false,
+			receiveNotifications: true,
 		},
 	};
 	return mockResponse;
