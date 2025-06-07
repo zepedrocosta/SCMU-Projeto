@@ -5,11 +5,12 @@ import { useRoutes } from "../../utils/routes";
 import useBLE from "../../hooks/useBle";
 import DeviceModal from "../../components/DeviceConnectionModal";
 import { useIsFocused } from "@react-navigation/native";
-// import SendWifiForm from "./SendWifiForm";
 import { useStateContext } from "../../context/StateContext";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { read } from "fs";
+import { CreateAquariumRequest } from "../../types/Aquarium";
 
 const schema = z.object({
 	ssid: z.string().min(1, "SSID is required"),
@@ -32,6 +33,7 @@ export default function ConnectToDevicePage() {
 		resetDevices,
 		refreshBluetoothState,
 		isConnectingToDevice,
+		readFromDevice,
 	} = useBLE();
 	const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
@@ -71,8 +73,6 @@ export default function ConnectToDevicePage() {
 		defaultValues: { ssid: "", password: "" },
 	});
 
-	const { user } = useStateContext();
-
 	const ssid = watch("ssid");
 	const password = watch("password");
 
@@ -80,19 +80,30 @@ export default function ConnectToDevicePage() {
 		try {
 			console.log("Sending WiFi data:", data);
 			const serviceUUID = "bd8db997-757f-44b7-ad11-b81515927ca8";
-			const characteristicUUID = "6e4fe646-a8f0-4892-8ef4-9ac94142da48";
+			const writeCharacteristicUUID = "6e4fe646-a8f0-4892-8ef4-9ac94142da48";
+			const readCharacteristicUUID = "6e4fe646-a8f0-4892-8ef4-9ac94142da48";
 			const payload = {
 				...data,
 				resetWifi: false,
-				nickname: user?.email || "default_nickname", // Use a default value if user.email is not available
 			};
 			const jsonString = JSON.stringify(payload);
 
-			await writeToDevice(serviceUUID, characteristicUUID, jsonString);
+			await writeToDevice(serviceUUID, writeCharacteristicUUID, jsonString);
 
 			console.log("WiFi data sent successfully");
 
-			router.gotoHome();
+			const macAddress = await readFromDevice(serviceUUID, readCharacteristicUUID).then(
+				(response) => {
+					return response;
+				}
+			);
+
+			if (!macAddress) {
+				console.error("Failed to read MAC address from device");
+				return;
+			}
+
+			router.gotoAddAquariumForm(macAddress);
 		} catch (error) {
 			console.error("Error sending WiFi data:", error);
 		}

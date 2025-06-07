@@ -88,3 +88,17 @@ export type Snapshot = {
 	height: number;
 	isBombWorking: boolean;
 };
+
+export type CreateAquariumRequest = {
+	macAddress: string;
+	name: string;
+	location: string;
+};
+
+export type CreateAquariumResponse = {
+	id: string;
+	name: string;
+	location: string;
+	createdDate: string;
+	createdBy: string;
+};

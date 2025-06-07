@@ -20,6 +20,10 @@ interface BluetoothLowEnergyApi {
 	resetDevices: () => void;
 	refreshBluetoothState: () => void;
 	isConnectingToDevice: boolean;
+	readFromDevice: (
+		serviceUUID: string,
+		characteristicUUID: string
+	) => Promise<string | null>;
 }
 
 export default function useBLE(): BluetoothLowEnergyApi {
@@ -139,9 +143,32 @@ export default function useBLE(): BluetoothLowEnergyApi {
 				characteristicUUID,
 				base64Value
 			);
+
 			console.log("Data sent!: ", value);
 		} catch (e) {
 			console.log("Failed to write:", e);
+		}
+	};
+
+	const readFromDevice = async (
+		serviceUUID: string,
+		characteristicUUID: string
+	): Promise<string | null> => {
+		if (!connectedDevice) return null;
+		try {
+			const res = await connectedDevice.readCharacteristicForService(
+				serviceUUID,
+				characteristicUUID
+			);
+			const base64Value = res.value;
+			if (base64Value) {
+				const value = Buffer.from(base64Value, "base64").toString("utf8");
+				return value;
+			}
+			return null;
+		} catch (e) {
+			console.log("Failed to read:", e);
+			return null;
 		}
 	};
 
@@ -156,5 +183,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
 		resetDevices,
 		refreshBluetoothState,
 		isConnectingToDevice,
+		readFromDevice,
 	};
 }

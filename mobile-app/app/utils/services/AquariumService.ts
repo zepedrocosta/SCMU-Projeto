@@ -3,6 +3,7 @@ import { useStateContext } from "../../context/StateContext";
 import { EVENTS } from "../../context/reducer";
 import {
 	changeWaterPumpStatus,
+	createAquarium,
 	deleteAquarium,
 	editAquarium,
 	getLastAquariumSnapshot,
@@ -10,6 +11,7 @@ import {
 	updateThresholds,
 } from "../api/AquariumApi";
 import {
+	CreateAquariumRequest,
 	EditAquarium,
 	ShareAquariumRequest,
 	updateThresholdsRequest,
@@ -43,6 +45,23 @@ export function useGetLastAquariumSnapshot(aquariumId: string) {
 //endregion
 
 //region MUTATIONS
+export function useCreateAquarium() {
+	const { dispatch } = useStateContext();
+	return useMutation({
+		mutationFn: (data: CreateAquariumRequest) => createAquarium(data),
+		onError: (error) => {
+			console.error("Error creating aquarium:", error);
+		},
+		onSuccess: (data) => {
+			dispatch({
+				type: EVENTS.ADD_AQUARIUM,
+				payload: data,
+			});
+			console.log(`Aquarium created successfully with ID: ${data.id}`);
+		},
+	});
+}
+
 export function useShareAquarium() {
 	return useMutation({
 		mutationFn: (data: ShareAquariumRequest) => shareAquarium(data),

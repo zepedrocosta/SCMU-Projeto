@@ -2,6 +2,8 @@ import {
 	Aquarium,
 	AquariumListResponse,
 	AquariumResponse,
+	CreateAquariumRequest,
+	CreateAquariumResponse,
 	EditAquarium,
 	LastSnapshotResponse,
 	ShareAquariumRequest,
@@ -24,13 +26,24 @@ const ENDPOINTS = {
 };
 
 const mockSnapshot: Snapshot = {
-	snapshotId: "",
+	snapshotId: "0",
 	temperature: 0,
 	light: false,
 	pH: 0,
 	tds: 0,
 	height: 0,
 	isBombWorking: false,
+};
+
+const mockThreshold: ThresholdResponse = {
+	minTemperature: 20,
+	maxTemperature: 28,
+	minPH: 6.5,
+	maxPH: 8.5,
+	minTds: 100,
+	maxTds: 500,
+	minHeight: 30,
+	maxHeight: 60,
 };
 
 const mockResponse: AquariumResponse[] = [
@@ -262,10 +275,43 @@ export function mapToAquariumArrayResponse(aquariums: AquariumResponse[]): Aquar
 }
 
 //region POST
+export async function createAquarium(
+	createAquariumRequest: CreateAquariumRequest
+): Promise<Aquarium> {
+	console.log("Creating aquarium:", createAquariumRequest);
+	const newAquarium: CreateAquariumResponse = {
+		id: "new-id",
+		name: createAquariumRequest.name,
+		location: createAquariumRequest.location,
+		createdDate: new Date().toISOString(),
+		createdBy: "currentUser",
+	};
 
-//TODO -> Define Flow in POST Aquarium
-// It will depend if the Aquarium already exists and this is just read only add
-// Or if it is a new Aquarium creation
+	const aq: Aquarium = {
+		id: newAquarium.id,
+		name: newAquarium.name,
+		location: newAquarium.location,
+		isBombWorking: true,
+		createdDate: newAquarium.createdDate,
+		ownerUsername: newAquarium.createdBy,
+		threshold: mockThreshold,
+		snapshot: mockSnapshot,
+	};
+
+	return aq;
+
+	// TODO uncomment when backend is ready
+	// return await axiosInstance
+	// 	.post<AquariumResponse>(ENDPOINTS.AQUARIUM, createAquariumRequest)
+	// 	.then((response) => {
+	// 		console.log("Aquarium created successfully:", response.data);
+	// 		return mapToAquariumResponse(response.data);
+	// 	})
+	// 	.catch((error) => {
+	// 		console.error("Error creating aquarium:", error);
+	// 		throw error;
+	// 	});
+}
 
 export async function shareAquarium(
 	shareAquariumRequest: ShareAquariumRequest

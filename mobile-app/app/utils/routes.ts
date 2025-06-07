@@ -12,6 +12,8 @@ export const ROUTES = {
 	GROUPS: "/pages/groups",
 	SEND_WIFI_FORM: "/pages/SendWifiForm",
 	HISTORIY: "/pages/aquariumHistory",
+	ADD_AQUARIUM_FORM: "/pages/addAquariumForm",
+	DEFINE_AQUARIUM_THRESHOLDS: "/pages/defineAquariumThresholds",
 };
 
 export const useRoutes = () => {
@@ -73,6 +75,14 @@ export const useRoutes = () => {
 		router.push(`${ROUTES.HISTORIY}/${aquariumId}`);
 	};
 
+	const gotoAddAquariumForm = (macAddress: string) => {
+		router.push(`${ROUTES.ADD_AQUARIUM_FORM}?macAddress=${macAddress}`);
+	};
+
+	const gotoDefineAquariumThresholds = (aquariumId: string) => {
+		router.push(`${ROUTES.DEFINE_AQUARIUM_THRESHOLDS}/${aquariumId}`);
+	};
+
 	return {
 		expo: router,
 		gotoIndex,
@@ -88,5 +98,7 @@ export const useRoutes = () => {
 		gotoGroup,
 		gotoSendWifiForm,
 		gotoAquariumHistory,
+		gotoAddAquariumForm,
+		gotoDefineAquariumThresholds,
 	};
 };
