@@ -9,6 +9,7 @@ const ENDPOINTS = {
 	ADD_AQUARIUMS_TO_GROUP: `${basepath}/aquariums`,
 	ADD_GROUP: `${basepath}?groupName=`,
 	ADD_AQUARIUM_TO_GROUP: `${basepath}/values`,
+	REMOVE_AQUARIUM_FROM_GROUP: `${basepath}/values/delete`,
 };
 
 const mockResponse: GroupResponse[] = [
@@ -89,7 +90,6 @@ export function mapGroupResponseToGroup(
 
 //region GET
 export async function getUserGroups(): Promise<GroupResponse[]> {
-	// return mockResponse;
 	return await axiosInstance
 		.get<GroupResponseAxios[]>(ENDPOINTS.GET_USER_GROUPS)
 		.then((response) => {
@@ -110,15 +110,6 @@ export async function getUserGroups(): Promise<GroupResponse[]> {
 //region POST
 export async function addGroup(groupName: string): Promise<GroupResponse> {
 	console.log(`Adding group with name: ${groupName}`);
-	// return {
-	// 	id: String(Date.now()),
-	// 	name: groupName,
-	// 	description: "",
-	// 	createdAt: new Date().toISOString(),
-	// 	aquariumsIds: [],
-	// };
-
-	// TODO remove this when backend is ready, check response type
 	return await axiosInstance
 		.post<GroupResponseAxios>(ENDPOINTS.ADD_GROUP + groupName)
 		.then((response) => {
@@ -140,10 +131,6 @@ export async function addAquariumsToGroup(
 	groupId: string,
 	aquariumIds: string[]
 ): Promise<{ groupId: string; aquariumIds: string[] }> {
-	// return { groupId, aquariumIds };
-
-	// TODO remove this when backend is ready
-
 	for (const aquariumId of aquariumIds) {
 		console.log(`Adding aquarium ${aquariumId} to group ${groupId}`);
 		await axiosInstance
@@ -164,41 +151,45 @@ export async function addAquariumsToGroup(
 }
 //endregion
 
-//region DELETE
+//region DELETE~
+// todo FIX
 export async function removeAquariumFromGroup(
 	groupId: string,
 	aquariumIds: string[]
 ): Promise<{ groupId: string; aquariumIds: string[] }> {
-	// TODO remove this when backend is ready
-	return { groupId, aquariumIds };
-
+	// TODO remove this when backend is ready - FIX
 	for (const aquariumId of aquariumIds) {
 		console.log(`Removing aquarium ${aquariumId} from group ${groupId}`);
 		await axiosInstance
-			.delete(`${basepath}?groupId=${groupId}&aquariumId=${aquariumId}`)
+			.post(ENDPOINTS.REMOVE_AQUARIUM_FROM_GROUP, {
+				groupId: groupId,
+				aquariumId: aquariumId,
+			})
 			.then((response) => {
 				return response.data;
 			})
 			.catch((error) => {
 				console.error("Error removing aquarium from group:", error);
+				console.error(`Group ID: ${groupId}, Aquarium ID: ${aquariumId}`);
 				throw error;
 			});
 	}
+
+	return { groupId, aquariumIds };
 }
 
 export async function deleteGroup(groupId: string): Promise<string> {
-	// TODO remove this when backend is ready
 	console.log(`Deleting group with ID: ${groupId}`);
-	return groupId;
+	await axiosInstance
+		.delete(`${basepath}/${groupId}`)
+		.then(() => {
+			console.log(`Group with ID ${groupId} deleted successfully`);
+		})
+		.catch((error) => {
+			console.error("Error deleting group:", error);
+			throw error;
+		});
 
-	// return await axiosInstance
-	// 	.delete(`${basepath}/group/${groupId}`)
-	// 	.then(() => {
-	// 		console.log(`Group with ID ${groupId} deleted successfully`);
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error deleting group:", error);
-	// 		throw error;
-	// 	});
+	return groupId;
 }
 //endregion
