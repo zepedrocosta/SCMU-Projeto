@@ -4,11 +4,14 @@ import { useStateContext } from "../../context/StateContext";
 import { useEffect } from "react";
 import { useRoutes } from "../../utils/routes";
 import { useGetLastAquariumSnapshot } from "../../utils/services/AquariumService";
-import { sleep } from "../../utils/api/axiosConfig";
+
+function AquariumSnapshotFetcher({ aquariumId }: { aquariumId: string }) {
+	useGetLastAquariumSnapshot(aquariumId);
+	return null;
+}
 
 export default function PagesLayout() {
-	const { isLoggedIn, loading } = useStateContext();
-
+	const { isLoggedIn, loading, aquariums } = useStateContext();
 	const router = useRoutes();
 
 	useEffect(() => {
@@ -21,15 +24,11 @@ export default function PagesLayout() {
 		return null;
 	}
 
-	const { aquariums } = useStateContext();
-
-	aquariums.forEach((aquarium) => {
-		sleep(200);
-		useGetLastAquariumSnapshot(aquarium.id);
-	});
-
 	return (
 		<>
+			{aquariums.map((aq) => (
+				<AquariumSnapshotFetcher key={aq.id} aquariumId={aq.id} />
+			))}
 			<Slot />
 			<BottomBar />
 		</>
