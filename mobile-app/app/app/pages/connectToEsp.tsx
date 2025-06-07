@@ -78,7 +78,7 @@ export default function ConnectToDevicePage() {
 			console.log("Sending WiFi data:", data);
 			const serviceUUID = "bd8db997-757f-44b7-ad11-b81515927ca8";
 			const writeCharacteristicUUID = "6e4fe646-a8f0-4892-8ef4-9ac94142da48";
-			const readCharacteristicUUID = "6e4fe646-a8f0-4892-8ef4-9ac94142da48";
+			const readCharacteristicUUID = "6e4fe646-a8f0-4892-8ef4-9ac94142da47";
 			const payload = {
 				...data,
 				resetWifi: false,
@@ -89,17 +89,18 @@ export default function ConnectToDevicePage() {
 
 			console.log("WiFi data sent successfully");
 
-			const macAddress = await readFromDevice(serviceUUID, readCharacteristicUUID).then(
+			const macAddress = await readFromDevice(serviceUUID, writeCharacteristicUUID).then(
 				(response) => {
 					return response;
 				}
 			);
-			// const macAddress = "hello";
 
 			if (!macAddress) {
 				console.error("Failed to read MAC address from device");
 				return;
 			}
+
+			console.log("MAC Address received: ", macAddress);
 
 			router.gotoAddAquariumForm(macAddress);
 		} catch (error) {
@@ -112,7 +113,7 @@ export default function ConnectToDevicePage() {
 			<View style={styles.titleWrapper}>
 				{isBluetoothOn === undefined || !isBluetoothOn ? (
 					<Text style={styles.text}>Please turn on Bluetooth </Text>
-				) : !connectedDevice ? (
+				) : connectedDevice ? (
 					// This is when the device is connected
 					<View style={styles.container2}>
 						<TextInput
