@@ -55,9 +55,4 @@ public class Threshold {
     @EqualsAndHashCode.Exclude
     @OneToOne(cascade = CascadeType.PERSIST)
     private Aquarium aquarium;
-
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @OneToOne
-    private SensorsSnapshot values;
 }

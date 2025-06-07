@@ -1,6 +1,7 @@
 package fct.project.scmu.daos;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import fct.project.scmu.dtos.responses.aquariums.ThresholdSnapshot;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -57,8 +58,6 @@ public class SensorsSnapshot implements Serializable {
     @JoinColumn(name = "aquariumId")
     private Aquarium aquarium;
 
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @OneToOne(mappedBy = "values")
-    private Threshold threshold;
+    @Embedded
+    private ThresholdSnapshot threshold;
 }

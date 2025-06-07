@@ -22,4 +22,6 @@ public class GetLastSnapshotResponse {
     private double height;
 
     private boolean isBombWorking;
+
+    private ThresholdSnapshot threshold;
 }

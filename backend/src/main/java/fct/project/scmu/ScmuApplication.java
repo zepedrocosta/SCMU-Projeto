@@ -71,6 +71,7 @@ public class ScmuApplication implements CommandLineRunner {
             aquarium.setLocation("Covilha");
             aquarium.setOwner(user);
             aquarium.setThreshold(threshold);
+            aquarium.setEsp("esp1");
             threshold.setAquarium(aquarium);
             thresholdRepository.save(threshold);
             aquariumRepository.save(aquarium);
@@ -84,6 +85,7 @@ public class ScmuApplication implements CommandLineRunner {
             aquarium.setLocation("Caparica");
             aquarium.setOwner(user);
             aquarium.setThreshold(threshold);
+            aquarium.setEsp("esp2");
             threshold.setAquarium(aquarium);
             thresholdRepository.save(threshold);
             aquariumRepository.save(aquarium);

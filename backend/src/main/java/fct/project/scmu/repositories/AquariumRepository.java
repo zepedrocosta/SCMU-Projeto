@@ -33,5 +33,5 @@ public interface AquariumRepository extends JpaRepository<Aquarium, UUID> {
     @Query("SELECT a FROM aquariums a WHERE a.owner = :user OR :user MEMBER OF a.managers")
     List<Aquarium> list(User user);
 
-    boolean existsByEspId(String espId);
+    boolean existsByEsp(String espId);
 }

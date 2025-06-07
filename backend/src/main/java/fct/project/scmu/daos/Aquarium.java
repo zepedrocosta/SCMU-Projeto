@@ -1,7 +1,5 @@
 package fct.project.scmu.daos;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -29,7 +27,7 @@ public class Aquarium extends DAO implements Serializable {
     private String location;
 
     @Column(nullable = false, unique = true)
-    private String espId;
+    private String esp;
 
     @Column
     private boolean isBombWorking = false;

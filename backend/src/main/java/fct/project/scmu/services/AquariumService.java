@@ -8,7 +8,6 @@ import fct.project.scmu.dtos.responses.aquariums.*;
 import fct.project.scmu.repositories.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -41,6 +40,7 @@ public class AquariumService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         var aquarium = response.get();
         snapshot.setAquarium(aquarium);
+        snapshot.setThreshold(new ThresholdSnapshot(aquarium.getThreshold()));
         snapshots.save(snapshot);
 
         var threshold = aquarium.getThreshold();
@@ -65,7 +65,7 @@ public class AquariumService {
         if (snapshot.getTds() < threshold.getMinTds() || snapshot.getTds() > threshold.getMaxTds()) {
             aquarium.setBombWorking(true);
             exceedsThreshold = true;
-            aquariums.save(aquarium);
+            aquarium = aquariums.save(aquarium);
             params.add("tds");
         }
 
@@ -92,7 +92,7 @@ public class AquariumService {
         return new SetSnapshotResponse(aquarium.isBombWorking(), exceedsThreshold);
     }
 
-    public GetLastSnapshotResponse getLastSnapshot(String aquariumId) {
+    public SensorsSnapshot getLastSnapshot(String aquariumId) {
         var res = aquariums.findById(UUID.fromString(aquariumId));
         if (res.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
@@ -103,9 +103,7 @@ public class AquariumService {
         if (lastRes.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 
-        var last = lastRes.get();
-        return new GetLastSnapshotResponse(last.getId().toString(), last.getTemperature(),
-                last.isLdr(), last.getPh(), last.getTds(), last.getHeight(), aquarium.isBombWorking());
+        return lastRes.get();
     }
 
     @Async
@@ -124,7 +122,7 @@ public class AquariumService {
 
     @Transactional
     public Aquarium createAquarium(Aquarium aquarium) {
-        if (aquariums.existsByEspId(aquarium.getEspId()))
+        if (aquariums.existsByEsp(aquarium.getEsp()))
             throw new ResponseStatusException(HttpStatus.CONFLICT);
 
         var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

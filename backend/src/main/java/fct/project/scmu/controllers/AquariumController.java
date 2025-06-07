@@ -31,7 +31,7 @@ public class AquariumController extends AbstractController{
 
     @GetMapping("/snapshot/{aquariumId}")
     public ResponseEntity<GetLastSnapshotResponse> getLastSnapshot(@PathVariable String aquariumId) {
-        return ok(aquariumService.getLastSnapshot(aquariumId));
+        return ok(aquariumService.getLastSnapshot(aquariumId), GetLastSnapshotResponse.class);
     }
 
     @SneakyThrows
