@@ -4,9 +4,8 @@ import * as z from "zod";
 import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { TextInput, Button, Text, Card } from "react-native-paper";
 import { useState } from "react";
-import { useRouter } from "expo-router";
-import { useRegister } from "../utils/services/AuthService";
 import { useRoutes } from "../utils/routes";
+import { useRegister } from "../utils/services/AuthService";
 
 const registerSchema = z.object({
 	name: z.string().min(1, { message: "Name is required" }),
@@ -20,7 +19,6 @@ type RegisterInput = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
 	const router = useRoutes();
-
 	const { mutate } = useRegister();
 
 	const {
@@ -55,87 +53,84 @@ export default function RegisterPage() {
 				keyboardShouldPersistTaps="handled"
 			>
 				<View style={styles.container}>
-					<Card>
+					<Card style={styles.card}>
 						<Card.Title title="Register" />
 						<Card.Content>
-							<TextInput
-								label="Name"
-								mode="outlined"
-								onChangeText={(text) => setValue("name", text)}
-								onBlur={() => trigger("name")}
-								error={!!errors.name}
-							/>
-							{errors.name && (
-								<Text style={styles.error}>{errors.name.message}</Text>
-							)}
-
-							<TextInput
-								label="Nickname"
-								mode="outlined"
-								onChangeText={(text) => setValue("nickname", text)}
-								onBlur={() => trigger("nickname")}
-								error={!!errors.nickname}
-							/>
-							{errors.nickname && (
-								<Text style={styles.error}>{errors.nickname.message}</Text>
-							)}
-
-							<TextInput
-								label="Email"
-								mode="outlined"
-								onChangeText={(text) => setValue("email", text)}
-								onBlur={() => trigger("email")}
-								error={!!errors.email}
-							/>
-							{errors.email && (
-								<Text style={styles.error}>{errors.email.message}</Text>
-							)}
-
-							<TextInput
-								label="Password"
-								mode="outlined"
-								secureTextEntry={!showPassword}
-								onChangeText={(text) => setValue("password", text)}
-								onBlur={() => trigger("password")}
-								error={!!errors.password}
-								style={{ marginTop: 16 }}
-								right={
-									<TextInput.Icon
-										icon={showPassword ? "eye-off" : "eye"}
-										onPress={() => setShowPassword(!showPassword)}
+							{[
+								{
+									label: "Name",
+									key: "name",
+									secure: false,
+								},
+								{
+									label: "Nickname",
+									key: "nickname",
+									secure: false,
+								},
+								{
+									label: "Email",
+									key: "email",
+									secure: false,
+								},
+								{
+									label: "Password",
+									key: "password",
+									secure: true,
+								},
+								{
+									label: "Confirm Password",
+									key: "confirmPassword",
+									secure: true,
+								},
+							].map((field, idx) => (
+								<View key={field.key} style={styles.inputGroup}>
+									<TextInput
+										label={field.label}
+										mode="outlined"
+										secureTextEntry={field.secure && !showPassword}
+										onChangeText={(text) =>
+											setValue(field.key as keyof RegisterInput, text)
+										}
+										onBlur={() =>
+											trigger(field.key as keyof RegisterInput)
+										}
+										error={!!errors[field.key as keyof RegisterInput]}
+										style={styles.input}
+										right={
+											field.secure ? (
+												<TextInput.Icon
+													icon={showPassword ? "eye-off" : "eye"}
+													onPress={() => setShowPassword((v) => !v)}
+												/>
+											) : undefined
+										}
 									/>
-								}
-							/>
-							{errors.password && (
-								<Text style={styles.error}>{errors.password.message}</Text>
-							)}
-
-							<TextInput
-								label="Confirm Password"
-								mode="outlined"
-								secureTextEntry={!showPassword}
-								onChangeText={(text) => setValue("confirmPassword", text)}
-								onBlur={() => trigger("confirmPassword")}
-								error={!!errors.confirmPassword}
-								style={{ marginTop: 16 }}
-							/>
-							{errors.confirmPassword && (
-								<Text style={styles.error}>
-									{errors.confirmPassword.message}
-								</Text>
-							)}
+									{/* Reserve space for error */}
+									<View style={styles.errorContainer}>
+										{errors[field.key as keyof RegisterInput] ? (
+											<Text style={styles.error}>
+												{errors[
+													field.key as keyof RegisterInput
+												]?.message?.toString()}
+											</Text>
+										) : (
+											<Text style={styles.errorPlaceholder}> </Text>
+										)}
+									</View>
+								</View>
+							))}
 
 							<Button
 								mode="contained"
 								onPress={handleSubmit(onSubmit)}
-								style={{ marginTop: 24 }}
+								style={styles.button}
 							>
 								Register
 							</Button>
 							<Button
 								mode="text"
 								onPress={() => router.gotoIndex()}
-								style={{ marginTop: 8 }}
+								style={styles.secondaryButton}
 							>
 								Already have an account? Login
 							</Button>
@@ -152,9 +147,41 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: "center",
 		padding: 16,
+		backgroundColor: "#f7fafd",
+	},
+	card: {
+		borderRadius: 18,
+		paddingVertical: 8,
+		paddingHorizontal: 4,
+		elevation: 2,
+	},
+	inputGroup: {
+		marginBottom: 13,
+	},
+	input: {
+		backgroundColor: "#fff",
+	},
+	errorContainer: {
+		minHeight: 20,
+		justifyContent: "flex-start",
 	},
 	error: {
-		color: "red",
+		color: "#e53935",
+		fontSize: 13,
+		marginTop: 2,
+	},
+	errorPlaceholder: {
+		color: "transparent",
+		fontSize: 13,
+		marginTop: 2,
+	},
+	button: {
+		marginTop: 8,
+		borderRadius: 8,
+		paddingVertical: 4,
+	},
+	secondaryButton: {
 		marginTop: 4,
+		marginBottom: 4,
 	},
 });
