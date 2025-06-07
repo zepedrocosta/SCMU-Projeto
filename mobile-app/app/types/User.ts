@@ -1,12 +1,10 @@
 export type User = {
-	id: string;
 	name: string;
 	email: string;
 	nickname: string;
 };
 
 export type UserResponse = {
-	id: string;
 	name: string;
 	email: string;
 	nickname: string;

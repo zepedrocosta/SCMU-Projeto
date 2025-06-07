@@ -22,6 +22,7 @@ export const EVENTS = {
 	UPDATE_AQUARIUM_SNAPSHOT: "UPDATE_AQUARIUM_SNAPSHOT",
 	CHANGE_NOTIFICATIONS_STATUS: "CHANGE_NOTIFICATIONS_STATUS",
 	UPDATE_NOTIFICATIONS: "UPDATE_NOTIFICATIONS",
+	MARK_AS_READ: "MARK_AS_READ",
 	CLEAR_USER: "CLEAR_USER",
 	LOAD_STATE: "LOAD_STATE",
 } as const;
@@ -98,6 +99,7 @@ export type Action =
 				notification: NotificationNew[];
 			};
 	  }
+	| { type: typeof EVENTS.MARK_AS_READ; payload: string } // Notification ID
 	| { type: typeof EVENTS.CLEAR_USER }
 	| { type: typeof EVENTS.LOAD_STATE; payload: State };
 
@@ -249,12 +251,37 @@ export function reducer(state: State, action: Action): State {
 			const { aquariumId, notification } = action.payload;
 			const updatedAquariums = state.aquariums.map((aquarium) => {
 				if (aquarium.id === aquariumId) {
+					const allNotifications = [
+						...(aquarium.notifications || []),
+						...notification,
+					];
+					const deduped = allNotifications.filter(
+						(n, idx, arr) =>
+							n.notificationId &&
+							arr.findIndex((x) => x.notificationId === n.notificationId) === idx
+					);
 					return {
 						...aquarium,
-						notifications: [...(aquarium.notifications || []), ...notification],
+						notifications: deduped,
 					};
 				}
 				return aquarium;
+			});
+			return { ...state, aquariums: updatedAquariums };
+		}
+		case EVENTS.MARK_AS_READ: {
+			console.log("Marking notification as read:", action.payload);
+			const notificationId = action.payload;
+			const updatedAquariums = state.aquariums.map((aquarium) => {
+				const updatedNotifications = (aquarium.notifications || []).map(
+					(notification) => {
+						if (notification.notificationId === notificationId) {
+							return { ...notification, unread: false };
+						}
+						return notification;
+					}
+				);
+				return { ...aquarium, notifications: updatedNotifications };
 			});
 			return { ...state, aquariums: updatedAquariums };
 		}

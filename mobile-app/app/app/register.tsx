@@ -47,6 +47,7 @@ export default function RegisterPage() {
 					{ email: data.email, password: data.password },
 					{
 						onSuccess: () => {
+							console.log("Login after registration successful");
 							router.gotoHome(true);
 						},
 						onError: (error) => {

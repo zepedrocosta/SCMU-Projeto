@@ -76,7 +76,8 @@ export const StateProvider: FC<{ children: ReactNode }> = ({ children }) => {
 	}, [state]);
 
 	const { user, aquariums, groups, defaults } = state;
-	const isLoggedIn = typeof user.id === "string" && user.id.length > 0 && user.id !== "0";
+	const isLoggedIn =
+		typeof user.nickname === "string" && user.nickname.length > 0 && user.nickname !== "0";
 
 	if (loading) {
 		return (

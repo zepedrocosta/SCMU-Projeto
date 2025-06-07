@@ -5,8 +5,6 @@ import { jwtDecode } from "jwt-decode";
 
 const basePath = "/security";
 
-("/rest/users");
-
 const ENDPOINTS = {
 	LOGIN: basePath,
 	LOGOUT: basePath,
@@ -25,14 +23,6 @@ export function extractTokenFromResponse(response: any): string {
 }
 
 export async function authenticateUser(body: LoginRequest): Promise<LoginResponse> {
-	// const mockResponse: LoginResponse = {
-	// 	nickname: "mockUserId",
-	// 	accessToken: "mockAccessToken",
-	// };
-
-	// return mockResponse;
-
-	//TODO - Uncomment the following code when the backend is ready
 	return axiosInstance
 		.put(ENDPOINTS.LOGIN, body)
 		.then((response) => {
@@ -60,7 +50,6 @@ export async function authenticateUser(body: LoginRequest): Promise<LoginRespons
 }
 
 export async function logoutUser(): Promise<void> {
-	//TODO - Uncomment the following code when the backend is ready
 	return axiosInstance
 		.delete(ENDPOINTS.LOGOUT)
 		.then(() => {

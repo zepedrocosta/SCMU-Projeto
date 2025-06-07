@@ -1,7 +1,8 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const basePath = "https://scmu.zepedrocosta.com/rest";
+// const basePath = "https://scmu.zepedrocosta.com/rest";
+const basePath = "http://192.168.1.69:8080/rest"; // Use this for local development
 
 export const axiosInstance = axios.create({ baseURL: basePath });
 
@@ -24,5 +25,5 @@ export function sleep(ms: number) {
 
 export const URL_PLACEHOLDER = {
 	AQUARIUM_ID: ":aquariumId",
-	USER_ID: ":userId",
+	NICKNAME: ":nickname",
 };
