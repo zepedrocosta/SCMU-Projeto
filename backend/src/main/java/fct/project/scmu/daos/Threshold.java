@@ -53,7 +53,11 @@ public class Threshold {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JsonBackReference
+    @OneToOne(cascade = CascadeType.PERSIST)
     private Aquarium aquarium;
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToOne(mappedBy = "values")
+    private SensorsSnapshot values;
 }

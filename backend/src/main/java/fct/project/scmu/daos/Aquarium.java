@@ -36,30 +36,26 @@ public class Aquarium extends DAO implements Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToOne
-    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
     private User owner;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "aquarium", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "aquarium", cascade = CascadeType.MERGE)
     private Set<SensorsSnapshot> values = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    @JsonBackReference
+    @ManyToMany(cascade = CascadeType.MERGE)
     private Set<User> managers = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToMany(mappedBy = "aquariums", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    @JsonBackReference
+    @ManyToMany(mappedBy = "aquariums", cascade = CascadeType.MERGE)
     private Set<Group> groups = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToOne(mappedBy = "aquarium", fetch = FetchType.EAGER, orphanRemoval = true)
-    @JsonManagedReference
+    @OneToOne(mappedBy = "aquarium")
     private Threshold threshold;
 }

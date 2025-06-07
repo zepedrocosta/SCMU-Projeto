@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Necessary to apply colors in console -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <property name="DATE_PATTERN" value="[%d{dd-MM-yyyy HH:mm:ss.SSS}]" />
+    <property name="LEVEL_PATTERN" value="[%p]" />
+    <property name="LOG_PID" value="[${PID:- }]" />
+    <property name="THREAD" value="[%thread]" />
+    <property name="CLASS" value="%-40.40logger{39}" />
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="fct.project.scmu.config.MDCLayout">
+            <pattern>%highlight(${LEVEL_PATTERN}) %clr(${DATE_PATTERN}){green} %clr(${LOG_PID}){magenta} %clr(${THREAD}){faint} %customMdc %clr(${CLASS}){cyan} : %m%n</pattern>
+            <charset>utf8</charset>
+        </layout>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

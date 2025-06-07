@@ -28,12 +28,11 @@ public class Group extends DAO{
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.MERGE)
     private Set<Aquarium> aquariums = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    @JsonBackReference
+    @ManyToOne(cascade = CascadeType.MERGE)
     private User owner;
 }

@@ -55,6 +55,10 @@ public class SensorsSnapshot implements Serializable {
     @EqualsAndHashCode.Exclude
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "aquariumId")
-    @JsonBackReference
     private Aquarium aquarium;
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToOne(mappedBy = "values")
+    private Threshold threshold;
 }

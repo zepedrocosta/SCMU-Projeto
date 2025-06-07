@@ -1,6 +1,5 @@
 package fct.project.scmu.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fct.project.scmu.daos.*;
 import fct.project.scmu.dtos.forms.aquariums.EditAquariumForm;
 import fct.project.scmu.dtos.forms.aquariums.ManagerForm;
@@ -31,7 +30,6 @@ public class AquariumService {
     private final UserRepository users;
     private final GroupsRepository groups;
     private final ThresholdRepository thresholds;
-    private final ObjectMapper objectMapper;
     private final NotificationRepository notifications;
 
     @Transactional
@@ -118,7 +116,7 @@ public class AquariumService {
     }
 
     @Transactional
-    public Optional<AquariumResponse> createAquarium(Aquarium aquarium) {
+    public Aquarium createAquarium(Aquarium aquarium) {
         var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var threshold = new Threshold();
         aquarium.setOwner(principal);
@@ -126,30 +124,25 @@ public class AquariumService {
         threshold.setAquarium(aquarium);
 
         thresholds.save(threshold);
-        aquariums.save(aquarium);
-        return Optional.of(objectMapper.convertValue(aquarium, AquariumResponse.class));
+        return aquariums.save(aquarium);
     }
 
-    public Optional<PrivAquariumResponse> getAquarium(String id) {
+    public Optional<Aquarium> getAquarium(String id) {
         var res = aquariums.findById(UUID.fromString(id));
         checkPermission(res);
-        var aquarium = res.get();
-        PrivAquariumResponse aquariumResponse = objectMapper.convertValue(aquarium, PrivAquariumResponse.class);
-        ThresholdResponse thresholdResponse = objectMapper.convertValue(res.get().getThreshold(), ThresholdResponse.class);
 
-        aquariumResponse.setThreshold(thresholdResponse);
-        return Optional.of(aquariumResponse);
+        return Optional.of(res.get());
     }
 
     @Transactional
-    public Optional<AquariumResponse> updateAquarium(EditAquariumForm form) {
+    public Aquarium updateAquarium(EditAquariumForm form) {
         var res = aquariums.findById(UUID.fromString(form.getId()));
         var aquarium = checkPermission(res);
 
         aquarium.setName(form.getName());
         aquarium.setLocation(form.getLocation());
-        aquariums.save(aquarium);
-        return Optional.of(objectMapper.convertValue(aquarium, AquariumResponse.class));
+
+        return aquariums.save(aquarium);
     }
 
     @Transactional
@@ -167,15 +160,10 @@ public class AquariumService {
     }
 
     @Async
-    public Future<List<PrivAquariumResponse>> listAquariums() {
+    public Future<List<Aquarium>> listAquariums() {
         var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        var ownedAq = principal.getOwns();
-
-        var managedAq = principal.getManages();
-
-        return CompletableFuture.completedFuture(Stream.concat(ownedAq.stream(), managedAq.stream()).distinct()
-                .map(aquarium -> objectMapper.convertValue(aquarium, PrivAquariumResponse.class)).toList());
+        return CompletableFuture.completedFuture(aquariums.list(principal));
     }
 
     @Transactional
@@ -219,10 +207,9 @@ public class AquariumService {
     }
 
     @Async
-    public Future<Page<PrivAquariumResponse>> searchAquariums(String query, int page, int size) {
+    public Future<Page<Aquarium>> searchAquariums(String query, int page, int size) {
         var pageable = PageRequest.of(page, size);
-        Page<Aquarium> aquariums = this.aquariums.search(query, pageable);
-        return CompletableFuture.completedFuture(aquariums.map(aquarium -> objectMapper.convertValue(aquarium, PrivAquariumResponse.class)));
+        return CompletableFuture.completedFuture(aquariums.search(query, pageable));
     }
 
     @Transactional
@@ -245,7 +232,7 @@ public class AquariumService {
     }
 
     @Transactional
-    public Optional<AquariumResponse> addAquariumToGroup(String groupId, String aquariumId) {
+    public Aquarium addAquariumToGroup(String groupId, String aquariumId) {
         var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var groupRes = groups.findById(UUID.fromString(groupId));
         if (groupRes.isEmpty()) {
@@ -266,9 +253,8 @@ public class AquariumService {
         group.getAquariums().add(aquarium);
         aquarium.getGroups().add(group);
         groups.save(group);
-        aquariums.save(aquarium);
 
-        return Optional.of(objectMapper.convertValue(aquarium, AquariumResponse.class));
+        return aquariums.save(aquarium);
     }
 
     @Transactional
@@ -298,7 +284,7 @@ public class AquariumService {
         return Optional.empty();
     }
 
-    public List<AquariumResponse> getAquariumsInGroup(String groupId) {
+    public List<Aquarium> getAquariumsInGroup(String groupId) {
         var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var groupRes = groups.findById(UUID.fromString(groupId));
         if (groupRes.isEmpty()) {
@@ -310,8 +296,7 @@ public class AquariumService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        return group.getAquariums().stream()
-                .map(aquarium -> objectMapper.convertValue(aquarium, AquariumResponse.class)).toList();
+        return group.getAquariums().stream().toList();
     }
 
     @Transactional
@@ -377,7 +362,7 @@ public class AquariumService {
 
 
     @Transactional
-    public ThresholdResponse editThreshold(ThresholdForm form) {
+    public Threshold editThreshold(ThresholdForm form) {
         var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var aquarium = aquariums.findById(UUID.fromString(form.getAquariumId()));
 
@@ -399,8 +384,8 @@ public class AquariumService {
         threshold.setMinHeight(form.getMinHeight());
         threshold.setMaxHeight(form.getMaxHeight());
 
-        thresholds.save(threshold);
-        return objectMapper.convertValue(threshold, ThresholdResponse.class);
+
+        return thresholds.save(threshold);
     }
 
     @Async

@@ -32,6 +32,6 @@ public class Notification extends DAO {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToMany(mappedBy = "notifications", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToMany(mappedBy = "notifications", cascade = CascadeType.MERGE)
     private Set<User> users;
 }

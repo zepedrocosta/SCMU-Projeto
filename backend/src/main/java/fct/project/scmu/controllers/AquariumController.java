@@ -8,6 +8,7 @@ import fct.project.scmu.dtos.responses.aquariums.*;
 import fct.project.scmu.services.AquariumService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,17 +45,17 @@ public class AquariumController extends AbstractController{
 
     @PostMapping
     public ResponseEntity<AquariumResponse> createAquarium(@RequestBody AquariumForm form) {
-        return ok(aquariumService.createAquarium(convert(form, Aquarium.class)));
+        return ok(aquariumService.createAquarium(convert(form, Aquarium.class)), AquariumResponse.class);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PrivAquariumResponse> getAquarium(@PathVariable String id) {
-        return ok(aquariumService.getAquarium(id));
+        return ok(aquariumService.getAquarium(id), PrivAquariumResponse.class);
     }
 
     @PutMapping
     public ResponseEntity<AquariumResponse> updateAquarium(@RequestBody EditAquariumForm form) {
-        return ok(aquariumService.updateAquarium(form));
+        return ok(aquariumService.updateAquarium(form), AquariumResponse.class);
     }
 
     @DeleteMapping("/{id}")
@@ -65,7 +66,8 @@ public class AquariumController extends AbstractController{
     @SneakyThrows
     @GetMapping("/list")
     public ResponseEntity<List<PrivAquariumResponse>> listAquariums() {
-        return ok(aquariumService.listAquariums().get());
+        var token = new TypeToken<List<PrivAquariumResponse>>(){}.getType();
+        return ok(aquariumService.listAquariums().get(), token);
     }
 
     @SneakyThrows
@@ -74,7 +76,8 @@ public class AquariumController extends AbstractController{
     public ResponseEntity<Page<PrivAquariumResponse>> searchAquariums(@RequestParam String query,
                                                                   @RequestParam(defaultValue = "0") Integer page,
                                                                  @RequestParam(defaultValue = "12") Integer size) {
-        return ok(aquariumService.searchAquariums(query, page, size).get());
+        var token = new TypeToken<Page<PrivAquariumResponse>>(){}.getType();
+        return ok(aquariumService.searchAquariums(query, page, size).get(), token);
     }
 
     @PutMapping("/bomb")
@@ -99,7 +102,7 @@ public class AquariumController extends AbstractController{
 
     @PostMapping("/groups/values")
     public ResponseEntity<AquariumResponse> addAquariumToGroup(@RequestBody AquariumToGroupForm form) {
-        return ok(aquariumService.addAquariumToGroup(form.getGroupId(), form.getAquariumId()));
+        return ok(aquariumService.addAquariumToGroup(form.getGroupId(), form.getAquariumId()), AquariumResponse.class);
     }
 
     @DeleteMapping("/groups/values")
@@ -109,7 +112,8 @@ public class AquariumController extends AbstractController{
 
     @GetMapping("/groups/{groupId}")
     public ResponseEntity<List<AquariumResponse>> getAquariumsInGroup(@PathVariable String groupId) {
-        return ok(aquariumService.getAquariumsInGroup(groupId));
+        var token = new TypeToken<List<AquariumResponse>>(){}.getType();
+        return ok(aquariumService.getAquariumsInGroup(groupId), token);
     }
 
     @PostMapping("/manage")
@@ -124,7 +128,7 @@ public class AquariumController extends AbstractController{
 
     @PutMapping("/threshold")
     public ResponseEntity<ThresholdResponse> editThreshold(@RequestBody ThresholdForm form) {
-        return ok(aquariumService.editThreshold(form));
+        return ok(aquariumService.editThreshold(form), ThresholdResponse.class);
     }
 
     @SneakyThrows

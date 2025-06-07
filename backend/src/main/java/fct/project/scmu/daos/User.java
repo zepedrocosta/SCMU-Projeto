@@ -48,28 +48,27 @@ public class User extends DAO implements UserDetails, Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @JsonIgnore
-    @OneToMany(mappedBy = "user",  fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user")
     private Set<Session> sessions = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "owner")
     private Set<Aquarium> owns = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToMany(mappedBy = "managers", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "managers", cascade = CascadeType.MERGE)
     private Set<Aquarium> manages = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "owner")
     private Set<Group> groups = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToMany(cascade = CascadeType.MERGE)
     private Set<Notification> notifications = new HashSet<>();
 
 

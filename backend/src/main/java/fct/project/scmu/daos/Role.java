@@ -25,6 +25,5 @@ public class Role extends DAO {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToMany(mappedBy = "roles", cascade = CascadeType.MERGE)
-    @JsonBackReference
     private Set<User> users = new HashSet<>();
 }
