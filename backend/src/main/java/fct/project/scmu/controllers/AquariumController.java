@@ -26,7 +26,7 @@ public class AquariumController extends AbstractController{
 
     @PostMapping("/snapshot")
     public ResponseEntity<SetSnapshotResponse> storeSnapshot(@RequestBody SensorSnapshotForm form) {
-        return ok(aquariumService.storeSnapshot(convert(form, SensorsSnapshot.class), form.getAquariumId()));
+        return ok(aquariumService.storeSnapshot(convert(form, SensorsSnapshot.class), form.getEsp()));
     }
 
     @GetMapping("/snapshot/{aquariumId}")

@@ -34,8 +34,8 @@ public class AquariumService {
     private final NotificationRepository notifications;
 
     @Transactional
-    public SetSnapshotResponse storeSnapshot(SensorsSnapshot snapshot, String aquariumId) {
-        var response = aquariums.findById(UUID.fromString(aquariumId));
+    public SetSnapshotResponse storeSnapshot(SensorsSnapshot snapshot, String esp) {
+        var response = aquariums.findByEsp(esp);
         if (response.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         var aquarium = response.get();

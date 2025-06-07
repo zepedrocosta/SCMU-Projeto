@@ -24,6 +24,6 @@ public class SensorSnapshotForm implements Serializable {
 
     private double height;
 
-    private String aquariumId;
+    private String esp;
 
 }

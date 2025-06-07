@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface AquariumRepository extends JpaRepository<Aquarium, UUID> {
-    Optional<Aquarium> findByName(String name);
+    Optional<Aquarium> findByEsp(String esp);
 
     boolean existsByName(String name);
 
@@ -34,4 +34,5 @@ public interface AquariumRepository extends JpaRepository<Aquarium, UUID> {
     List<Aquarium> list(User user);
 
     boolean existsByEsp(String espId);
+
 }
