@@ -44,7 +44,15 @@ class CredentialsCallback : public BLECharacteristicCallbacks
                 preferences.putString("ssid", ssid);
                 preferences.putString("pass", password);
                 preferences.end();
+
                 credentialsReceivedBT = true;
+
+                String mac = WiFi.macAddress();
+                Serial.print("Sending MAC Address back via BLE: ");
+                Serial.println(mac);
+
+                characteristic->setValue(mac.c_str());
+                characteristic->notify();
             }
             else
             {
