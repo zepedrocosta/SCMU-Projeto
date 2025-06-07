@@ -3,15 +3,23 @@ import BottomBar from "../../components/BottomBar";
 import { useStateContext } from "../../context/StateContext";
 import { useEffect } from "react";
 import { useRoutes } from "../../utils/routes";
-import { useGetLastAquariumSnapshot } from "../../utils/services/AquariumService";
+import {
+	useGetAquariumNotifications,
+	useGetLastAquariumSnapshot,
+} from "../../utils/services/AquariumService";
 
 function AquariumSnapshotFetcher({ aquariumId }: { aquariumId: string }) {
 	useGetLastAquariumSnapshot(aquariumId);
 	return null;
 }
 
+function AquariumNotificationsFetcher({ aquariumId }: { aquariumId: string }) {
+	useGetAquariumNotifications(aquariumId, new Date().toISOString());
+	return null;
+}
+
 export default function PagesLayout() {
-	const { isLoggedIn, loading, aquariums } = useStateContext();
+	const { isLoggedIn, loading, aquariums, defaults } = useStateContext();
 	const router = useRoutes();
 
 	useEffect(() => {
@@ -29,6 +37,11 @@ export default function PagesLayout() {
 			{aquariums.map((aq) => (
 				<AquariumSnapshotFetcher key={aq.id} aquariumId={aq.id} />
 			))}
+
+			{defaults.receiveNotifications &&
+				aquariums.map((aq) => (
+					<AquariumNotificationsFetcher key={aq.id} aquariumId={aq.id} />
+				))}
 			<Slot />
 			<BottomBar />
 		</>

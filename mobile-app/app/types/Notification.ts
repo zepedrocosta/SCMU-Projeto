@@ -26,3 +26,20 @@ export type Notification = {
 	timestamp: string;
 	unread: boolean;
 };
+
+export type NotificationNew = {
+	message: string;
+	createdDate: string;
+	snapshotId: string;
+	unread: boolean;
+};
+
+export type NotificationListResponse = {
+	notifications: NotificationResponse[];
+};
+
+export type NotificationResponse = {
+	message: string;
+	createdDate: string;
+	snapshotId: string;
+};

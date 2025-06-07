@@ -3,6 +3,7 @@ import { User, UserDefaults } from "../types/User";
 import { Aquarium, EditAquarium } from "../types/Aquarium";
 import { Group } from "../types/Group";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { NotificationNew } from "../types/Notification";
 
 export const EVENTS = {
 	SET_USER: "SET_USER",
@@ -20,6 +21,7 @@ export const EVENTS = {
 	UPDATE_AQUARIUM: "UPDATE_AQUARIUM",
 	UPDATE_AQUARIUM_SNAPSHOT: "UPDATE_AQUARIUM_SNAPSHOT",
 	CHANGE_NOTIFICATIONS_STATUS: "CHANGE_NOTIFICATIONS_STATUS",
+	UPDATE_NOTIFICATIONS: "UPDATE_NOTIFICATIONS",
 	CLEAR_USER: "CLEAR_USER",
 	LOAD_STATE: "LOAD_STATE",
 } as const;
@@ -89,6 +91,13 @@ export type Action =
 			};
 	  }
 	| { type: typeof EVENTS.CHANGE_NOTIFICATIONS_STATUS; payload: boolean }
+	| {
+			type: typeof EVENTS.UPDATE_NOTIFICATIONS;
+			payload: {
+				aquariumId: string;
+				notification: NotificationNew[];
+			};
+	  }
 	| { type: typeof EVENTS.CLEAR_USER }
 	| { type: typeof EVENTS.LOAD_STATE; payload: State };
 
@@ -235,6 +244,19 @@ export function reducer(state: State, action: Action): State {
 				receiveNotifications,
 			};
 			return { ...state, defaults: updatedDefaults };
+		}
+		case EVENTS.UPDATE_NOTIFICATIONS: {
+			const { aquariumId, notification } = action.payload;
+			const updatedAquariums = state.aquariums.map((aquarium) => {
+				if (aquarium.id === aquariumId) {
+					return {
+						...aquarium,
+						notifications: notification,
+					};
+				}
+				return aquarium;
+			});
+			return { ...state, aquariums: updatedAquariums };
 		}
 		case EVENTS.CLEAR_USER: {
 			AsyncStorage.removeItem("accessToken");

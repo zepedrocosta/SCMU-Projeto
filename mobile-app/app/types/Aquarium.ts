@@ -1,3 +1,5 @@
+import { Notification, NotificationNew } from "./Notification";
+
 export type Aquarium = {
 	id: string;
 	name: string;
@@ -7,6 +9,7 @@ export type Aquarium = {
 	ownerUsername: string;
 	threshold: ThresholdResponse;
 	snapshot: Snapshot;
+	notifications: NotificationNew[];
 };
 
 export type ThresholdResponse = {
@@ -29,6 +32,7 @@ export type AquariumResponse = {
 	ownerUsername: string;
 	threshold: ThresholdResponse;
 	snapshot: Snapshot | null;
+	notifications: NotificationNew[] | [];
 };
 
 export type AquariumListResponse = {

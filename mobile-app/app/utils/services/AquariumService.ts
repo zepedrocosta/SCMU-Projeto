@@ -6,6 +6,7 @@ import {
 	createAquarium,
 	deleteAquarium,
 	editAquarium,
+	fetchAquariumsNotifications,
 	getLastAquariumSnapshot,
 	shareAquarium,
 	updateThresholds,
@@ -35,6 +36,35 @@ export function useGetLastAquariumSnapshot(aquariumId: string) {
 				payload: {
 					aquariumId,
 					snapshot: query.data,
+				},
+			});
+		}
+	}, [query.data, aquariumId, dispatch]);
+
+	return query;
+}
+
+export function useGetAquariumNotifications(aquariumId: string, timestamp: string) {
+	const { dispatch } = useStateContext();
+
+	const query = useQuery({
+		queryKey: ["aquariumNotifications", aquariumId, timestamp],
+		queryFn: () => fetchAquariumsNotifications(aquariumId, timestamp),
+		refetchInterval: 30000,
+	});
+
+	useEffect(() => {
+		if (query.data) {
+			dispatch({
+				type: EVENTS.UPDATE_NOTIFICATIONS,
+				payload: {
+					aquariumId,
+					notification: query.data.notifications.map((notification) => ({
+						message: notification.message,
+						createdDate: notification.createdDate,
+						snapshotId: notification.snapshotId,
+						unread: true,
+					})),
 				},
 			});
 		}
