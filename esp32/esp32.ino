@@ -116,13 +116,13 @@ void setup()
 
 void setupTask(void *parameter)
 {
-  sensors.begin();                   // Start DS18B20
-  pinMode(TDS_SENSOR, INPUT);        // TDS
-  pinMode(LDR_SENSOR, INPUT);        // LDR
-  pinMode(ECHO_PIN, INPUT);          // Ultrasonic Echo Pin
-  pinMode(BUZZER_PIN, OUTPUT);       // Buzzer Pin
-  pinMode(TRIG_PIN, OUTPUT);         // Ultrasonic Trigger Pin
-  pinMode(WATER_PUMP_PIN, OUTPUT);   // Water Pump Pin
+  sensors.begin();                 // Start DS18B20
+  pinMode(TDS_SENSOR, INPUT);      // TDS
+  pinMode(LDR_SENSOR, INPUT);      // LDR
+  pinMode(ECHO_PIN, INPUT);        // Ultrasonic Echo Pin
+  pinMode(BUZZER_PIN, OUTPUT);     // Buzzer Pin
+  pinMode(TRIG_PIN, OUTPUT);       // Ultrasonic Trigger Pin
+  pinMode(WATER_PUMP_PIN, OUTPUT); // Water Pump Pin
 
   digitalWrite(WATER_PUMP_PIN, LOW); // Start with pump off
 
