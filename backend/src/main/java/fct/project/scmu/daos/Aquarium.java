@@ -28,6 +28,9 @@ public class Aquarium extends DAO implements Serializable {
     @Column(nullable = false)
     private String location;
 
+    @Column(nullable = false, unique = true)
+    private String espId;
+
     @Column
     private boolean isBombWorking = false;
 

@@ -124,6 +124,9 @@ public class AquariumService {
 
     @Transactional
     public Aquarium createAquarium(Aquarium aquarium) {
+        if (aquariums.existsByEspId(aquarium.getEspId()))
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+
         var principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var threshold = new Threshold();
         aquarium.setOwner(principal);

@@ -15,5 +15,7 @@ public class AquariumForm implements Serializable {
 
     private String name;
 
+    private String espId;
+
     private String location;
 }
