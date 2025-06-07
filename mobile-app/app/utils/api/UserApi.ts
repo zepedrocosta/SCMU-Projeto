@@ -1,11 +1,34 @@
+import { jwtDecode } from "jwt-decode";
+import { RegisterRequest, RegisterResponse } from "../../types/Auth";
+import { Token } from "../../types/Token";
 import { User, UserResponse, UserUpdateRequest, UserWithDefaults } from "../../types/User";
 import { axiosInstance, URL_PLACEHOLDER } from "./axiosConfig";
+import { extractTokenFromResponse } from "./AuthApi";
 
 const basepath = "/users";
 
 const ENDPOINTS = {
 	USER: `${basepath}/${URL_PLACEHOLDER.USER_ID}`,
+	REGISTER: basepath,
 };
+
+// region POST
+export async function registerUser(body: RegisterRequest): Promise<RegisterResponse> {
+	//TODO - Uncomment the following code when the backend is ready
+	return axiosInstance
+		.post<RegisterResponse>(ENDPOINTS.REGISTER, body)
+		.then((response) => {
+			return {
+				email: response.data.email,
+				password: response.data.password,
+			};
+		})
+		.catch((error) => {
+			console.error("Error during registration:", error);
+			throw error;
+		});
+}
+//endregion
 
 //region GET
 export async function getUserInfo(userId: string): Promise<UserWithDefaults> {

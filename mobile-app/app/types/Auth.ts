@@ -17,7 +17,6 @@ export type RegisterRequest = {
 };
 
 export type RegisterResponse = {
-	userId: string;
-	accessToken: string;
-	refreshToken: string;
+	email: string;
+	password: string;
 };

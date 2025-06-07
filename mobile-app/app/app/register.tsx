@@ -5,7 +5,7 @@ import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from "re
 import { TextInput, Button, Text, Card } from "react-native-paper";
 import { useState } from "react";
 import { useRoutes } from "../utils/routes";
-import { useRegister } from "../utils/services/AuthService";
+import { useLogin, useRegister } from "../utils/services/AuthService";
 
 const registerSchema = z.object({
 	name: z.string().min(1, { message: "Name is required" }),
@@ -20,6 +20,7 @@ type RegisterInput = z.infer<typeof registerSchema>;
 export default function RegisterPage() {
 	const router = useRoutes();
 	const { mutate } = useRegister();
+	const { mutate: loginMutate } = useLogin();
 
 	const {
 		handleSubmit,
@@ -40,7 +41,24 @@ export default function RegisterPage() {
 
 	const onSubmit = (data: RegisterInput) => {
 		console.log("Register data:", data);
-		mutate(data);
+		mutate(data, {
+			onSuccess: () => {
+				loginMutate(
+					{ email: data.email, password: data.password },
+					{
+						onSuccess: () => {
+							router.gotoHome(true);
+						},
+						onError: (error) => {
+							console.error("Login after registration failed:", error);
+						},
+					}
+				);
+			},
+			onError: (error) => {
+				console.error("Registration failed:", error);
+			},
+		});
 	};
 
 	return (
