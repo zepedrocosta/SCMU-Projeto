@@ -7,13 +7,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useStateContext } from "../../context/StateContext";
 import { EVENTS } from "../../context/reducer";
 import { useRoutes } from "../routes";
-import { getUserGroups, mapGroupResponseToGroup } from "../api/GroupApi";
-import { Aquarium, AquariumResponse } from "../../types/Aquarium";
+import { getGroupAquariums, getUserGroups, mapGroupResponseToGroup } from "../api/GroupApi";
+import { Aquarium } from "../../types/Aquarium";
 import { Group, GroupResponse } from "../../types/Group";
 
 export function useLogin() {
-	const router = useRoutes();
-
 	const { dispatch } = useStateContext();
 
 	return useMutation({
@@ -29,7 +27,6 @@ export function useLogin() {
 			await AsyncStorage.setItem("accessToken", data.accessToken);
 
 			try {
-				// Fetch user aquarium data
 				const [userInfo, userAquariums, userGroups] = await Promise.all([
 					getUserInfo(data.nickname),
 					getUserAquariums(data.nickname),
@@ -68,7 +65,24 @@ export function useLogin() {
 				});
 
 				if (userGroups) {
-					const mappedGroups = mapAquariumsToGroups(userAquariums, userGroups);
+					const groupsWithAquariums = await Promise.all(
+						userGroups.map(async (group) => {
+							try {
+								const aquariumIds = await getGroupAquariums(group.id);
+								return { ...group, aquariumsIds: aquariumIds };
+							} catch (error) {
+								console.error(
+									`Failed to fetch aquariums for group ${group.id}`,
+									error
+								);
+								return { ...group, aquariumsIds: [] };
+							}
+						})
+					);
+					const mappedGroups = mapAquariumsToGroups(
+						userAquariums,
+						groupsWithAquariums
+					);
 					dispatch({ type: EVENTS.SET_GROUPS, payload: mappedGroups });
 					console.log("User groups:", userGroups);
 				} else {
@@ -78,8 +92,6 @@ export function useLogin() {
 			} catch (error) {
 				console.error("Error fetching user data:", error);
 			}
-
-			// router.gotoHome(true);
 		},
 	});
 }

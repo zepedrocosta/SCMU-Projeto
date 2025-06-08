@@ -40,7 +40,14 @@ export default function LoginPage() {
 
 	const onSubmit = (data: LoginInput) => {
 		console.log("Login data:", data);
-		mutate(data, {});
+		mutate(data, {
+			onError: (error) => {
+				console.error("Login error:", error);
+			},
+			onSuccess: () => {
+				router.gotoHome(true);
+			},
+		});
 	};
 
 	if (loading) return null;

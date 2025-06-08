@@ -1,6 +1,6 @@
-import { Aquarium } from "../../types/Aquarium";
+import { Aquarium, AquariumResponse, SimpleAquarium } from "../../types/Aquarium";
 import { Group, GroupResponse, GroupResponseAxios } from "../../types/Group";
-import { axiosInstance } from "./axiosConfig";
+import { axiosInstance, URL_PLACEHOLDER } from "./axiosConfig";
 
 const basepath = "/aquariums/groups";
 
@@ -10,6 +10,7 @@ const ENDPOINTS = {
 	ADD_GROUP: `${basepath}?groupName=`,
 	ADD_AQUARIUM_TO_GROUP: `${basepath}/values`,
 	REMOVE_AQUARIUM_FROM_GROUP: `${basepath}/values/delete`,
+	GET_GROUP_AQUARIUMS: `${basepath}/${URL_PLACEHOLDER.GROUP_ID}`,
 };
 
 const mockResponse: GroupResponse[] = [
@@ -104,6 +105,23 @@ export async function getUserGroups(): Promise<GroupResponse[]> {
 			console.error("Error fetching gourps by user ID:", error);
 			throw error;
 		});
+}
+
+export async function getGroupAquariums(groupId: string): Promise<string[]> {
+	console.log(`Fetching aquariums for group with ID: ${groupId}`);
+	const res = await axiosInstance
+		.get<SimpleAquarium[]>(
+			ENDPOINTS.GET_GROUP_AQUARIUMS.replace(URL_PLACEHOLDER.GROUP_ID, groupId)
+		)
+		.then((response) => {
+			console.log("Fetched aquariums:", response.data);
+			return response.data;
+		})
+		.catch((error) => {
+			console.error("Error fetching aquariums for group:", error);
+			throw error;
+		});
+	return res.map((aquarium) => aquarium.id);
 }
 //endregion
 

@@ -222,7 +222,7 @@ export default function AquariumPage() {
 		return <Text>No aquarium found.</Text>;
 	}
 	const handleToggleBomb = (value: boolean) => {
-		if (user.nickname === aquarium.ownerUsername) {
+		if (user.email === aquarium.ownerUsername) {
 			changeWaterPumpStatus(id as string, {
 				onSuccess: () => {
 					console.log(`Water pump status for aquarium ${id} changed to ${value}`);

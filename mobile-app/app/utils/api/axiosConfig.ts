@@ -26,4 +26,5 @@ export function sleep(ms: number) {
 export const URL_PLACEHOLDER = {
 	AQUARIUM_ID: ":aquariumId",
 	NICKNAME: ":nickname",
+	GROUP_ID: ":groupId",
 };

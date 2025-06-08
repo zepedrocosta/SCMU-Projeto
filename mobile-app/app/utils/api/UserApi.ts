@@ -40,6 +40,7 @@ export async function getUserInfo(userId: string): Promise<UserWithDefaults> {
 					receiveNotifications: true,
 				},
 			};
+			console.log("Fetched user info:", user);
 			return user;
 		})
 		.catch((error) => {

@@ -107,3 +107,11 @@ export type CreateAquariumResponse = {
 	createdDate: string;
 	createdBy: string;
 };
+
+export type SimpleAquarium = {
+	id: string;
+	name: string;
+	location: string;
+	createdBy: string;
+	createdDate: string;
+};

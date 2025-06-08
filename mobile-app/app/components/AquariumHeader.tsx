@@ -71,9 +71,6 @@ export default function AquariumHeader({ aquarium, user }: AquariumHeaderProps) 
 		seteditThresholdsModalVisible(false);
 	};
 
-	console.log("User nickname:", user.email);
-	console.log("Aquarium owner username:", ownerUsername);
-
 	const dateObj = new Date(createdDate);
 	const formattedDate = dateObj.toLocaleDateString("en-US", {
 		day: "2-digit",
