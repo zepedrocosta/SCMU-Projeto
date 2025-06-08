@@ -1,5 +1,6 @@
 package fct.project.scmu.repositories;
 
+import fct.project.scmu.daos.Aquarium;
 import fct.project.scmu.daos.Group;
 import fct.project.scmu.daos.User;
 import org.springframework.data.jpa.repository.JpaRepository;

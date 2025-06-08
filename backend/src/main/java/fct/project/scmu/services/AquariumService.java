@@ -160,9 +160,8 @@ public class AquariumService {
 
         var u = aquarium.getOwner();
         snapshots.deleteAllByAquariumIn(u.getOwns());
-        groups.deleteAllByOwner(u);
         thresholds.deleteAllByAquariumIn(u.getOwns());
-        aquariums.deleteAllByOwner(u);
+        aquariums.deleteByOwner(u);
 
         return Optional.empty();
     }

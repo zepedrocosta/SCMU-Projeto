@@ -21,6 +21,8 @@ public interface AquariumRepository extends JpaRepository<Aquarium, UUID> {
 
     void deleteAllByOwner(User owner);
 
+    void deleteByOwner(User owner);
+
     @Query("SELECT COUNT(a) > 0 FROM aquariums a LEFT JOIN a.managers m " +
             "WHERE a = :aquarium AND (m = :user OR a.owner = :user)")
     boolean isUserManagerOrOwner(@Param("aquarium") Aquarium aquarium, @Param("user") User user);
