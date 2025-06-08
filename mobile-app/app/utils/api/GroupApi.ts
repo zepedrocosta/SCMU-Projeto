@@ -9,7 +9,7 @@ const ENDPOINTS = {
 	ADD_AQUARIUMS_TO_GROUP: `${basepath}/aquariums`,
 	ADD_GROUP: `${basepath}?groupName=`,
 	ADD_AQUARIUM_TO_GROUP: `${basepath}/values`,
-	REMOVE_AQUARIUM_FROM_GROUP: `${basepath}/values/delete`,
+	REMOVE_AQUARIUM_FROM_GROUP: `${basepath}/values`,
 	GET_GROUP_AQUARIUMS: `${basepath}/${URL_PLACEHOLDER.GROUP_ID}`,
 };
 
@@ -170,18 +170,18 @@ export async function addAquariumsToGroup(
 //endregion
 
 //region DELETE~
-// todo FIX
-export async function removeAquariumFromGroup(
+export async function removeAquariumsFromGroup(
 	groupId: string,
 	aquariumIds: string[]
 ): Promise<{ groupId: string; aquariumIds: string[] }> {
-	// TODO remove this when backend is ready - FIX
 	for (const aquariumId of aquariumIds) {
 		console.log(`Removing aquarium ${aquariumId} from group ${groupId}`);
 		await axiosInstance
-			.post(ENDPOINTS.REMOVE_AQUARIUM_FROM_GROUP, {
-				groupId: groupId,
-				aquariumId: aquariumId,
+			.delete(ENDPOINTS.REMOVE_AQUARIUM_FROM_GROUP, {
+				data: {
+					aquariumId: aquariumId,
+					groupId: groupId,
+				},
 			})
 			.then((response) => {
 				return response.data;

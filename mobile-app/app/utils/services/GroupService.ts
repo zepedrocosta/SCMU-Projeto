@@ -5,6 +5,7 @@ import {
 	deleteGroup,
 	getUserGroups,
 	mapGroupResponseToGroup,
+	removeAquariumsFromGroup,
 } from "../api/GroupApi";
 import { useStateContext } from "../../context/StateContext";
 import { EVENTS } from "../../context/reducer";
@@ -46,7 +47,7 @@ export function useRemoveAquariumFromGroup() {
 
 	return useMutation({
 		mutationFn: (data: { groupId: string; aquariumIds: string[] }) =>
-			addAquariumsToGroup(data.groupId, data.aquariumIds),
+			removeAquariumsFromGroup(data.groupId, data.aquariumIds),
 		onError: (error) => {
 			console.error("Error removing aquariums from group:", error);
 		},

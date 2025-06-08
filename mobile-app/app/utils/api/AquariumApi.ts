@@ -8,6 +8,7 @@ import {
 	EditAquarium,
 	LastSnapshotResponse,
 	ShareAquariumRequest,
+	SimpleAquarium,
 	Snapshot,
 	ThresholdResponse,
 	updateThresholdsRequest,
@@ -26,7 +27,7 @@ const ENDPOINTS = {
 	CREATE_AQUARIUM: basePath,
 	AQUARIUM_BY_ID: `/aquariums/${URL_PLACEHOLDER.AQUARIUM_ID}`,
 	USER_AQUARIUMS: `${basePath}/list`,
-	CHANGE_WATER_PUMP_STATUS: `${basePath}/bomb/?aquariumId=`,
+	CHANGE_WATER_PUMP_STATUS: `${basePath}/bomb?aquariumId=`,
 	UPDATE_THRESHOLDS: `${basePath}/threshold`,
 	UPDATE_AQUARIUM: basePath,
 	GET_LAST_SNAPSHOT: `${basePath}/snapshot/${URL_PLACEHOLDER.AQUARIUM_ID}`,
@@ -334,25 +335,6 @@ export async function fetchAquariumsNotifications(
 		});
 }
 
-export async function getAquariumById(aquariumId: string): Promise<Aquarium> {
-	const foundAquarium = mockResponse.find((aquarium) => aquarium.id === aquariumId);
-	const response = mapToAquariumResponse(foundAquarium || mockResponse[0]);
-	return response;
-
-	// TODO TEST, currently not being used
-	// return await axiosInstance
-	// 	.get<AquariumResponse>(
-	// 		ENDPOINTS.AQUARIUM_BY_ID.replace(URL_PLACEHOLDER.AQUARIUM_ID, aquariumId)
-	// 	)
-	// 	.then((response) => {
-	// 		return response.data;
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error fetching aquarium by ID:", error);
-	// 		throw error;
-	// 	});
-}
-
 export async function getUserAquariums(nickname: string): Promise<Aquarium[]> {
 	return await axiosInstance
 		.get<AquariumResponse[]>(ENDPOINTS.USER_AQUARIUMS)
@@ -405,22 +387,17 @@ export async function getLastAquariumSnapshot(aquariumId: string): Promise<Snaps
 
 //region PUT
 export async function changeWaterPumpStatus(aquariumId: string): Promise<string> {
-	await sleep(1000); // Simulate network delay
+	await axiosInstance
+		.put(ENDPOINTS.CHANGE_WATER_PUMP_STATUS + aquariumId)
+		.then(() => {
+			console.log(`Water pump status for aquarium ${aquariumId} changed successfully`);
+		})
+		.catch((error) => {
+			console.error("Error changing water pump status:", error);
+			throw error;
+		});
 
 	return aquariumId;
-
-	// TODO uncomment when backend is ready
-	// return await axiosInstance
-	// 	.put(ENDPOINTS.CHANGE_WATER_PUMP_STATUS + aquariumId)
-	// 	.then(() => {
-	// 		console.log(
-	// 			`Water pump status for aquarium ${aquariumId} changed successfully`
-	// 		);
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error changing water pump status:", error);
-	// 		throw error;
-	// 	});
 }
 
 export async function updateThresholds(updateThresholds: updateThresholdsRequest) {
@@ -442,24 +419,19 @@ export async function updateThresholds(updateThresholds: updateThresholdsRequest
 
 export async function editAquarium(editAquariumRequest: EditAquarium): Promise<EditAquarium> {
 	console.log("Editing aquarium:", editAquariumRequest);
-	const aquariumId = editAquariumRequest.id;
-	return {
-		id: aquariumId,
-		name: editAquariumRequest.name,
-		location: editAquariumRequest.location,
-	};
-
-	// // TODO uncomment when backend is ready
-	// return await axiosInstance
-	// 	.put<AquariumResponse>(ENDPOINTS.UPDATE_AQUARIUM)
-	// 	.then((response) => {
-	// 		console.log(`Aquarium ${aquariumId} edited successfully`, response.data);
-	// 		return response.data;
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error editing aquarium:", error);
-	// 		throw error;
-	// 	});
+	return await axiosInstance
+		.put<SimpleAquarium>(ENDPOINTS.UPDATE_AQUARIUM, editAquariumRequest)
+		.then((response) => {
+			console.log(
+				`Aquarium ${editAquariumRequest.id} edited successfully`,
+				response.data
+			);
+			return response.data;
+		})
+		.catch((error) => {
+			console.error("Error editing aquarium:", error);
+			throw error;
+		});
 }
 //endregion
 
