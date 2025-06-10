@@ -1,58 +1,50 @@
-import { User, UserResponse, UserUpdateRequest, UserWithDefaults } from "../../types/User";
+import { RegisterRequest, RegisterResponse } from "../../types/Auth";
+import { UserWithDefaults } from "../../types/User";
 import { axiosInstance, URL_PLACEHOLDER } from "./axiosConfig";
 
 const basepath = "/users";
 
 const ENDPOINTS = {
-	USER: `${basepath}/${URL_PLACEHOLDER.USER_ID}`,
+	USER: `${basepath}/${URL_PLACEHOLDER.NICKNAME}`,
+	REGISTER: basepath,
 };
 
-//region GET
-export async function getUserInfo(userId: string): Promise<UserWithDefaults> {
-	const mockResponse: UserWithDefaults = {
-		id: userId,
-		name: "John Doe",
-		email: "some@gmail.com",
-		defaults: {
-			darkMode: false,
-		},
-	};
-	return mockResponse;
-}
-
-export async function updateUserInfo(
-	userId: string,
-	body: UserUpdateRequest
-): Promise<UserResponse> {
-	const mockResponse: UserResponse = {
-		id: userId,
-		name: body.name,
-		email: "some@gmail.com",
-	};
-
-	return mockResponse;
-
-	// TODO uncomment when backend is ready
+// region POST
+export async function registerUser(body: RegisterRequest): Promise<RegisterResponse> {
 	return axiosInstance
-		.put<UserResponse>(ENDPOINTS.USER.replace(URL_PLACEHOLDER.USER_ID, userId), body)
+		.post<RegisterResponse>(ENDPOINTS.REGISTER, body)
 		.then((response) => {
-			return response.data;
+			return {
+				email: response.data.email,
+				password: response.data.password,
+			};
 		})
 		.catch((error) => {
-			console.error("Error updating user info:", error);
+			console.error("Error during registration:", error);
 			throw error;
 		});
 }
+//endregion
 
-// TODO uncomment when backend is ready
-// export async function getUserInfo(userId: string): Promise<UserWithDefaults> {
-// 	return axiosInstance
-// 		.get<UserWithDefaults>(ENDPOINTS.USER.replace(URL_PLACEHOLDER.USER_ID, userId))
-// 		.then((response) => {
-// 			return response.data;
-// 		})
-// 		.catch((error) => {
-// 			console.error("Error fetching user info:", error);
-// 			throw error;
-// 		});
-// }
+//region GET
+export async function getUserInfo(userId: string): Promise<UserWithDefaults> {
+	return axiosInstance
+		.get<UserWithDefaults>(ENDPOINTS.USER.replace(URL_PLACEHOLDER.NICKNAME, userId))
+		.then((response) => {
+			const user: UserWithDefaults = {
+				name: response.data.name,
+				email: response.data.email,
+				nickname: response.data.nickname,
+				defaults: response.data.defaults || {
+					darkMode: false,
+					receiveNotifications: true,
+				},
+			};
+			console.log("Fetched user info:", user);
+			return user;
+		})
+		.catch((error) => {
+			console.error("Error fetching user info:", error);
+			throw error;
+		});
+}

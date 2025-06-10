@@ -1,15 +1,16 @@
 import { defaultUser, State } from "./state";
 import { User, UserDefaults } from "../types/User";
-import { Aquarium } from "../types/Aquarium";
+import { Aquarium, EditAquarium } from "../types/Aquarium";
 import { Group } from "../types/Group";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { NotificationNew } from "../types/Notification";
 
 export const EVENTS = {
 	SET_USER: "SET_USER",
 	SET_AQUARIUMS: "SET_AQUARIUMS",
 	SET_GROUPS: "SET_GROUPS",
 	SET_DEFAULTS: "SET_DEFAULTS",
-	// ADD_AQUARIUM: "ADD_AQUARIUM",
+	ADD_AQUARIUM: "ADD_AQUARIUM",
 	ADD_GROUP: "ADD_GROUP",
 	ADD_AQUARIUMS_TO_GROUP: "ADD_AQUARIUMS_TO_GROUP",
 	REMOVE_AQUARIUM: "REMOVE_AQUARIUM",
@@ -17,6 +18,11 @@ export const EVENTS = {
 	REMOVE_GROUP: "REMOVE_GROUP",
 	CHANGE_WATER_PUMP_STATUS: "CHANGE_WATER_PUMP_STATUS",
 	UPDATE_THRESHOLDS: "UPDATE_THRESHOLDS",
+	UPDATE_AQUARIUM: "UPDATE_AQUARIUM",
+	UPDATE_AQUARIUM_SNAPSHOT: "UPDATE_AQUARIUM_SNAPSHOT",
+	CHANGE_NOTIFICATIONS_STATUS: "CHANGE_NOTIFICATIONS_STATUS",
+	UPDATE_NOTIFICATIONS: "UPDATE_NOTIFICATIONS",
+	MARK_AS_READ: "MARK_AS_READ",
 	CLEAR_USER: "CLEAR_USER",
 	LOAD_STATE: "LOAD_STATE",
 } as const;
@@ -26,7 +32,7 @@ export type Action =
 	| { type: typeof EVENTS.SET_AQUARIUMS; payload: Aquarium[] }
 	| { type: typeof EVENTS.SET_GROUPS; payload: Group[] }
 	| { type: typeof EVENTS.SET_DEFAULTS; payload: UserDefaults }
-	// | { type: typeof EVENTS.ADD_AQUARIUM; payload: Aquarium }
+	| { type: typeof EVENTS.ADD_AQUARIUM; payload: Aquarium }
 	| { type: typeof EVENTS.ADD_GROUP; payload: Group }
 	| {
 			type: typeof EVENTS.ADD_AQUARIUMS_TO_GROUP;
@@ -69,6 +75,31 @@ export type Action =
 				};
 			};
 	  }
+	| { type: typeof EVENTS.UPDATE_AQUARIUM; payload: EditAquarium }
+	| {
+			type: typeof EVENTS.UPDATE_AQUARIUM_SNAPSHOT;
+			payload: {
+				aquariumId: string;
+				snapshot: {
+					snapshotId: string;
+					temperature: number;
+					light: boolean;
+					pH: number;
+					tds: number;
+					height: number;
+					isBombWorking: boolean;
+				};
+			};
+	  }
+	| { type: typeof EVENTS.CHANGE_NOTIFICATIONS_STATUS; payload: boolean }
+	| {
+			type: typeof EVENTS.UPDATE_NOTIFICATIONS;
+			payload: {
+				aquariumId: string;
+				notification: NotificationNew[];
+			};
+	  }
+	| { type: typeof EVENTS.MARK_AS_READ; payload: string } // Notification ID
 	| { type: typeof EVENTS.CLEAR_USER }
 	| { type: typeof EVENTS.LOAD_STATE; payload: State };
 
@@ -82,16 +113,23 @@ export function reducer(state: State, action: Action): State {
 			return { ...state, groups: action.payload };
 		case EVENTS.SET_DEFAULTS:
 			return { ...state, defaults: action.payload };
-		// case EVENTS.ADD_AQUARIUM:
-		// 	return { ...state, aquariums: [...state.aquariums, action.payload] };
+		case EVENTS.ADD_AQUARIUM:
+			return { ...state, aquariums: [...state.aquariums, action.payload] };
 		case EVENTS.ADD_GROUP:
 			return { ...state, groups: [...state.groups, action.payload] };
 		case EVENTS.ADD_AQUARIUMS_TO_GROUP: {
 			const { groupId, aquariumIds } = action.payload;
 			const updatedGroups = state.groups.map((group) => {
 				if (group.id === groupId) {
+					const existingAquariums = group.aquariums || [];
+					const newAquariums = state.aquariums.filter(
+						(aq) =>
+							aquariumIds.includes(aq.id) &&
+							!existingAquariums.some((ea) => ea.id === aq.id)
+					);
 					return {
 						...group,
+						aquariums: [...existingAquariums, ...newAquariums],
 					};
 				}
 				return group;
@@ -175,6 +213,78 @@ export function reducer(state: State, action: Action): State {
 			});
 			return { ...state, aquariums: updatedAquariums };
 		}
+		case EVENTS.UPDATE_AQUARIUM: {
+			const updatedAquarium = action.payload;
+			const updatedAquariums = state.aquariums.map((aquarium) => {
+				if (aquarium.id === updatedAquarium.id) {
+					return {
+						...aquarium,
+						...updatedAquarium,
+					};
+				}
+				return aquarium;
+			});
+			return { ...state, aquariums: updatedAquariums };
+		}
+		case EVENTS.UPDATE_AQUARIUM_SNAPSHOT: {
+			const { aquariumId, snapshot } = action.payload;
+			const updatedAquariums = state.aquariums.map((aquarium) => {
+				if (aquarium.id === aquariumId) {
+					return {
+						...aquarium,
+						snapshot: snapshot,
+					};
+				}
+				return aquarium;
+			});
+			return { ...state, aquariums: updatedAquariums };
+		}
+		case EVENTS.CHANGE_NOTIFICATIONS_STATUS: {
+			const receiveNotifications = action.payload;
+			const updatedDefaults = {
+				...state.defaults,
+				receiveNotifications,
+			};
+			return { ...state, defaults: updatedDefaults };
+		}
+		case EVENTS.UPDATE_NOTIFICATIONS: {
+			const { aquariumId, notification } = action.payload;
+			const updatedAquariums = state.aquariums.map((aquarium) => {
+				if (aquarium.id === aquariumId) {
+					const allNotifications = [
+						...(aquarium.notifications || []),
+						...notification,
+					];
+					const deduped = allNotifications.filter(
+						(n, idx, arr) =>
+							n.notificationId &&
+							arr.findIndex((x) => x.notificationId === n.notificationId) === idx
+					);
+					return {
+						...aquarium,
+						notifications: deduped,
+					};
+				}
+				return aquarium;
+			});
+			return { ...state, aquariums: updatedAquariums };
+		}
+		case EVENTS.MARK_AS_READ: {
+			console.log("Marking notification as read:", action.payload);
+			const notificationId = action.payload;
+			const updatedAquariums = state.aquariums.map((aquarium) => {
+				const updatedNotifications = (aquarium.notifications || []).map(
+					(notification) => {
+						if (notification.notificationId === notificationId) {
+							return { ...notification, unread: false };
+						}
+						return notification;
+					}
+				);
+				return { ...aquarium, notifications: updatedNotifications };
+			});
+			return { ...state, aquariums: updatedAquariums };
+		}
 		case EVENTS.CLEAR_USER: {
 			AsyncStorage.removeItem("accessToken");
 			return {
@@ -182,10 +292,9 @@ export function reducer(state: State, action: Action): State {
 				user: defaultUser,
 				aquariums: [],
 				groups: [],
-				defaults: { darkMode: false },
+				defaults: { darkMode: false, receiveNotifications: true },
 			};
 		}
-
 		case EVENTS.LOAD_STATE:
 			return { ...action.payload };
 		default:

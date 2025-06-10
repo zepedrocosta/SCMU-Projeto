@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, TouchableOpacity, ViewBase } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
 import { useRoutes } from "../../utils/routes";
 import useBLE from "../../hooks/useBle";
 import DeviceModal from "../../components/DeviceConnectionModal";
-import ConnectingScreen from "./connectingScreen";
 import { useIsFocused } from "@react-navigation/native";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-const SERVICE_UUID = "0x180D";
-const CHARACTERISTIC_UUID = "0x2A39";
+const schema = z.object({
+	ssid: z.string().min(1, "SSID is required"),
+	password: z.string().min(1, "Password is required"),
+});
+
+type WifiFormInput = z.infer<typeof schema>;
+
 export default function ConnectToDevicePage() {
 	const router = useRoutes();
 
@@ -22,10 +29,11 @@ export default function ConnectToDevicePage() {
 		writeToDevice,
 		resetDevices,
 		refreshBluetoothState,
+		isConnectingToDevice,
+		readFromDevice,
 	} = useBLE();
 	const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
-	// ...existing code...
 	const isFocused = useIsFocused();
 
 	useEffect(() => {
@@ -52,8 +60,53 @@ export default function ConnectToDevicePage() {
 		setIsModalVisible(true);
 	};
 
-	const handleSendData = () => {
-		//writeToDevice(SERVICE_UUID, CHARACTERISTIC_UUID, "Hello from app!");
+	const {
+		handleSubmit,
+		formState: { errors, isSubmitting },
+		setValue,
+		watch,
+	} = useForm<WifiFormInput>({
+		resolver: zodResolver(schema),
+		defaultValues: { ssid: "", password: "" },
+	});
+
+	const ssid = watch("ssid");
+	const password = watch("password");
+
+	const onSubmit = async (data: WifiFormInput) => {
+		try {
+			console.log("Sending WiFi data:", data);
+			const serviceUUID = "bd8db997-757f-44b7-ad11-b81515927ca8";
+			const writeCharacteristicUUID = "6e4fe646-a8f0-4892-8ef4-9ac94142da48";
+			const readCharacteristicUUID = "6e4fe646-a8f0-4892-8ef4-9ac94142da47";
+			const payload = {
+				...data,
+				resetWifi: false,
+			};
+			const jsonString = JSON.stringify(payload);
+
+			await writeToDevice(serviceUUID, writeCharacteristicUUID, jsonString);
+
+			console.log("WiFi data sent successfully");
+
+			const macAddress = await readFromDevice(serviceUUID, writeCharacteristicUUID).then(
+				(response) => {
+					return response;
+				}
+			);
+
+			if (!macAddress) {
+				console.error("Failed to read MAC address from device");
+				return;
+			}
+
+			// const macAddress = "ola";
+			console.log("MAC Address received: ", macAddress);
+
+			router.gotoAddAquariumForm(macAddress);
+		} catch (error) {
+			console.error("Error sending WiFi data:", error);
+		}
 	};
 
 	return (
@@ -61,15 +114,42 @@ export default function ConnectToDevicePage() {
 			<View style={styles.titleWrapper}>
 				{isBluetoothOn === undefined || !isBluetoothOn ? (
 					<Text style={styles.text}>Please turn on Bluetooth </Text>
-				) : connectedDevice ? (
+				) : !connectedDevice ? (
 					// This is when the device is connected
-					<View style={styles.titleWrapper}>
+					<View style={styles.container2}>
+						<TextInput
+							label="SSID"
+							value={ssid}
+							onChangeText={(text) => setValue("ssid", text)}
+							mode="outlined"
+							error={!!errors.ssid}
+							style={styles.input}
+							autoFocus
+						/>
+						{errors.ssid && (
+							<Text style={styles.errorText}>{errors.ssid.message}</Text>
+						)}
+						<TextInput
+							label="Wifi Password"
+							value={password}
+							onChangeText={(text) => setValue("password", text)}
+							mode="outlined"
+							error={!!errors.password}
+							style={styles.input}
+							secureTextEntry
+						/>
+						{errors.password && (
+							<Text style={styles.errorText}>{errors.password.message}</Text>
+						)}
+
 						<Button
 							mode="contained"
-							onPress={handleSendData}
-							style={{ margin: 20 }}
+							onPress={handleSubmit(onSubmit)}
+							loading={isSubmitting}
+							style={styles.button}
+							disabled={isSubmitting}
 						>
-							Send Test Data
+							Send
 						</Button>
 					</View>
 				) : (
@@ -78,27 +158,57 @@ export default function ConnectToDevicePage() {
 					</Text>
 				)}
 			</View>
-			<TouchableOpacity
-				onPress={openModal}
-				style={[styles.ctaButton, !isBluetoothOn && { backgroundColor: "#ccc" }]}
-				disabled={!isBluetoothOn}
-			>
-				<Text style={styles.ctaButtonText}>{"Connect"}</Text>
-			</TouchableOpacity>
-			<DeviceModal
-				closeModal={hideModal}
-				visible={isModalVisible}
-				connectToPeripheral={connectToDevice}
-				devices={allDevices}
-			/>
+
+			{isConnectingToDevice && !connectedDevice ? (
+				<ActivityIndicator size="large" color="#1976d2" style={{ marginTop: 32 }} />
+			) : (
+				!connectedDevice && (
+					<>
+						<TouchableOpacity
+							onPress={openModal}
+							style={[
+								styles.ctaButton,
+								!isBluetoothOn && { backgroundColor: "#ccc" },
+							]}
+							disabled={!isBluetoothOn}
+						>
+							<Text style={styles.ctaButtonText}>{"Connect"}</Text>
+						</TouchableOpacity>
+						<DeviceModal
+							closeModal={hideModal}
+							visible={isModalVisible}
+							connectToPeripheral={connectToDevice}
+							devices={allDevices}
+						/>
+					</>
+				)
+			)}
 		</>
 	);
 }
 
 const styles = StyleSheet.create({
+	input: {
+		marginBottom: 8,
+	},
+	button: {
+		marginTop: 8,
+		borderRadius: 8,
+	},
+	errorText: {
+		color: "#e53935",
+		marginBottom: 4,
+		marginLeft: 2,
+	},
 	container: {
 		flex: 1,
+		padding: 24,
+
 		backgroundColor: "#f2f2f2",
+	},
+	container2: {
+		padding: 16,
+		width: "100%",
 	},
 	titleWrapper: {
 		flex: 1,

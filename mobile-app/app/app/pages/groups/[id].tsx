@@ -30,8 +30,6 @@ export default function GroupDetail() {
 	const openMenu = () => setMenuVisible(true);
 	const closeMenu = () => setMenuVisible(false);
 
-	const [editModalVisible, setEditModalVisible] = useState(false);
-
 	const [groupAquariums, setGroupAquariums] = useState<Aquarium[]>(group.aquariums || []);
 
 	const { mutate: addAquariumsToGroup } = useAddAquariumsToGroup();
@@ -153,23 +151,29 @@ export default function GroupDetail() {
 							onPress={openMenu}
 						/>
 					}
+					contentStyle={{
+						borderRadius: 14,
+						backgroundColor: "#fff",
+						minWidth: 200,
+						elevation: 6,
+						paddingVertical: 4,
+					}}
 				>
-					<Menu.Item
-						onPress={() => {
-							closeMenu();
-							setEditModalVisible(true);
-						}}
-						title="Edit Group Name"
-						leadingIcon="pencil"
-					/>
 					<Menu.Item
 						onPress={() => {
 							closeMenu();
 							setDeleteModalVisible(true);
 						}}
 						title="Delete Group"
-						leadingIcon="trash-can"
-						titleStyle={{ color: "#e53935" }}
+						leadingIcon={() => (
+							<Avatar.Icon
+								icon="trash-can"
+								size={28}
+								color="#e53935"
+								style={{ backgroundColor: "transparent" }}
+							/>
+						)}
+						titleStyle={{ color: "#e53935", fontWeight: "bold" }}
 					/>
 				</Menu>
 
@@ -205,21 +209,6 @@ export default function GroupDetail() {
 									Delete
 								</Button>
 							</View>
-						</View>
-					</View>
-				</Modal>
-
-				<Modal
-					visible={editModalVisible}
-					transparent
-					animationType="fade"
-					onRequestClose={() => setEditModalVisible(false)}
-				>
-					<View style={styles.modalOverlay}>
-						<View style={styles.modalContent}>
-							<Text style={styles.modalTitle}>Edit Group Name</Text>
-							{/* Place edit group form here */}
-							<Button onPress={() => setEditModalVisible(false)}>Close</Button>
 						</View>
 					</View>
 				</Modal>
@@ -301,6 +290,37 @@ export default function GroupDetail() {
 }
 
 const styles = StyleSheet.create({
+	modalOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0,0,0,0.3)",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	modalContent: {
+		backgroundColor: "#fff",
+		borderRadius: 16,
+		padding: 24,
+		width: "90%",
+		maxWidth: 400,
+		maxHeight: "80%",
+		alignItems: "stretch",
+		justifyContent: "flex-start",
+	},
+	modalTitle: {
+		fontSize: 20,
+		fontWeight: "bold",
+		marginBottom: 16,
+	},
+	modalButtonRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		marginTop: 24,
+		width: "100%",
+	},
+	modalButton: {
+		flex: 1,
+		marginHorizontal: 8,
+	},
 	container: {
 		flex: 1,
 		backgroundColor: "#f5f7fa",
@@ -345,25 +365,38 @@ const styles = StyleSheet.create({
 		color: "#888",
 		fontSize: 15,
 	},
-	modalOverlay: {
-		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.3)",
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	modalContent: {
-		backgroundColor: "#fff",
-		borderRadius: 16,
-		padding: 24,
-		width: "85%",
-		maxWidth: 400,
-		alignItems: "center",
-	},
-	modalTitle: {
-		fontSize: 20,
-		fontWeight: "bold",
-		marginBottom: 16,
-	},
+
+	// modalOverlay: {
+	// 	flex: 1,
+	// 	backgroundColor: "rgba(0,0,0,0.3)",
+	// 	justifyContent: "center",
+	// 	alignItems: "center",
+	// },
+	// modalContent: {
+	// 	backgroundColor: "#fff",
+	// 	borderRadius: 16,
+	// 	padding: 24,
+	// 	width: "90%",
+	// 	maxWidth: 400,
+	// 	maxHeight: "80%",
+	// 	alignItems: "stretch",
+	// 	justifyContent: "flex-start",
+	// },
+	// modalTitle: {
+	// 	fontSize: 20,
+	// 	fontWeight: "bold",
+	// 	marginBottom: 16,
+	// },
+	// modalButtonRow: {
+	// 	flexDirection: "row",
+	// 	justifyContent: "space-between",
+	// 	marginTop: 24,
+	// 	width: "100%",
+	// },
+	// modalButton: {
+	// 	flex: 1,
+	// 	marginHorizontal: 8,
+	// },
 	checkboxRow: {
 		flexDirection: "row",
 		alignItems: "center",
@@ -371,15 +404,5 @@ const styles = StyleSheet.create({
 	},
 	checkboxLabel: {
 		fontSize: 16,
-	},
-	modalButtonRow: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		marginTop: 24,
-		width: "100%",
-	},
-	modalButton: {
-		flex: 1,
-		marginHorizontal: 8,
 	},
 });

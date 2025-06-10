@@ -1,32 +1,24 @@
-import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { Avatar, Text, List, Divider, Button } from "react-native-paper";
+import { Avatar, Text, List, Divider, Button, Switch } from "react-native-paper";
+import { useCallback } from "react";
 import { useStateContext } from "../../context/StateContext";
-import { useRoutes } from "../../utils/routes";
 import { useLogout } from "../../utils/services/AuthService";
-import EditProfileModal from "../../components/EditProfileModal";
-export default function AccountPage() {
-	const { user } = useStateContext();
-	const router = useRoutes();
-	const { mutate } = useLogout();
+import { EVENTS } from "../../context/reducer";
 
-	const [editVisible, setEditVisible] = useState(false);
-	const [name, setName] = useState(user.name || "");
+export default function AccountPage() {
+	const { user, defaults, dispatch } = useStateContext();
+	const { mutate } = useLogout();
 
 	const handleLogout = () => {
 		mutate();
 	};
 
-	const openEdit = () => {
-		setName(user.name || "");
-		setEditVisible(true);
-	};
-
-	const closeEdit = () => setEditVisible(false);
-
-	const handleSave = () => {
-		closeEdit();
-	};
+	const toggleNotifications = useCallback(() => {
+		dispatch({
+			type: EVENTS.CHANGE_NOTIFICATIONS_STATUS,
+			payload: !defaults.receiveNotifications,
+		});
+	}, [dispatch, defaults.receiveNotifications]);
 
 	return (
 		<View style={styles.container}>
@@ -42,16 +34,14 @@ export default function AccountPage() {
 			<Divider style={{ marginVertical: 16 }} />
 			<List.Section>
 				<List.Item
-					title="Edit Profile"
-					left={(props) => <List.Icon {...props} icon="account-edit" />}
-					onPress={openEdit}
-				/>
-				<List.Item
-					title="Notifications"
-					left={(props) => <List.Icon {...props} icon="bell" />}
-					onPress={() => {
-						router.gotoNotifications();
-					}}
+					title="Receive notifications"
+					left={(props) => <List.Icon {...props} icon="bell-ring" />}
+					right={() => (
+						<Switch
+							value={defaults.receiveNotifications}
+							onValueChange={toggleNotifications}
+						/>
+					)}
 				/>
 			</List.Section>
 			<Divider style={{ marginVertical: 16 }} />
@@ -63,13 +53,6 @@ export default function AccountPage() {
 			>
 				Logout
 			</Button>
-			<EditProfileModal
-				visible={editVisible}
-				onClose={closeEdit}
-				name={name}
-				setName={setName}
-				onSave={handleSave}
-			/>
 		</View>
 	);
 }

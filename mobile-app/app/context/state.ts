@@ -3,9 +3,9 @@ import { Group } from "../types/Group.js";
 import { User, UserDefaults } from "../types/User.js";
 
 export const defaultUser: User = {
-	id: "0",
 	name: "",
 	email: "",
+	nickname: "0",
 };
 
 export interface State {
@@ -21,5 +21,6 @@ export const initialState: State = {
 	groups: [],
 	defaults: {
 		darkMode: false,
+		receiveNotifications: true,
 	},
 };

@@ -13,10 +13,6 @@ export default function HomePage() {
 	const [visibleItems, setVisibleItems] = useState(aquariums);
 	const [searchQuery, setSearchQuery] = useState("");
 
-	const handlePress = (itemId: string) => {
-		router.gotoAquarium(itemId);
-	};
-
 	const handleSearch = (query: string) => {
 		setSearchQuery(query);
 		if (query) {

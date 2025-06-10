@@ -13,8 +13,10 @@ type AddGroupInput = z.infer<typeof schema>;
 
 export default function AddGroupForm({
 	onSubmit,
+	onCancel,
 }: {
 	onSubmit: (data: AddGroupInput) => void;
+	onCancel: () => void;
 }) {
 	const {
 		handleSubmit,
@@ -40,15 +42,25 @@ export default function AddGroupForm({
 				autoFocus
 			/>
 			{errors.name && <Text style={styles.errorText}>{errors.name.message}</Text>}
-			<Button
-				mode="contained"
-				onPress={handleSubmit(onSubmit)}
-				loading={isSubmitting}
-				style={styles.button}
-				disabled={isSubmitting}
-			>
-				Add Group
-			</Button>
+			<View style={styles.buttonRow}>
+				<Button
+					mode="outlined"
+					onPress={onCancel}
+					style={[styles.button, { marginRight: 8 }]}
+					disabled={isSubmitting}
+				>
+					Cancel
+				</Button>
+				<Button
+					mode="contained"
+					onPress={handleSubmit(onSubmit)}
+					loading={isSubmitting}
+					style={styles.button}
+					disabled={isSubmitting}
+				>
+					Add Group
+				</Button>
+			</View>
 		</View>
 	);
 }
@@ -61,8 +73,13 @@ const styles = StyleSheet.create({
 	input: {
 		marginBottom: 8,
 	},
-	button: {
+	buttonRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
 		marginTop: 8,
+	},
+	button: {
+		flex: 1,
 		borderRadius: 8,
 	},
 	errorText: {

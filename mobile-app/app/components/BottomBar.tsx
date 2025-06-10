@@ -40,57 +40,6 @@ export default function BottomBar() {
 				/>
 				{notifications > 0 && <Badge style={styles.badge}>{notifications}</Badge>}
 			</View>
-
-			<Menu
-				visible={menuVisible}
-				onDismiss={() => setMenuVisible(false)}
-				anchor={
-					<Appbar.Action
-						style={styles.symbol}
-						icon="plus"
-						onPress={() => setMenuVisible(true)}
-					/>
-				}
-				contentStyle={styles.menuContent}
-			>
-				<Menu.Item
-					onPress={() => {
-						setMenuVisible(false);
-						router.gotoConnectToEsp();
-					}}
-					titleStyle={styles.menuItemText}
-					leadingIcon={({ size, color }) => (
-						<MaterialCommunityIcons name="fishbowl" size={size} color={color} />
-					)}
-					title="Add Aquarium"
-				/>
-				<Menu.Item
-					onPress={() => {
-						setMenuVisible(false);
-						// router.gotoAddGroup();
-					}}
-					titleStyle={styles.menuItemText}
-					leadingIcon={({ size, color }) => (
-						<MaterialCommunityIcons
-							name="account-group"
-							size={size}
-							color={color}
-						/>
-					)}
-					title="Add Aquarium Group"
-				/>
-				<Menu.Item
-					onPress={() => {
-						setMenuVisible(false);
-						// router.gotoAddSample();
-					}}
-					titleStyle={styles.menuItemText}
-					leadingIcon={({ size, color }) => (
-						<MaterialCommunityIcons name="flask" size={size} color={color} />
-					)}
-					title="Add Sample"
-				/>
-			</Menu>
 		</Appbar>
 	);
 }

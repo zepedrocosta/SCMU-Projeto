@@ -3,7 +3,7 @@ import { View, StyleSheet, FlatList, Modal } from "react-native";
 import { Card, Text, Badge, Avatar, Button } from "react-native-paper";
 import { useRoutes } from "../../utils/routes";
 import { useStateContext } from "../../context/StateContext";
-import AddGroupForm from "../../components/AddGroupForm"; // <-- import your form
+import AddGroupForm from "../../components/AddGroupForm";
 import { useAddGroup } from "../../utils/services/GroupService";
 
 export default function GroupsPage() {
@@ -87,14 +87,10 @@ export default function GroupsPage() {
 				<View style={styles.modalOverlay}>
 					<View style={styles.modalContent}>
 						<Text style={styles.modalTitle}>Add Group</Text>
-						<AddGroupForm onSubmit={handleAddGroup} />
-						<Button
-							mode="outlined"
-							onPress={() => setModalVisible(false)}
-							style={styles.modalButton}
-						>
-							Cancel
-						</Button>
+						<AddGroupForm
+							onSubmit={handleAddGroup}
+							onCancel={() => setModalVisible(false)}
+						/>
 					</View>
 				</View>
 			</Modal>

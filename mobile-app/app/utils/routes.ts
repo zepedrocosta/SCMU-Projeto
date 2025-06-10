@@ -1,16 +1,20 @@
 import { useRouter } from "expo-router";
-import { Group } from "../types/Group";
 
 export const ROUTES = {
 	INDEX: "/",
 	HOME: "/pages/home",
 	ACCOUNT: "/pages/account",
 	AQUARIUM: "/pages/aquarium",
+	SNAPSHOT: "/pages/snapshot",
 	NOTIFICATIONS: "/pages/notifications",
-	REGISTER: "/pages/register",
+	REGISTER: "/register",
 	CONNECT_TO_ESP: "/pages/connectToEsp",
 	CONNECTIING: "/pages/connectingScreen",
 	GROUPS: "/pages/groups",
+	SEND_WIFI_FORM: "/pages/SendWifiForm",
+	HISTORIY: "/pages/aquariumHistory",
+	ADD_AQUARIUM_FORM: "/pages/addAquariumForm",
+	DEFINE_AQUARIUM_THRESHOLDS: "/pages/defineAquariumThresholds",
 };
 
 export const useRoutes = () => {
@@ -40,8 +44,8 @@ export const useRoutes = () => {
 		router.push(ROUTES.NOTIFICATIONS);
 	};
 
-	const gotoNotification = (notificationId: string) => {
-		router.push(`${ROUTES.NOTIFICATIONS}/${notificationId}`);
+	const gotoSnapshot = (snapshotId: string) => {
+		router.push(`${ROUTES.SNAPSHOT}/${snapshotId}`);
 	};
 
 	const gotoRegister = () => {
@@ -64,17 +68,38 @@ export const useRoutes = () => {
 		router.push(`${ROUTES.GROUPS}/${groupId}`);
 	};
 
+	const gotoSendWifiForm = () => {
+		router.push(ROUTES.SEND_WIFI_FORM);
+	};
+
+	const gotoAquariumHistory = (aquariumId: string) => {
+		router.push(`${ROUTES.HISTORIY}/${aquariumId}`);
+	};
+
+	const gotoAddAquariumForm = (macAddress: string) => {
+		router.push(`${ROUTES.ADD_AQUARIUM_FORM}?macAddress=${macAddress}`);
+	};
+
+	const gotoDefineAquariumThresholds = (aquariumId: string) => {
+		router.push(`${ROUTES.DEFINE_AQUARIUM_THRESHOLDS}/${aquariumId}`);
+	};
+
 	return {
+		expo: router,
 		gotoIndex,
 		gotoHome,
 		gotoAccount,
 		gotoAquarium,
 		gotoNotifications,
-		gotoNotification,
 		gotoRegister,
 		gotoConnectToEsp,
 		gotoConnectingScreen,
 		gotoGroups,
 		gotoGroup,
+		gotoSendWifiForm,
+		gotoAquariumHistory,
+		gotoAddAquariumForm,
+		gotoDefineAquariumThresholds,
+		gotoSnapshot,
 	};
 };

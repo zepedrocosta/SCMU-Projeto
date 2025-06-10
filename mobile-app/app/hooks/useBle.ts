@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PermissionsAndroid, Platform } from "react-native";
 import { BleManager, Device, State } from "react-native-ble-plx";
-import { Buffer } from "buffer"; // Add this at the top if not present
+import { Buffer } from "buffer";
 
 import * as ExpoDevice from "expo-device";
 
@@ -19,6 +19,11 @@ interface BluetoothLowEnergyApi {
 	) => Promise<void>;
 	resetDevices: () => void;
 	refreshBluetoothState: () => void;
+	isConnectingToDevice: boolean;
+	readFromDevice: (
+		serviceUUID: string,
+		characteristicUUID: string
+	) => Promise<string | null>;
 }
 
 export default function useBLE(): BluetoothLowEnergyApi {
@@ -29,6 +34,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
 	const [allDevices, setAllDevices] = useState<Device[]>([]);
 	const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
 	const [isBluetoothOn, setBluetoothOn] = useState(false);
+	const [isConnectingToDevice, setIsConnectingToDevice] = useState(false);
 
 	useEffect(() => {
 		const subscription = bleManager.onStateChange((state) => {
@@ -110,6 +116,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
 	};
 
 	const connectToDevice = async (device: Device) => {
+		setIsConnectingToDevice(true);
 		try {
 			const deviceConnection = await bleManager.connectToDevice(device.id);
 			setConnectedDevice(deviceConnection);
@@ -118,6 +125,8 @@ export default function useBLE(): BluetoothLowEnergyApi {
 			bleManager.stopDeviceScan();
 		} catch (e) {
 			console.log("FAILED TO CONNECT", e);
+		} finally {
+			setIsConnectingToDevice(false);
 		}
 	};
 
@@ -134,9 +143,32 @@ export default function useBLE(): BluetoothLowEnergyApi {
 				characteristicUUID,
 				base64Value
 			);
+
 			console.log("Data sent!: ", value);
 		} catch (e) {
 			console.log("Failed to write:", e);
+		}
+	};
+
+	const readFromDevice = async (
+		serviceUUID: string,
+		characteristicUUID: string
+	): Promise<string | null> => {
+		if (!connectedDevice) return null;
+		try {
+			const res = await connectedDevice.readCharacteristicForService(
+				serviceUUID,
+				characteristicUUID
+			);
+			const base64Value = res.value;
+			if (base64Value) {
+				const value = Buffer.from(base64Value, "base64").toString("utf8");
+				return value;
+			}
+			return null;
+		} catch (e) {
+			console.log("Failed to read:", e);
+			return null;
 		}
 	};
 
@@ -150,5 +182,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
 		writeToDevice,
 		resetDevices,
 		refreshBluetoothState,
+		isConnectingToDevice,
+		readFromDevice,
 	};
 }

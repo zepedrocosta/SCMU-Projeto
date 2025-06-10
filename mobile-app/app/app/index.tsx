@@ -1,15 +1,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import {
-	View,
-	StyleSheet,
-	Image,
-	ScrollView,
-	KeyboardAvoidingView,
-	Platform,
-} from "react-native";
-import { TextInput, Button, Text, Card } from "react-native-paper";
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { TextInput, Button, Text, Card, Avatar } from "react-native-paper";
 import { useEffect, useState } from "react";
 import { useLogin } from "../utils/services/AuthService";
 import { useRoutes } from "../utils/routes";
@@ -30,7 +23,6 @@ export default function LoginPage() {
 	const { mutate } = useLogin();
 
 	const {
-		register,
 		handleSubmit,
 		setValue,
 		formState: { errors },
@@ -48,7 +40,14 @@ export default function LoginPage() {
 
 	const onSubmit = (data: LoginInput) => {
 		console.log("Login data:", data);
-		mutate(data, {});
+		mutate(data, {
+			onError: (error) => {
+				console.error("Login error:", error);
+			},
+			onSuccess: () => {
+				router.gotoHome(true);
+			},
+		});
 	};
 
 	if (loading) return null;
@@ -63,43 +62,67 @@ export default function LoginPage() {
 				keyboardShouldPersistTaps="handled"
 			>
 				<View style={styles.container}>
-					<Image source={require("../assets/favicon.png")} style={styles.logo} />
+					<Avatar.Icon
+						icon="fishbowl"
+						size={100}
+						style={styles.avatar}
+						color="#fff"
+					/>
 
-					<Card>
+					<Card style={styles.card}>
 						<Card.Title title="Login" />
 						<Card.Content>
-							<TextInput
-								label="Email"
-								mode="outlined"
-								onChangeText={(text) => setValue("email", text)}
-								error={!!errors.email}
-							/>
-							{errors.email && (
-								<Text style={styles.error}>{errors.email.message}</Text>
-							)}
+							<View style={styles.inputGroup}>
+								<TextInput
+									label="Email"
+									mode="outlined"
+									onChangeText={(text) => setValue("email", text)}
+									error={!!errors.email}
+									style={styles.input}
+									autoCapitalize="none"
+									keyboardType="email-address"
+								/>
+								<View style={styles.errorContainer}>
+									{errors.email ? (
+										<Text style={styles.error}>
+											{errors.email.message}
+										</Text>
+									) : (
+										<Text style={styles.errorPlaceholder}> </Text>
+									)}
+								</View>
+							</View>
 
-							<TextInput
-								label="Password"
-								mode="outlined"
-								secureTextEntry={!showPassword}
-								onChangeText={(text) => setValue("password", text)}
-								error={!!errors.password}
-								style={{ marginTop: 16 }}
-								right={
-									<TextInput.Icon
-										icon={showPassword ? "eye-off" : "eye"}
-										onPress={() => setShowPassword(!showPassword)}
-									/>
-								}
-							/>
-							{errors.password && (
-								<Text style={styles.error}>{errors.password.message}</Text>
-							)}
+							<View style={styles.inputGroup}>
+								<TextInput
+									label="Password"
+									mode="outlined"
+									secureTextEntry={!showPassword}
+									onChangeText={(text) => setValue("password", text)}
+									error={!!errors.password}
+									style={styles.input}
+									right={
+										<TextInput.Icon
+											icon={showPassword ? "eye-off" : "eye"}
+											onPress={() => setShowPassword(!showPassword)}
+										/>
+									}
+								/>
+								<View style={styles.errorContainer}>
+									{errors.password ? (
+										<Text style={styles.error}>
+											{errors.password.message}
+										</Text>
+									) : (
+										<Text style={styles.errorPlaceholder}> </Text>
+									)}
+								</View>
+							</View>
 
 							<Button
 								mode="contained"
 								onPress={handleSubmit(onSubmit)}
-								style={{ marginTop: 24 }}
+								style={styles.button}
 							>
 								Login
 							</Button>
@@ -107,7 +130,7 @@ export default function LoginPage() {
 							<Button
 								mode="text"
 								onPress={() => router.gotoRegister()}
-								style={{ marginTop: 8 }}
+								style={styles.secondaryButton}
 							>
 								Don't have an account? Register here
 							</Button>
@@ -124,14 +147,52 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: "center",
 		padding: 16,
+		backgroundColor: "#f7fafd",
 	},
-	error: {
-		color: "red",
-		marginTop: 4,
+	card: {
+		borderRadius: 18,
+		paddingVertical: 8,
+		paddingHorizontal: 4,
+		elevation: 2,
+	},
+	avatar: {
+		alignSelf: "center",
+		marginBottom: 24,
+		backgroundColor: "#1976d2",
 	},
 	logo: {
-		width: 150,
-		height: 150,
-		marginBottom: 40,
+		width: 120,
+		height: 120,
+		alignSelf: "center",
+		marginBottom: 24,
+	},
+	inputGroup: {
+		marginBottom: 18,
+	},
+	input: {
+		backgroundColor: "#fff",
+	},
+	errorContainer: {
+		minHeight: 20,
+		justifyContent: "flex-start",
+	},
+	error: {
+		color: "#e53935",
+		fontSize: 13,
+		marginTop: 2,
+	},
+	errorPlaceholder: {
+		color: "transparent",
+		fontSize: 13,
+		marginTop: 2,
+	},
+	button: {
+		marginTop: 8,
+		borderRadius: 8,
+		paddingVertical: 4,
+	},
+	secondaryButton: {
+		marginTop: 4,
+		marginBottom: 4,
 	},
 });

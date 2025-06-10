@@ -18,7 +18,7 @@ export default function ListAquariums({ aquariums }: ListAquariumsProps) {
 	return (
 		<View style={[styles.section, { flex: 1 }]}>
 			<Text variant="titleMedium" style={styles.sectionTitle}>
-				Your Aquariums
+				Aquariums
 			</Text>
 
 			<FlatList

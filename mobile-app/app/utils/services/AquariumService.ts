@@ -1,14 +1,111 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useStateContext } from "../../context/StateContext";
 import { EVENTS } from "../../context/reducer";
-import { changeWaterPumpStatus, deleteAquarium, updateThresholds } from "../api/AquariumApi";
-import { updateThresholdsRequest } from "../../types/Aquarium";
+import {
+	changeWaterPumpStatus,
+	createAquarium,
+	deleteAquarium,
+	editAquarium,
+	fetchAquariumsNotifications,
+	getLastAquariumSnapshot,
+	shareAquarium,
+	updateThresholds,
+} from "../api/AquariumApi";
+import {
+	CreateAquariumRequest,
+	EditAquarium,
+	ShareAquariumRequest,
+	updateThresholdsRequest,
+} from "../../types/Aquarium";
+import { useEffect } from "react";
 
 //region QUERIES
+export function useGetLastAquariumSnapshot(aquariumId: string) {
+	const { dispatch } = useStateContext();
 
+	const query = useQuery({
+		queryKey: ["lastAquariumSnapshot", aquariumId],
+		queryFn: () => getLastAquariumSnapshot(aquariumId),
+		refetchInterval: 10000,
+	});
+
+	useEffect(() => {
+		if (query.data) {
+			dispatch({
+				type: EVENTS.UPDATE_AQUARIUM_SNAPSHOT,
+				payload: {
+					aquariumId,
+					snapshot: query.data,
+				},
+			});
+		}
+	}, [query.data, aquariumId, dispatch]);
+
+	return query;
+}
+
+export function useGetAquariumNotifications(aquariumId: string, timestamp: string) {
+	const { dispatch } = useStateContext();
+
+	const query = useQuery({
+		queryKey: ["aquariumNotifications", aquariumId],
+		queryFn: () => fetchAquariumsNotifications(aquariumId, timestamp),
+		refetchInterval: 60000,
+	});
+
+	useEffect(() => {
+		if (query.data) {
+			dispatch({
+				type: EVENTS.UPDATE_NOTIFICATIONS,
+				payload: {
+					aquariumId,
+					notification: query.data.map((notification) => ({
+						notificationId: notification.id,
+						message: notification.message,
+						createdDate: notification.createdDate,
+						snapshotId: notification.snapshotId,
+						unread: true,
+					})),
+				},
+			});
+		}
+	}, [query.data, aquariumId, dispatch]);
+
+	return query;
+}
 //endregion
 
 //region MUTATIONS
+export function useCreateAquarium() {
+	const { dispatch } = useStateContext();
+	return useMutation({
+		mutationFn: (data: CreateAquariumRequest) => createAquarium(data),
+		onError: (error) => {
+			console.error("Error creating aquarium:", error);
+		},
+		onSuccess: (data) => {
+			console.log("Aquarium created successfully service:", data);
+			dispatch({
+				type: EVENTS.ADD_AQUARIUM,
+				payload: data,
+			});
+			console.log(`Aquarium created successfully with ID: ${data.id}`);
+		},
+	});
+}
+
+export function useShareAquarium() {
+	return useMutation({
+		mutationFn: (data: ShareAquariumRequest) => shareAquarium(data),
+		onError: (error) => {
+			console.error("Error changing water pump status:", error);
+		},
+		onSuccess: (aquariumId) => {
+			console.log(`Aquarium shared successfully with ID: ${aquariumId}`);
+		},
+	});
+}
+
 export function useChangeWaterPumpStatus() {
 	const { dispatch } = useStateContext();
 
@@ -74,3 +171,22 @@ export function useDeleteAquarium() {
 		},
 	});
 }
+
+export function useEditAquarium() {
+	const { dispatch } = useStateContext();
+
+	return useMutation({
+		mutationFn: (data: EditAquarium) => editAquarium(data),
+		onError: (error) => {
+			console.error("Error editing aquarium:", error);
+		},
+		onSuccess: (data) => {
+			dispatch({
+				type: EVENTS.UPDATE_AQUARIUM,
+				payload: data,
+			});
+			console.log(`Aquarium with ID ${data} deleted successfully`);
+		},
+	});
+}
+//endregion

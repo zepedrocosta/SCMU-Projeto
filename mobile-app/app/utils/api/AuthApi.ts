@@ -1,9 +1,4 @@
-import {
-	LoginRequest,
-	LoginResponse,
-	RegisterRequest,
-	RegisterResponse,
-} from "../../types/Auth";
+import { LoginRequest, LoginResponse } from "../../types/Auth";
 import { Token } from "../../types/Token";
 import { axiosInstance } from "./axiosConfig";
 import { jwtDecode } from "jwt-decode";
@@ -15,7 +10,7 @@ const ENDPOINTS = {
 	LOGOUT: basePath,
 };
 
-function extractTokenFromResponse(response: any): string {
+export function extractTokenFromResponse(response: any): string {
 	const authHeader = response.headers["authorization"];
 	if (!authHeader) {
 		throw new Error("Authorization header not found in response");
@@ -28,78 +23,48 @@ function extractTokenFromResponse(response: any): string {
 }
 
 export async function authenticateUser(body: LoginRequest): Promise<LoginResponse> {
-	const mockResponse: LoginResponse = {
-		nickname: "mockUserId",
-		accessToken: "mockAccessToken",
-	};
+	return axiosInstance
+		.put(ENDPOINTS.LOGIN, body)
+		.then((response) => {
+			const decodedToken: Token = jwtDecode(extractTokenFromResponse(response));
 
-	return mockResponse;
+			console.log("Decoded token:", decodedToken);
 
-	//TODO - Uncomment the following code when the backend is ready
-	// return axiosInstance
-	// 	.put(ENDPOINTS.LOGIN, body)
-	// 	.then((response) => {
-	// 		const decodedToken: Token = jwtDecode(extractTokenFromResponse(response));
+			const loginResponse: LoginResponse = {
+				nickname: decodedToken.nickname,
+				accessToken: extractTokenFromResponse(response),
+			};
 
-	// 		console.log("Decoded token:", decodedToken);
-
-	// 		const loginResponse: LoginResponse = {
-	// 			nickname: decodedToken.nickname,
-	// 			accessToken: extractTokenFromResponse(response),
-	// 		};
-
-	// 		return loginResponse;
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error during authentication:", error);
-	// 		console.error("Details:", {
-	// 			path: error.config?.url,
-	// 			method: error.config?.method,
-	// 			status: error.response?.status,
-	// 			data: error.response?.data,
-	// 		});
-	// 		throw error;
-	// 	});
+			return loginResponse;
+		})
+		.catch((error) => {
+			console.error("Error during authentication:", error);
+			console.error("Details:", {
+				path: error.config?.url,
+				method: error.config?.method,
+				status: error.response?.status,
+				data: error.response?.data,
+			});
+			throw error;
+		});
 }
 
 export async function logoutUser(): Promise<void> {
-	//TODO - Uncomment the following code when the backend is ready
-	// return axiosInstance
-	// 	.delete(ENDPOINTS.LOGOUT)
-	// 	.then(() => {
-	// 		console.log("User logged out successfully");
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error during logout:", error);
-	// 		console.error("Details:", {
-	// 			path: error.config?.url,
-	// 			method: error.config?.method,
-	// 			status: error.response?.status,
-	// 			data: error.response?.data,
-	// 		});
-	// 		throw error;
-	// 	});
+	return axiosInstance
+		.delete(ENDPOINTS.LOGOUT)
+		.then(() => {
+			console.log("User logged out successfully");
+		})
+		.catch((error) => {
+			console.error("Error during logout:", error);
+			console.error("Details:", {
+				path: error.config?.url,
+				method: error.config?.method,
+				status: error.response?.status,
+				data: error.response?.data,
+			});
+			throw error;
+		});
 
 	console.log("Mock logout successful");
-}
-
-export async function registerUser(body: RegisterRequest): Promise<RegisterResponse> {
-	const mockResponse: RegisterResponse = {
-		userId: "mockUserId",
-		accessToken: "mockAccessToken",
-		refreshToken: "mockRefreshToken",
-	};
-
-	return mockResponse;
-
-	//TODO - Uncomment the following code when the backend is ready
-	// return axiosInstance
-	// 	.post<RegisterResponse>(ENDPOINTS.REGISTER, body)
-	// 	.then((response) => {
-	// 		return response.data;
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error during registration:", error);
-	// 		throw error;
-	// 	});
 }

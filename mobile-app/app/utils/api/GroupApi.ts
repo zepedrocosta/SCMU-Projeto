@@ -1,13 +1,16 @@
-import { Aquarium } from "../../types/Aquarium";
-import { Group, GroupResponse } from "../../types/Group";
-import { axiosInstance } from "./axiosConfig";
+import { Aquarium, AquariumResponse, SimpleAquarium } from "../../types/Aquarium";
+import { Group, GroupResponse, GroupResponseAxios } from "../../types/Group";
+import { axiosInstance, URL_PLACEHOLDER } from "./axiosConfig";
 
 const basepath = "/aquariums/groups";
 
 const ENDPOINTS = {
 	GET_USER_GROUPS: basepath,
 	ADD_AQUARIUMS_TO_GROUP: `${basepath}/aquariums`,
-	ADD_GROUP: `${basepath}/group?groupName=`,
+	ADD_GROUP: `${basepath}?groupName=`,
+	ADD_AQUARIUM_TO_GROUP: `${basepath}/values`,
+	REMOVE_AQUARIUM_FROM_GROUP: `${basepath}/values`,
+	GET_GROUP_AQUARIUMS: `${basepath}/${URL_PLACEHOLDER.GROUP_ID}`,
 };
 
 const mockResponse: GroupResponse[] = [
@@ -15,56 +18,48 @@ const mockResponse: GroupResponse[] = [
 		id: "1",
 		name: "Aquarium Enthusiasts",
 		description: "A group for aquarium lovers to share tips and experiences.",
-		createdAt: "2023-01-01T12:00:00Z",
 		aquariumsIds: ["1", "2", "3"],
 	},
 	{
 		id: "2",
 		name: "Marine Biologists",
 		description: "A group for marine biology students and professionals.",
-		createdAt: "2023-02-01T12:00:00Z",
 		aquariumsIds: ["4", "5"],
 	},
 	{
 		id: "3",
 		name: "Freshwater Aquarists",
 		description: "A group dedicated to freshwater aquarium setups.",
-		createdAt: "2023-03-01T12:00:00Z",
 		aquariumsIds: ["6", "7", "8"],
 	},
 	{
 		id: "4",
 		name: "Coral Reef Keepers",
 		description: "For those who love coral reefs and marine life.",
-		createdAt: "2023-04-01T12:00:00Z",
 		aquariumsIds: ["2", "5"],
 	},
 	{
 		id: "5",
 		name: "Aquascaping Artists",
 		description: "Share your aquascaping designs and ideas.",
-		createdAt: "2023-05-01T12:00:00Z",
 		aquariumsIds: ["3", "4", "6"],
 	},
 	{
 		id: "6",
 		name: "Aquarium Maintenance Crew",
 		description: "A group for those who specialize in aquarium maintenance.",
-		createdAt: "2023-06-01T12:00:00Z",
 		aquariumsIds: ["1", "2", "3", "4"],
 	},
 	{
 		id: "7",
 		name: "Aquarium Photography",
 		description: "For photographers who love capturing aquarium life.",
-		createdAt: "2023-07-01T12:00:00Z",
 		aquariumsIds: ["1", "5"],
 	},
 	{
 		id: "8",
 		name: "Aquarium DIY Projects",
 		description: "Share your DIY aquarium projects and ideas.",
-		createdAt: "2023-08-01T12:00:00Z",
 		aquariumsIds: ["3", "6"],
 	},
 ];
@@ -90,67 +85,55 @@ export function mapGroupResponseToGroup(
 		name: response.name,
 		description: response.description,
 		color: colors[Math.floor(Math.random() * colors.length)],
-		createdAt: response.createdAt,
 		aquariums: aquariums.filter((aq) => response.aquariumsIds.includes(aq.id)), // This is not filtering, it's returning every aquarium in general
 	};
 }
 
 //region GET
 export async function getUserGroups(): Promise<GroupResponse[]> {
-	return mockResponse;
+	return await axiosInstance
+		.get<GroupResponseAxios[]>(ENDPOINTS.GET_USER_GROUPS)
+		.then((response) => {
+			return response.data.map((group) => ({
+				id: group.id,
+				name: group.name,
+				description: "Mock description for group",
+				aquariumsIds: group.aquariumsIds ? group.aquariumsIds : [],
+			}));
+		})
+		.catch((error) => {
+			console.error("Error fetching gourps by user ID:", error);
+			throw error;
+		});
+}
 
-	// TODO uncomment when backend is ready
-	// return await axiosInstance
-	// 	.get<GroupResponse[]>(ENDPOINTS.GET_USER_GROUPS)
-	// 	.then((response) => {
-	// 		return response.data;
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error fetching gourps by user ID:", error);
-	// 		throw error;
-	// 	});
+export async function getGroupAquariums(groupId: string): Promise<string[]> {
+	console.log(`Fetching aquariums for group with ID: ${groupId}`);
+	const res = await axiosInstance
+		.get<SimpleAquarium[]>(
+			ENDPOINTS.GET_GROUP_AQUARIUMS.replace(URL_PLACEHOLDER.GROUP_ID, groupId)
+		)
+		.then((response) => {
+			console.log("Fetched aquariums:", response.data);
+			return response.data;
+		})
+		.catch((error) => {
+			console.error("Error fetching aquariums for group:", error);
+			throw error;
+		});
+	return res.map((aquarium) => aquarium.id);
 }
 //endregion
 
 //region POST
-export async function addAquariumsToGroup(
-	groupId: string,
-	aquariumIds: string[]
-): Promise<{ groupId: string; aquariumIds: string[] }> {
-	// TODO remove this when backend is ready
-	return { groupId, aquariumIds };
-
-	for (const aquariumId of aquariumIds) {
-		console.log(`Adding aquarium ${aquariumId} to group ${groupId}`);
-		await axiosInstance
-			.post(`${basepath}?groupId=${groupId}&aquariumId=${aquariumId}`)
-			.then((response) => {
-				return response.data;
-			})
-			.catch((error) => {
-				console.error("Error adding aquarium to group:", error);
-				throw error;
-			});
-	}
-}
-
 export async function addGroup(groupName: string): Promise<GroupResponse> {
 	console.log(`Adding group with name: ${groupName}`);
-	return {
-		id: String(Date.now()),
-		name: groupName,
-		description: "",
-		createdAt: new Date().toISOString(),
-		aquariumsIds: [],
-	};
-
-	// TODO remove this when backend is ready, check response type
 	return await axiosInstance
-		.post<string>(ENDPOINTS.ADD_GROUP + groupName)
+		.post<GroupResponseAxios>(ENDPOINTS.ADD_GROUP + groupName)
 		.then((response) => {
 			return {
-				id: response.data,
-				name: groupName,
+				id: response.data.id,
+				name: response.data.name,
 				description: "Mock response for group creation",
 				createdAt: new Date().toISOString(),
 				aquariumsIds: [],
@@ -161,43 +144,70 @@ export async function addGroup(groupName: string): Promise<GroupResponse> {
 			throw error;
 		});
 }
-//endregion
 
-//region DELETE
-export async function removeAquariumFromGroup(
+export async function addAquariumsToGroup(
 	groupId: string,
 	aquariumIds: string[]
 ): Promise<{ groupId: string; aquariumIds: string[] }> {
-	// TODO remove this when backend is ready
-	return { groupId, aquariumIds };
+	for (const aquariumId of aquariumIds) {
+		console.log(`Adding aquarium ${aquariumId} to group ${groupId}`);
+		await axiosInstance
+			.post(ENDPOINTS.ADD_AQUARIUM_TO_GROUP, {
+				groupId: groupId,
+				aquariumId: aquariumId,
+			})
+			.then((response) => {
+				return response.data;
+			})
+			.catch((error) => {
+				console.error("Error adding aquarium to group:", error);
+				throw error;
+			});
+	}
 
+	return { groupId, aquariumIds };
+}
+//endregion
+
+//region DELETE~
+export async function removeAquariumsFromGroup(
+	groupId: string,
+	aquariumIds: string[]
+): Promise<{ groupId: string; aquariumIds: string[] }> {
 	for (const aquariumId of aquariumIds) {
 		console.log(`Removing aquarium ${aquariumId} from group ${groupId}`);
 		await axiosInstance
-			.delete(`${basepath}?groupId=${groupId}&aquariumId=${aquariumId}`)
+			.delete(ENDPOINTS.REMOVE_AQUARIUM_FROM_GROUP, {
+				data: {
+					aquariumId: aquariumId,
+					groupId: groupId,
+				},
+			})
 			.then((response) => {
 				return response.data;
 			})
 			.catch((error) => {
 				console.error("Error removing aquarium from group:", error);
+				console.error(`Group ID: ${groupId}, Aquarium ID: ${aquariumId}`);
 				throw error;
 			});
 	}
+
+	return { groupId, aquariumIds };
 }
 
 export async function deleteGroup(groupId: string): Promise<string> {
-	// TODO remove this when backend is ready
 	console.log(`Deleting group with ID: ${groupId}`);
-	return groupId;
+	await axiosInstance
+		.delete(`${basepath}/${groupId}`)
+		.then(() => {
+			console.log(`Group with ID ${groupId} deleted successfully`);
+		})
+		.catch((error) => {
+			console.error("Error deleting group:", error);
+			throw error;
+		});
 
-	// return await axiosInstance
-	// 	.delete(`${basepath}/group/${groupId}`)
-	// 	.then(() => {
-	// 		console.log(`Group with ID ${groupId} deleted successfully`);
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error deleting group:", error);
-	// 		throw error;
-	// 	});
+	return groupId;
 }
 //endregion
