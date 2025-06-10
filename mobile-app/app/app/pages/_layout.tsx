@@ -35,14 +35,14 @@ export default function PagesLayout() {
 
 	return (
 		<>
-			{aquariums.map((aq) => (
+			{/* {aquariums.map((aq) => (
 				<AquariumSnapshotFetcher key={aq.id} aquariumId={aq.id} />
 			))}
 
 			{defaults.receiveNotifications &&
 				aquariums.map((aq) => (
 					<AquariumNotificationsFetcher key={aq.id} aquariumId={aq.id} />
-				))}
+				))} */}
 			<Slot />
 			<BottomBar />
 		</>

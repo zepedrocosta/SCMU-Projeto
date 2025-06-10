@@ -85,22 +85,22 @@ export default function ConnectToDevicePage() {
 			};
 			const jsonString = JSON.stringify(payload);
 
-			// await writeToDevice(serviceUUID, writeCharacteristicUUID, jsonString);
+			await writeToDevice(serviceUUID, writeCharacteristicUUID, jsonString);
 
 			console.log("WiFi data sent successfully");
 
-			// const macAddress = await readFromDevice(serviceUUID, writeCharacteristicUUID).then(
-			// 	(response) => {
-			// 		return response;
-			// 	}
-			// );
+			const macAddress = await readFromDevice(serviceUUID, writeCharacteristicUUID).then(
+				(response) => {
+					return response;
+				}
+			);
 
-			// if (!macAddress) {
-			// 	console.error("Failed to read MAC address from device");
-			// 	return;
-			// }
+			if (!macAddress) {
+				console.error("Failed to read MAC address from device");
+				return;
+			}
 
-			const macAddress = "ola";
+			// const macAddress = "ola";
 			console.log("MAC Address received: ", macAddress);
 
 			router.gotoAddAquariumForm(macAddress);
