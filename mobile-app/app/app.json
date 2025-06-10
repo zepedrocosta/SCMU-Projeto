@@ -1,45 +1,51 @@
 {
-	"expo": {
-		"scheme": "app",
-		"name": "app",
-		"slug": "app",
-		"version": "1.0.0",
-		"orientation": "portrait",
-		"icon": "./assets/icon.png",
-		"userInterfaceStyle": "light",
-		"newArchEnabled": true,
-		"splash": {
-			"image": "./assets/splash-icon.png",
-			"resizeMode": "contain",
-			"backgroundColor": "#ffffff"
-		},
-		"ios": {
-			"supportsTablet": true
-		},
-		"android": {
-			"adaptiveIcon": {
-				"foregroundImage": "./assets/adaptive-icon.png",
-				"backgroundColor": "#ffffff"
-			},
-			"edgeToEdgeEnabled": true,
-			"package": "com.tonytyony.app",
-			"permissions": [
-				"BLUETOOTH",
-				"BLUETOOTH_ADMIN",
-				"BLUETOOTH_SCAN",
-				"BLUETOOTH_CONNECT",
-				"ACCESS_FINE_LOCATION"
-			]
-		},
-		"web": {
-			"favicon": "./assets/favicon.png"
-		},
-		"plugins": ["expo-router", "react-native-ble-plx"],
-		"extra": {
-			"router": {},
-			"eas": {
-				"projectId": "6fad1c6d-9690-4c31-90b4-f31dc3c75213"
-			}
-		}
-	}
+  "expo": {
+    "scheme": "app",
+    "name": "app",
+    "slug": "app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.yooo35425.app",
+      "permissions": [
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_SCAN",
+        "BLUETOOTH_CONNECT",
+        "ACCESS_FINE_LOCATION",
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "react-native-ble-plx"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "801c6da7-7523-42c0-8d50-10e4b6cfd89a"
+      }
+    }
+  }
 }

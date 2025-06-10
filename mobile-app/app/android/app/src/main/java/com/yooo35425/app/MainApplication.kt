@@ -1,4 +1,4 @@
-package com.tonytyony.app
+package com.yooo35425.app
 
 import android.app.Application
 import android.content.res.Configuration
