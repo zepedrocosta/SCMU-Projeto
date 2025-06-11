@@ -56,7 +56,7 @@
 #define SERVICE_UUID "bd8db997-757f-44b7-ad11-b81515927ca8"        // UUID for the BLE service
 #define CHARACTERISTIC_UUID "6e4fe646-a8f0-4892-8ef4-9ac94142da48" // UUID for the BLE characteristic
 
-#define SERVER_ENDPOINT "https://scmu.zepedrocosta.com/rest/aquariums/snapshot"
+#define SERVER_ENDPOINT "http://scmu.zepedrocosta.com/rest/aquariums/snapshot"
 
 OneWire oneWire(TEMPERATURE_SENSOR);
 DallasTemperature sensors(&oneWire);
@@ -96,7 +96,7 @@ void setup()
 {
   Serial.begin(9600);
   delay(2000); // Wait for serial monitor to open
-  Serial.println("Initializing SCMU project!\n");
+  Serial.println("\nInitializing SCMU project!\n");
 
   Wire.begin(21, 22); // Ensure correct I2C pins are used
 
@@ -409,7 +409,11 @@ void sendData(float temperature, float tds, int ldr, int depth, float pH)
       jsonDoc["ldr"] = true;
     }
 
-    jsonDoc["esp"] = WiFi.macAddress();
+    uint64_t chipId = ESP.getEfuseMac();
+    char idStr[13];
+    sprintf(idStr, "%04X%08X", (uint16_t)(chipId >> 32), (uint32_t)chipId);
+
+    jsonDoc["esp"] = idStr;
 
     String jsonStr;
     serializeJson(jsonDoc, jsonStr);
