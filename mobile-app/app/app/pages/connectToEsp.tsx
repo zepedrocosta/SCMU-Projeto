@@ -77,33 +77,31 @@ export default function ConnectToDevicePage() {
 		try {
 			console.log("Sending WiFi data:", data);
 			const serviceUUID = "bd8db997-757f-44b7-ad11-b81515927ca8";
-			const writeCharacteristicUUID = "6e4fe646-a8f0-4892-8ef4-9ac94142da48";
-			const readCharacteristicUUID = "6e4fe646-a8f0-4892-8ef4-9ac94142da47";
+			const characteristicUUID = "6e4fe646-a8f0-4892-8ef4-9ac94142da48";
 			const payload = {
 				...data,
 				resetWifi: false,
 			};
 			const jsonString = JSON.stringify(payload);
 
-			await writeToDevice(serviceUUID, writeCharacteristicUUID, jsonString);
+			await writeToDevice(serviceUUID, characteristicUUID, jsonString);
 
 			console.log("WiFi data sent successfully");
 
-			const macAddress = await readFromDevice(serviceUUID, writeCharacteristicUUID).then(
+			const chipID = await readFromDevice(serviceUUID, characteristicUUID).then(
 				(response) => {
 					return response;
 				}
 			);
 
-			if (!macAddress) {
-				console.error("Failed to read MAC address from device");
+			if (!chipID) {
+				console.error("Failed to read chip ID from device");
 				return;
 			}
 
-			// const macAddress = "ola";
-			console.log("MAC Address received: ", macAddress);
+			console.log("Chip ID received: ", chipID);
 
-			router.gotoAddAquariumForm(macAddress);
+			router.gotoAddAquariumForm(chipID);
 		} catch (error) {
 			console.error("Error sending WiFi data:", error);
 		}
@@ -114,7 +112,7 @@ export default function ConnectToDevicePage() {
 			<View style={styles.titleWrapper}>
 				{isBluetoothOn === undefined || !isBluetoothOn ? (
 					<Text style={styles.text}>Please turn on Bluetooth </Text>
-				) : !connectedDevice ? (
+				) : connectedDevice ? (
 					// This is when the device is connected
 					<View style={styles.container2}>
 						<TextInput

@@ -47,11 +47,14 @@ class CredentialsCallback : public BLECharacteristicCallbacks
 
                 credentialsReceivedBT = true;
 
-                String mac = WiFi.macAddress();
-                Serial.print("Sending MAC Address back via BLE: ");
-                Serial.println(mac);
+                uint64_t chipId = ESP.getEfuseMac();
+                char idStr[13];
+                sprintf(idStr, "%04X%08X", (uint16_t)(chipId >> 32), (uint32_t)chipId);
 
-                characteristic->setValue(mac.c_str());
+                Serial.print("Sending Chip ID via BLE: ");
+                Serial.println(idStr);
+                
+                characteristic->setValue(idStr);
                 characteristic->notify();
             }
             else

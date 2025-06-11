@@ -42,12 +42,13 @@
 #define SAMPLES_PH 10  // Number of samples for pH
 
 // OLED display settings
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-#define VALUE_X 75       // X position of the value
-#define START_Y 20       // First line below header
-#define LINE_SPACING 9   // Line spacing
-#define OLED_RESET -1    // Reset pin
+#define SCREEN_WIDTH 128    // OLED display width, in pixels
+#define SCREEN_HEIGHT 64    // OLED display height, in pixels
+#define VALUE_X 75          // X position of the value
+#define START_Y 20          // First line below header
+#define LINE_SPACING 9      // Line spacing
+#define OLED_RESET -1       // Reset pin
+#define SCREEN_ADDRESS 0x3C // I2C address for the OLED display
 
 #define DIST_ULTRA_TO_GROUND 21 // Distance from the ultrasonic sensor to the ground in cm
 #define WIFI_BT_TIMEOUT 180000  // Bluetooth and Wi-Fi connection timeout in milliseconds (3 minutes)
@@ -55,8 +56,7 @@
 #define SERVICE_UUID "bd8db997-757f-44b7-ad11-b81515927ca8"        // UUID for the BLE service
 #define CHARACTERISTIC_UUID "6e4fe646-a8f0-4892-8ef4-9ac94142da48" // UUID for the BLE characteristic
 
-// #define SERVER_ENDPOINT "https://scmu.zepedrocosta.com/rest/aquariums/snapshot" // Server endpoint for sending data
-#define SERVER_ENDPOINT "http://192.168.1.10:8080/rest/aquariums/snapshot" // Server endpoint for sending data
+#define SERVER_ENDPOINT "https://scmu.zepedrocosta.com/rest/aquariums/snapshot"
 
 OneWire oneWire(TEMPERATURE_SENSOR);
 DallasTemperature sensors(&oneWire);
@@ -96,23 +96,36 @@ void setup()
 {
   Serial.begin(9600);
   delay(2000); // Wait for serial monitor to open
-
   Serial.println("Initializing SCMU project!\n");
 
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+  Wire.begin(21, 22); // Ensure correct I2C pins are used
+
+  if (isI2CDeviceConnected(SCREEN_ADDRESS))
   {
-    Serial.println("SSD1306 allocation failed");
-    Serial.println("Check if the display is connected correctly");
+    if (display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
+    {
+      Serial.println("OLED display connected!\n");
+      hasDisplay = true;
+      display.setRotation(2);
+    }
+    else
+    {
+      Serial.println("SSD1306 allocation failed");
+    }
   }
   else
   {
-    Serial.println("OLED display connected!\n");
-    hasDisplay = true;
-    display.setRotation(2);
+    Serial.println("No OLED display found at 0x3C. Skipping display init.\n");
   }
 
   xTaskCreatePinnedToCore(setupTask, "SetupTask", 10000, NULL, 1, &setupTaskHandle, 0);
   xTaskCreatePinnedToCore(initializationTask, "InitializationScreen", 10000, NULL, 1, &initializationTaskHandle, 1);
+}
+
+bool isI2CDeviceConnected(uint8_t address)
+{
+  Wire.beginTransmission(address);
+  return (Wire.endTransmission() == 0);
 }
 
 void setupTask(void *parameter)
@@ -157,6 +170,7 @@ bool getWiFiInfo(String &ssid, String &password)
 
     btConnect();
 
+    preferences.begin("wifi", false);
     ssid = preferences.getString("ssid", "");
     password = preferences.getString("pass", "");
 
@@ -206,7 +220,7 @@ void btConnect()
 
   BLECharacteristic *pCharacteristic = pService->createCharacteristic(
       CHARACTERISTIC_UUID,
-      BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY);
+      BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ);
 
   pCharacteristic->addDescriptor(new BLE2902());
   pCharacteristic->setCallbacks(new CredentialsCallback());
@@ -227,9 +241,9 @@ void btConnect()
     Serial.print(".");
   }
 
-  pAdvertising->stop();
-  pServer->removeService(pService);
-  BLEDevice::deinit(true);
+  // pAdvertising->stop();
+  // pServer->removeService(pService);
+  // BLEDevice::deinit(true);
 
   Serial.println("\nBLE shut down!\n");
 }
@@ -244,7 +258,8 @@ void initializationTask(void *parameter)
       vTaskDelete(NULL);
     }
 
-    showInitialization();
+    if (hasDisplay)
+      showInitialization();
 
     vTaskDelay(300 / portTICK_PERIOD_MS);
   }
@@ -506,6 +521,9 @@ void showData(float temperature, float tds, int ldr, int depth, float pH)
 
 void showInitialization()
 {
+  if (!hasDisplay)
+    return;
+
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
