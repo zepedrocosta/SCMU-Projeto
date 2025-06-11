@@ -95,7 +95,6 @@ export type Action =
 	| {
 			type: typeof EVENTS.UPDATE_NOTIFICATIONS;
 			payload: {
-				aquariumId: string;
 				notification: NotificationNew[];
 			};
 	  }
@@ -248,12 +247,22 @@ export function reducer(state: State, action: Action): State {
 			return { ...state, defaults: updatedDefaults };
 		}
 		case EVENTS.UPDATE_NOTIFICATIONS: {
-			const { aquariumId, notification } = action.payload;
+			const { notification } = action.payload;
+			// Group notifications by aquariumId
+			const notificationsByAquarium: { [aquariumId: string]: NotificationNew[] } = {};
+			for (const n of notification) {
+				if (!notificationsByAquarium[n.aquariumId]) {
+					notificationsByAquarium[n.aquariumId] = [];
+				}
+				notificationsByAquarium[n.aquariumId].push(n);
+			}
+
 			const updatedAquariums = state.aquariums.map((aquarium) => {
-				if (aquarium.id === aquariumId) {
+				const newNotifications = notificationsByAquarium[aquarium.id];
+				if (newNotifications && newNotifications.length > 0) {
 					const allNotifications = [
 						...(aquarium.notifications || []),
-						...notification,
+						...newNotifications,
 					];
 					const deduped = allNotifications.filter(
 						(n, idx, arr) =>

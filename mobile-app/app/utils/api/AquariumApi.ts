@@ -14,7 +14,6 @@ import {
 	updateThresholdsRequest,
 } from "../../types/Aquarium";
 import {
-	Notification,
 	NotificationListResponse,
 	NotificationNew,
 	NotificationResponse,
@@ -319,10 +318,9 @@ export async function shareAquarium(
 
 //region GET
 export async function fetchAquariumsNotifications(
-	aquariumId: string,
 	timestamp: string
 ): Promise<NotificationResponse[]> {
-	console.log(`Fetching notifications for aquarium ${aquariumId} since ${timestamp}`);
+	console.log(`Fetching notifications since ${timestamp}`);
 	return await axiosInstance
 		.get<NotificationResponse[]>(ENDPOINTS.FETCH_NOTIFICATIONS)
 		.then((response) => {

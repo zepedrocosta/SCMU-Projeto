@@ -18,20 +18,12 @@ export const MetricType = {
 
 export type MetricType = (typeof MetricType)[keyof typeof MetricType];
 
-export type Notification = {
-	type: NotificationType;
-	metric_type?: MetricType;
-	title: string;
-	description: string;
-	timestamp: string;
-	unread: boolean;
-};
-
 export type NotificationNew = {
 	notificationId: string;
 	message: string;
 	createdDate: string;
 	snapshotId: string;
+	aquariumId: string;
 	unread: boolean;
 };
 
@@ -44,4 +36,5 @@ export type NotificationResponse = {
 	message: string;
 	createdDate: string;
 	snapshotId: string;
+	aquariumId: string;
 };

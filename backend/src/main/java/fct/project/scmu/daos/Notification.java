@@ -31,4 +31,7 @@ public class Notification extends DAO {
     @EqualsAndHashCode.Exclude
     @ManyToMany(mappedBy = "notifications", cascade = CascadeType.MERGE)
     private Set<User> users;
+
+    @Column(nullable = false)
+    private String aquariumId;
 }

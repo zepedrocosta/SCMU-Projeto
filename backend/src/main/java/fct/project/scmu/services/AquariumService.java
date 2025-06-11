@@ -82,6 +82,7 @@ public class AquariumService {
             var totalUsers = new HashSet<>(Stream.concat(managers.stream(), Stream.of(owner)).toList());
             notification.setUsers(totalUsers);
             notification.setSnapshotId(snapshot.getId().toString());
+            notification.setAquariumId(aquarium.getId().toString());
             notifications.save(notification);
             for (var user : totalUsers) {
                 user.getNotifications().add(notification);

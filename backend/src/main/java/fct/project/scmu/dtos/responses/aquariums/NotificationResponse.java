@@ -18,4 +18,6 @@ public class NotificationResponse {
     private LocalDateTime createdDate;
 
     private String snapshotId;
+
+    private String aquariumId;
 }

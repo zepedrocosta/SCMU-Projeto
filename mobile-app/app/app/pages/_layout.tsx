@@ -13,9 +13,24 @@ function AquariumSnapshotFetcher({ aquariumId }: { aquariumId: string }) {
 	return null;
 }
 
-function AquariumNotificationsFetcher({ aquariumId }: { aquariumId: string }) {
-	const date = new Date().toISOString();
-	useGetAquariumNotifications(aquariumId, date);
+function AquariumNotificationsFetcher() {
+	const now = new Date();
+	const oneMinuteAgo = new Date(now);
+	oneMinuteAgo.setMinutes(now.getMinutes() - 1);
+
+	const datePart = oneMinuteAgo.toISOString().slice(0, 19);
+
+	const ms = String(oneMinuteAgo.getMilliseconds()).padStart(3, "0");
+
+	const micros =
+		ms +
+		Math.floor(Math.random() * 1000)
+			.toString()
+			.padStart(3, "0");
+
+	const date = `${datePart}.${micros}`;
+
+	useGetAquariumNotifications(date);
 	return null;
 }
 

@@ -44,12 +44,12 @@ export function useGetLastAquariumSnapshot(aquariumId: string) {
 	return query;
 }
 
-export function useGetAquariumNotifications(aquariumId: string, timestamp: string) {
+export function useGetAquariumNotifications(timestamp: string) {
 	const { dispatch } = useStateContext();
 
 	const query = useQuery({
-		queryKey: ["aquariumNotifications", aquariumId],
-		queryFn: () => fetchAquariumsNotifications(aquariumId, timestamp),
+		queryKey: ["notifications", timestamp],
+		queryFn: () => fetchAquariumsNotifications(timestamp),
 		refetchInterval: 60000,
 	});
 
@@ -58,18 +58,18 @@ export function useGetAquariumNotifications(aquariumId: string, timestamp: strin
 			dispatch({
 				type: EVENTS.UPDATE_NOTIFICATIONS,
 				payload: {
-					aquariumId,
 					notification: query.data.map((notification) => ({
 						notificationId: notification.id,
 						message: notification.message,
 						createdDate: notification.createdDate,
 						snapshotId: notification.snapshotId,
 						unread: true,
+						aquariumId: notification.aquariumId,
 					})),
 				},
 			});
 		}
-	}, [query.data, aquariumId, dispatch]);
+	}, [query.data, dispatch]);
 
 	return query;
 }
