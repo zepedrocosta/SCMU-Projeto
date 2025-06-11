@@ -218,7 +218,7 @@ export default function AquariumHeader({ aquarium, user }: AquariumHeaderProps) 
 						style={styles.infoIcon}
 						color="#d2fafd"
 					/>
-					<Text style={styles.headerSubtitle}>{ownerUsername}</Text>
+					<Text style={styles.headerSubtitle}>{ownerUsername.split("@")[0]}</Text>
 				</View>
 				<View style={styles.infoItem}>
 					<Avatar.Icon
