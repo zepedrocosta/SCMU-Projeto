@@ -41,8 +41,7 @@ export default function AddAquariumForm() {
 		const payload: CreateAquariumRequest = {
 			name: data.name,
 			location: data.location,
-			esp: new Date().toISOString(), //todo change to use real MAC
-			// macAddress: macAddress as string, // Ensure macAddress is passed correctly
+			esp: macAddress as string,
 		};
 
 		try {
