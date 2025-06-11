@@ -55,7 +55,8 @@
 #define SERVICE_UUID "bd8db997-757f-44b7-ad11-b81515927ca8"        // UUID for the BLE service
 #define CHARACTERISTIC_UUID "6e4fe646-a8f0-4892-8ef4-9ac94142da48" // UUID for the BLE characteristic
 
-#define SERVER_ENDPOINT "https://scmu.zepedrocosta.com/rest/aquariums/snapshot" // Server endpoint for sending data
+// #define SERVER_ENDPOINT "https://scmu.zepedrocosta.com/rest/aquariums/snapshot" // Server endpoint for sending data
+#define SERVER_ENDPOINT "http://192.168.1.10:8080/rest/aquariums/snapshot" // Server endpoint for sending data
 
 OneWire oneWire(TEMPERATURE_SENSOR);
 DallasTemperature sensors(&oneWire);
@@ -378,10 +379,20 @@ void sendData(float temperature, float tds, int ldr, int depth, float pH)
     StaticJsonDocument<200> jsonDoc;
 
     jsonDoc["temperature"] = temperature;
-    jsonDoc["tds"] = tds;
-    jsonDoc["ldr"] = ldr;
-    jsonDoc["depth"] = depth;
+    jsonDoc["tds"] = int(tds);
+    jsonDoc["height"] = depth;
     jsonDoc["ph"] = pH;
+
+    if (ldr == HIGH)
+    {
+      jsonDoc["ldr"] = false;
+    }
+    else
+    {
+      jsonDoc["ldr"] = true;
+    }
+
+    jsonDoc["esp"] = WiFi.macAddress();
 
     String jsonStr;
     serializeJson(jsonDoc, jsonStr);
@@ -417,6 +428,9 @@ void analyseResponse(String response)
 {
   StaticJsonDocument<200> jsonDoc;
   DeserializationError error = deserializeJson(jsonDoc, response);
+
+  Serial.println("Response from server:");
+  Serial.println(response);
 
   if (error)
   {
