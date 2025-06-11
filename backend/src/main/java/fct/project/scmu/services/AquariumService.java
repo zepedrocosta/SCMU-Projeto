@@ -8,6 +8,7 @@ import fct.project.scmu.dtos.responses.aquariums.*;
 import fct.project.scmu.repositories.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AquariumService {
 
@@ -46,6 +48,10 @@ public class AquariumService {
         var threshold = aquarium.getThreshold();
         var exceedsThreshold = false;
         List<String> params = new ArrayList<>();
+
+        log.info("Snapshot: {}", snapshot);
+
+        log.info("Threshold: {}", threshold);
 
         if (snapshot.getTemperature() < threshold.getMinTemperature() || snapshot.getTemperature() > threshold.getMaxTemperature()) {
             exceedsThreshold = true;
@@ -90,7 +96,10 @@ public class AquariumService {
             }
         }
 
-        return new SetSnapshotResponse(aquarium.isBombWorking(), exceedsThreshold);
+        snapshot.setAreValuesNormal(!exceedsThreshold);
+        snapshots.save(snapshot);
+
+        return new SetSnapshotResponse(aquarium.isBombWorking(), !exceedsThreshold);
     }
 
     public SensorsSnapshot getLastSnapshot(String aquariumId) {
