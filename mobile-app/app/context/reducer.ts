@@ -84,7 +84,7 @@ export type Action =
 					snapshotId: string;
 					temperature: number;
 					light: boolean;
-					pH: number;
+					ph: number;
 					tds: number;
 					height: number;
 					isBombWorking: boolean;

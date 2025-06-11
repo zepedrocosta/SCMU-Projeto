@@ -40,7 +40,7 @@ const mockSnapshot: Snapshot = {
 	snapshotId: "0",
 	temperature: 0,
 	light: false,
-	pH: 0,
+	ph: 0,
 	tds: 0,
 	height: 0,
 	isBombWorking: false,
@@ -358,7 +358,7 @@ export async function getLastAquariumSnapshot(aquariumId: string): Promise<Snaps
 			return {
 				snapshotId: response.data.id,
 				temperature: response.data.temperature,
-				pH: response.data.pH,
+				ph: response.data.ph,
 				tds: response.data.tds,
 				light: response.data.ldr,
 				height: response.data.height,
@@ -375,7 +375,7 @@ export async function getLastAquariumSnapshot(aquariumId: string): Promise<Snaps
 			return {
 				snapshotId: "0",
 				temperature: 0,
-				pH: 0,
+				ph: 0,
 				tds: 0,
 				light: false,
 				height: 0,

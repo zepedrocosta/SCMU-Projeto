@@ -78,7 +78,7 @@ export type LastSnapshotResponse = {
 	id: string;
 	temperature: number;
 	ldr: boolean;
-	pH: number;
+	ph: number;
 	tds: number;
 	height: number;
 	isBombWorking: boolean;
@@ -87,7 +87,7 @@ export type LastSnapshotResponse = {
 export type Snapshot = {
 	snapshotId: string;
 	temperature: number;
-	pH: number;
+	ph: number;
 	tds: number;
 	light: boolean;
 	height: number;

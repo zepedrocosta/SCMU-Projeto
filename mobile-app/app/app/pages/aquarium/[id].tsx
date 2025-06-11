@@ -119,6 +119,8 @@ const ThresholdsSection = ({
 	const barCount = 5;
 	const barWidth = (screenWidth - horizontalPadding - (barCount - 1) * spacing) / barCount;
 
+	console.log("Snapshot:", snapshot);
+
 	const data = [
 		{
 			key: "temp",
@@ -128,7 +130,8 @@ const ThresholdsSection = ({
 			label: "Temp",
 			min: threshold?.minTemperature,
 			max: threshold?.maxTemperature,
-			value: snapshot.temperature,
+			value:
+				snapshot.temperature != null ? Number(snapshot.temperature).toFixed(1) : "-",
 			unit: "°C",
 		},
 		{
@@ -139,7 +142,7 @@ const ThresholdsSection = ({
 			label: "pH",
 			min: threshold?.minPH,
 			max: threshold?.maxPH,
-			value: snapshot.pH,
+			value: snapshot.ph != null ? Number(snapshot.ph).toFixed(1) : "-",
 		},
 		{
 			key: "tds",
@@ -210,7 +213,6 @@ export default function AquariumPage() {
 
 	const aquarium = aquariums.find((a) => a.id === id);
 
-	// Always call hooks!
 	const [bombOn, setBombOn] = useState(aquarium?.snapshot?.isBombWorking ?? false);
 	useEffect(() => {
 		if (aquarium) {
