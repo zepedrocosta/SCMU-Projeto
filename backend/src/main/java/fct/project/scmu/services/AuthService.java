@@ -1,5 +1,6 @@
 package fct.project.scmu.services;
 
+import fct.project.scmu.daos.Role;
 import fct.project.scmu.daos.Session;
 import fct.project.scmu.daos.User;
 import fct.project.scmu.daos.enums.UserStatus;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -50,23 +52,18 @@ public class AuthService implements UserDetailsService {
         if (!encoder.matches(login.getPassword(), user.getPassword()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
-        //Removing this comment will make the user unable to login if he already has an active session
-
-        /*if (sessions.existsByUserAndEndedIsNull(user.getId())) {
-            var session = sessions.findByUserAndEndedIsNull(user.getId()).get();
-            session.setEnded(LocalDateTime.now());
-            sessions.save(session);
-        }*/
-
         var session = new Session(request.getHeader(HttpHeaders.USER_AGENT), null, user);
         sessions.save(session);
+        String roles = user.getRoles().stream()
+                .map(Role::getRole)
+                .collect(Collectors.joining(","));
         var claims = new HashMap<String, Object>();
         claims.put("email", user.getEmail());
         claims.put("nickname", user.getNickname());
-        claims.put("role", user.getRoles().toString());
+        claims.put("name", user.getName());
+        claims.put("role", roles);
         claims.put("agent", request.getHeader(HttpHeaders.USER_AGENT));
-        claims.put("ip", request.getHeader("X-FORWARDED-FOR")); //TODO: Check if this is the correct header
-        claims.put("jti", session.getId());
+        claims.put("jti", session.getId().toString());
         var token = AuthUtils.build(new DefaultClaims(claims));
         response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
         return Optional.empty();

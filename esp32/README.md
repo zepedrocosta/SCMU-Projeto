@@ -8,27 +8,26 @@
 
 - Baud Rate: 9600
 
-## Secrets
+## Pins
 
-All sensitive information is stored in a separate file called `secrets.h`. You can create this file by copying the template provided below.
-
-```cpp
-#ifndef SECRETS_H
-
-#define SECRETS_H
-
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
-const char* serverUrl = "YOUR_SERVER_URL";
-
-#endif
-```
+- Temperature Sensor: GPIO 4 - **5V**
+- TDS Sensor: GPIO 34 - **3.3V**
+- LDR Sensor: GPIO 35 - **3.3V**
+- Ultrasonic Sensor: - **5V**
+  - Trigger Pin: GPIO 12
+  - Echo Pin: GPIO 14
+- pH Sensor: GPIO 25 - **3.3V**
+- Buzzer: GPIO 18
+- OLED Display: - **3.3V**
+  - SDA: GPIO 21
+  - SCL: GPIO 22
+- Water Pump: GPIO 19 - **3.3V**
 
 ## Sensors checklist
 
 - [x] Temperature Sensor
 - [x] TDS Sensor
-- [x] pH Sensor
+- [x] pH Sensor (needs calibration)
 - [x] Light Sensor
 - [x] Depth Sensor (Ultrasonic)
 
@@ -37,7 +36,7 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - [x] OLED Display
 - [ ] RGB LED
 - [x] Buzzer
-- [ ] Water Pump
+- [x] Water Pump
 
 ## OLED Representation
 
@@ -66,6 +65,11 @@ const char* serverUrl = "YOUR_SERVER_URL";
 - Wire
 - Adafruit_GFX
 - Adafruit_SSD1306
+- Preferences
+- BLEDevice
+- BLEUtils
+- BLEServer
+- BLE2902
 
 ## Bibliography
 

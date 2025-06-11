@@ -22,14 +22,20 @@ public class UserForm implements Serializable {
 
     @NotBlank
     @Size(max = 64)
+    private String name;
+
+
+    @NotBlank
+    @Size(max = 64)
+    @Email(regexp = ".+@.+\\..+")
+    private String email;
+
+    @NotBlank
+    @Size(max = 64)
     private String password;
 
     @NotBlank
     @Size(max = 64)
     private String confirmPassword;
 
-    @NotBlank
-    @Size(max = 64)
-    @Email(regexp = ".+@.+\\..+")
-    private String email;
 }
