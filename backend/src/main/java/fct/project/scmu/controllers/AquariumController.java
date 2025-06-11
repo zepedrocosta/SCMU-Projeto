@@ -2,12 +2,14 @@ package fct.project.scmu.controllers;
 
 
 import fct.project.scmu.daos.Aquarium;
+import fct.project.scmu.daos.Notification;
 import fct.project.scmu.daos.SensorsSnapshot;
 import fct.project.scmu.dtos.forms.aquariums.*;
 import fct.project.scmu.dtos.responses.aquariums.*;
 import fct.project.scmu.services.AquariumService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/rest/aquariums")
 public class AquariumController extends AbstractController{
 
@@ -141,8 +144,22 @@ public class AquariumController extends AbstractController{
         else
             date = LocalDateTime.parse(startDate);
 
-        var token = new TypeToken<List<NotificationResponse>>(){}.getType();
-        return ok(aquariumService.fetchNotifications(date).get(), token);
+        var bla = aquariumService.fetchNotifications(date).get();
+
+        var notifications = toNotificationResponse(bla);
+
+        return ResponseEntity.ok(notifications);
+    }
+
+    private static List<NotificationResponse> toNotificationResponse(List<Notification> notification) {
+        return notification.stream()
+                .map(n -> new NotificationResponse(
+                        n.getId().toString(),
+                        n.getMessage(),
+                        n.getCreatedDate(),
+                        n.getSnapshotId(),
+                        n.getAquariumId()
+                )).toList();
     }
 
 }
