@@ -220,7 +220,9 @@ void btConnect()
 
   BLECharacteristic *pCharacteristic = pService->createCharacteristic(
       CHARACTERISTIC_UUID,
-      BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ);
+      BLECharacteristic::PROPERTY_WRITE |
+          BLECharacteristic::PROPERTY_NOTIFY |
+          BLECharacteristic::PROPERTY_READ);
 
   pCharacteristic->addDescriptor(new BLE2902());
   pCharacteristic->setCallbacks(new CredentialsCallback());
