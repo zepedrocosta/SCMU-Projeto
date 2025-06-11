@@ -3,14 +3,12 @@ package fct.project.scmu.controllers;
 
 import fct.project.scmu.daos.Aquarium;
 import fct.project.scmu.daos.SensorsSnapshot;
-import fct.project.scmu.dtos.forms.aquariums.AquariumForm;
-import fct.project.scmu.dtos.forms.aquariums.EditAquariumForm;
-import fct.project.scmu.dtos.forms.aquariums.SensorSnapshotForm;
-import fct.project.scmu.dtos.forms.aquariums.ThresholdForm;
+import fct.project.scmu.dtos.forms.aquariums.*;
 import fct.project.scmu.dtos.responses.aquariums.*;
 import fct.project.scmu.services.AquariumService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,13 +25,18 @@ public class AquariumController extends AbstractController{
     private final AquariumService aquariumService;
 
     @PostMapping("/snapshot")
-    public ResponseEntity<SnapshotResponse> storeSnapshot(@RequestBody SensorSnapshotForm form) {
-        return ok(aquariumService.storeSnapshot(convert(form, SensorsSnapshot.class), form.getAquariumId()));
+    public ResponseEntity<SetSnapshotResponse> storeSnapshot(@RequestBody SensorSnapshotForm form) {
+        return ok(aquariumService.storeSnapshot(convert(form, SensorsSnapshot.class), form.getEsp()));
+    }
+
+    @GetMapping("/snapshot/{aquariumId}")
+    public ResponseEntity<GetLastSnapshotResponse> getLastSnapshot(@PathVariable String aquariumId) {
+        return ok(aquariumService.getLastSnapshot(aquariumId), GetLastSnapshotResponse.class);
     }
 
     @SneakyThrows
-    @GetMapping("/snapshot")
-    public ResponseEntity<Page<SensorsSnapshot>> getSnapshots(@RequestParam String aquariumId,
+    @GetMapping("/snapshot/{aquariumId}/history") //TODO: REVIEW
+    public ResponseEntity<Page<SensorsSnapshot>> getSnapshots(@PathVariable String aquariumId,
                                                               @RequestParam(required = false) LocalDateTime date,
                                                               @RequestParam(defaultValue = "0") Integer page,
                                                               @RequestParam(defaultValue = "288") Integer size) {
@@ -42,28 +45,29 @@ public class AquariumController extends AbstractController{
 
     @PostMapping
     public ResponseEntity<AquariumResponse> createAquarium(@RequestBody AquariumForm form) {
-        return ok(aquariumService.createAquarium(convert(form, Aquarium.class)));
+        return ok(aquariumService.createAquarium(convert(form, Aquarium.class)), AquariumResponse.class);
     }
 
-    @GetMapping
-    public ResponseEntity<PrivAquariumResponse> getAquarium(@RequestParam String id) {
-        return ok(aquariumService.getAquarium(id));
+    @GetMapping("/{id}")
+    public ResponseEntity<PrivAquariumResponse> getAquarium(@PathVariable String id) {
+        return ok(aquariumService.getAquarium(id), PrivAquariumResponse.class);
     }
 
     @PutMapping
     public ResponseEntity<AquariumResponse> updateAquarium(@RequestBody EditAquariumForm form) {
-        return ok(aquariumService.updateAquarium(form));
+        return ok(aquariumService.updateAquarium(form), AquariumResponse.class);
     }
 
-    @DeleteMapping
-    public ResponseEntity<Void> deleteAquarium(@RequestParam String id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAquarium(@PathVariable String id) {
         return ok(aquariumService.deleteAquarium(id));
     }
 
     @SneakyThrows
     @GetMapping("/list")
     public ResponseEntity<List<PrivAquariumResponse>> listAquariums() {
-        return ok(aquariumService.listAquariums().get());
+        var token = new TypeToken<List<PrivAquariumResponse>>(){}.getType();
+        return ok(aquariumService.listAquariums().get(), token);
     }
 
     @SneakyThrows
@@ -72,7 +76,8 @@ public class AquariumController extends AbstractController{
     public ResponseEntity<Page<PrivAquariumResponse>> searchAquariums(@RequestParam String query,
                                                                   @RequestParam(defaultValue = "0") Integer page,
                                                                  @RequestParam(defaultValue = "12") Integer size) {
-        return ok(aquariumService.searchAquariums(query, page, size).get());
+        var token = new TypeToken<Page<PrivAquariumResponse>>(){}.getType();
+        return ok(aquariumService.searchAquariums(query, page, size).get(), token);
     }
 
     @PutMapping("/bomb")
@@ -82,34 +87,62 @@ public class AquariumController extends AbstractController{
 
     @PostMapping("/groups")
     public ResponseEntity<GroupsResponse> createGroup(@RequestParam String groupName) {
-        return ok(aquariumService.createGroup(groupName));
+        return ok(aquariumService.createGroup(groupName), GroupsResponse.class);
+    }
+
+    @DeleteMapping("/groups/{groupId}")
+    public ResponseEntity<Void> deleteGroup(@PathVariable String groupId) {
+        return ok(aquariumService.deleteGroup(groupId));
     }
 
     @GetMapping("/groups")
     public ResponseEntity<List<GroupsResponse>> listGroups() {
-        return ok(aquariumService.listGroups());
+        var token = new TypeToken<List<GroupsResponse>>(){}.getType();
+        return ok(aquariumService.listGroups(), token);
     }
 
-    @PostMapping("/groups/aquariums")
-    public ResponseEntity<AquariumResponse> addAquariumToGroup(@RequestParam String groupId,
-                                                   @RequestParam String aquariumId) {
-        return ok(aquariumService.addAquariumToGroup(groupId, aquariumId));
+    @PostMapping("/groups/values")
+    public ResponseEntity<AquariumResponse> addAquariumToGroup(@RequestBody AquariumToGroupForm form) {
+        return ok(aquariumService.addAquariumToGroup(form.getGroupId(), form.getAquariumId()), AquariumResponse.class);
     }
 
-    @DeleteMapping("/groups/aquariums")
-    public ResponseEntity<Void> removeAquariumFromGroup(@RequestParam String groupId,
-                                                        @RequestParam String aquariumId) {
-        return ok(aquariumService.removeAquariumFromGroup(groupId, aquariumId));
+    @DeleteMapping("/groups/values")
+    public ResponseEntity<Void> removeAquariumFromGroup(@RequestBody AquariumToGroupForm form) {
+        return ok(aquariumService.removeAquariumFromGroup(form.getGroupId(), form.getAquariumId()));
     }
 
-    @GetMapping("/groups/aquariums")
-    public ResponseEntity<List<AquariumResponse>> getAquariumsInGroup(@RequestParam String groupId) {
-        return ok(aquariumService.getAquariumsInGroup(groupId));
+    @GetMapping("/groups/{groupId}")
+    public ResponseEntity<List<AquariumResponse>> getAquariumsInGroup(@PathVariable String groupId) {
+        var token = new TypeToken<List<AquariumResponse>>(){}.getType();
+        return ok(aquariumService.getAquariumsInGroup(groupId), token);
+    }
+
+    @PostMapping("/manage")
+    public ResponseEntity<List<String>> addManager(@RequestBody ManagerForm form) {
+        return ok(aquariumService.addManager(form));
+    }
+
+    @DeleteMapping("/manage")
+    public ResponseEntity<List<String>> removeManager(@RequestBody ManagerForm form) {
+        return ok(aquariumService.removeManager(form));
     }
 
     @PutMapping("/threshold")
     public ResponseEntity<ThresholdResponse> editThreshold(@RequestBody ThresholdForm form) {
-        return ok(aquariumService.editThreshold(form));
+        return ok(aquariumService.editThreshold(form), ThresholdResponse.class);
+    }
+
+    @SneakyThrows
+    @GetMapping("/notifications")
+    public ResponseEntity<List<NotificationResponse>> fetchNotifications(@RequestParam(defaultValue = "N/A") String startDate) {
+        LocalDateTime date;
+        if (startDate.equals("N/A"))
+            date = LocalDateTime.now().minusDays(1);
+        else
+            date = LocalDateTime.parse(startDate);
+
+        var token = new TypeToken<List<NotificationResponse>>(){}.getType();
+        return ok(aquariumService.fetchNotifications(date).get(), token);
     }
 
 }

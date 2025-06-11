@@ -5,17 +5,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.io.Serializable;
-
 @Setter
 @Getter
 @NoArgsConstructor
 @ToString(doNotUseGetters = true)
-public class AquariumForm implements Serializable {
+public class ManagerForm {
 
-    private String name;
+    private String aquariumId;
 
-    private String esp;
-
-    private String location;
+    private String nickname;
 }

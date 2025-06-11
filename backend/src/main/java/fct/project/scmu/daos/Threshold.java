@@ -16,7 +16,7 @@ import java.util.UUID;
 @EqualsAndHashCode(doNotUseGetters = true)
 @Entity(name = "thresholds")
 @SQLRestriction("is_deleted = false")
-@SQLDelete(sql = "UPDATE aquariums SET is_deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE thresholds SET is_deleted = true WHERE id = ?")
 public class Threshold {
 
     @Id
@@ -53,7 +53,6 @@ public class Threshold {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JsonBackReference
+    @OneToOne(cascade = CascadeType.PERSIST)
     private Aquarium aquarium;
 }

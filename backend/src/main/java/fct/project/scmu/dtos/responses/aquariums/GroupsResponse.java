@@ -11,9 +11,9 @@ import java.util.List;
 @ToString(doNotUseGetters = true)
 public class GroupsResponse {
 
-    String groupId;
+    String id;
 
-    String groupName;
+    String name;
 
     List<String> aquariumIds;
 }

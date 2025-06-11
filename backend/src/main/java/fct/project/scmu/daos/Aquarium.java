@@ -1,13 +1,12 @@
 package fct.project.scmu.daos;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 @Setter
@@ -27,6 +26,9 @@ public class Aquarium extends DAO implements Serializable {
     @Column(nullable = false)
     private String location;
 
+    @Column(nullable = false, unique = true)
+    private String esp;
+
     @Column
     private boolean isBombWorking = false;
 
@@ -35,28 +37,26 @@ public class Aquarium extends DAO implements Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToOne
-    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
     private User owner;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "aquarium", cascade = CascadeType.MERGE)
-    private Set<SensorsSnapshot> values;
+    private Set<SensorsSnapshot> values = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    private Set<User> managers;
+    @ManyToMany(cascade = CascadeType.MERGE)
+    private Set<User> managers = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToMany(mappedBy = "aquariums", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    private Set<Group> groups;
+    @ManyToMany(mappedBy = "aquariums", cascade = CascadeType.MERGE)
+    private Set<Group> groups = new HashSet<>();
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToOne(mappedBy = "aquarium", fetch = FetchType.EAGER, orphanRemoval = true)
-    @JsonManagedReference
+    @OneToOne(mappedBy = "aquarium")
     private Threshold threshold;
 }

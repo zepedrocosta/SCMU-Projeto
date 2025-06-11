@@ -1,5 +1,7 @@
 package fct.project.scmu.daos;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import fct.project.scmu.dtos.responses.aquariums.ThresholdSnapshot;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -18,7 +20,7 @@ import java.util.UUID;
 @EqualsAndHashCode(doNotUseGetters = true)
 @Entity(name = "sensorsSnapshot")
 @SQLRestriction("is_deleted = false")
-@SQLDelete(sql = "UPDATE aquariums SET is_deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE sensors_snapshot SET is_deleted = true WHERE id = ?")
 public class SensorsSnapshot implements Serializable {
 
     @Id
@@ -44,12 +46,18 @@ public class SensorsSnapshot implements Serializable {
     @Column(nullable = false)
     private double height;
 
-    @Column
+    @Column(nullable = false)
     private boolean isDeleted = false;
+
+    @Column(nullable = false)
+    private boolean areValuesNormal = true;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "aquariumId")
     private Aquarium aquarium;
+
+    @Embedded
+    private ThresholdSnapshot threshold;
 }

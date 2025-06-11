@@ -9,21 +9,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(doNotUseGetters = true)
-public class PrivAquariumResponse {
+public class NotificationResponse {
 
     private String id;
 
-    private String name;
-
-    private String location;
-
-    private boolean isBombWorking;
+    private String message;
 
     private LocalDateTime createdDate;
 
-    private String createdBy;
-
-    private ThresholdResponse threshold;
-
-
+    private String snapshotId;
 }

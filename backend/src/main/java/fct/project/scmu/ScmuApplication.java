@@ -52,7 +52,7 @@ public class ScmuApplication implements CommandLineRunner {
             roleRepository.save(role);
             userRepository.save(new User("admin", passwordEncoder.encode(adminPassword), "Admin",
                     "admin@aqsmart.pt", UserStatus.ACTIVE, Set.of(role), new HashSet<>(), new HashSet<>(),
-                    new HashSet<>(), new HashSet<>()));
+                    new HashSet<>(), new HashSet<>(), new HashSet<>()));
         }
 
         if (!roleRepository.existsByRole("USER")) {
@@ -60,30 +60,32 @@ public class ScmuApplication implements CommandLineRunner {
             roleRepository.save(role);
             userRepository.save(new User("user", passwordEncoder.encode(adminPassword), "User",
                     "user@aqsmart.pt", UserStatus.ACTIVE, Set.of(role), new HashSet<>(), new HashSet<>(),
-                    new HashSet<>(), new HashSet<>()));
+                    new HashSet<>(), new HashSet<>(), new HashSet<>()));
         }
 
         var user = userRepository.findByNickname("admin").get();
-        if (aquariumRepository.findByName("Aq1").isEmpty()) {
+        if (!aquariumRepository.existsByName("Aq1")) {
             var threshold = new Threshold();
             var aquarium = new Aquarium();
             aquarium.setName("Aq1");
             aquarium.setLocation("Covilha");
             aquarium.setOwner(user);
             aquarium.setThreshold(threshold);
+            aquarium.setEsp("esp1");
             threshold.setAquarium(aquarium);
             thresholdRepository.save(threshold);
             aquariumRepository.save(aquarium);
         }
 
         user = userRepository.findByNickname("user").get();
-        if (aquariumRepository.findByName("Aq2").isEmpty()) {
+        if (aquariumRepository.existsByName("Aq2")) {
             var threshold = new Threshold();
             var aquarium = new Aquarium();
             aquarium.setName("Aq2");
             aquarium.setLocation("Caparica");
             aquarium.setOwner(user);
             aquarium.setThreshold(threshold);
+            aquarium.setEsp("esp2");
             threshold.setAquarium(aquarium);
             thresholdRepository.save(threshold);
             aquariumRepository.save(aquarium);

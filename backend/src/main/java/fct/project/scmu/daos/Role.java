@@ -1,8 +1,10 @@
 package fct.project.scmu.daos;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 
@@ -23,5 +25,5 @@ public class Role extends DAO {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToMany(mappedBy = "roles", cascade = CascadeType.MERGE)
-    private Set<User> users;
+    private Set<User> users = new HashSet<>();
 }

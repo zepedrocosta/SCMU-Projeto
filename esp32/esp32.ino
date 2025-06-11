@@ -47,7 +47,7 @@
 #define VALUE_X 75       // X position of the value
 #define START_Y 20       // First line below header
 #define LINE_SPACING 9   // Line spacing
-#define OLED_RESET -1    // Reset pin # (or -1 if sharing Arduino reset pin)
+#define OLED_RESET -1    // Reset pin
 
 #define DIST_ULTRA_TO_GROUND 21 // Distance from the ultrasonic sensor to the ground in cm
 #define WIFI_BT_TIMEOUT 180000  // Bluetooth and Wi-Fi connection timeout in milliseconds (3 minutes)
@@ -107,7 +107,7 @@ void setup()
   {
     Serial.println("OLED display connected!\n");
     hasDisplay = true;
-    display.setRotation(2); // Rotate display to match the orientation
+    display.setRotation(2);
   }
 
   xTaskCreatePinnedToCore(setupTask, "SetupTask", 10000, NULL, 1, &setupTaskHandle, 0);
@@ -116,13 +116,14 @@ void setup()
 
 void setupTask(void *parameter)
 {
-  sensors.begin();                   // Start DS18B20
-  pinMode(TDS_SENSOR, INPUT);        // TDS
-  pinMode(LDR_SENSOR, INPUT);        // LDR
-  pinMode(ECHO_PIN, INPUT);          // Ultrasonic Echo Pin
-  pinMode(BUZZER_PIN, OUTPUT);       // Buzzer Pin
-  pinMode(TRIG_PIN, OUTPUT);         // Ultrasonic Trigger Pin
-  pinMode(WATER_PUMP_PIN, OUTPUT);   // Water Pump Pin
+  sensors.begin();                 // Start DS18B20
+  pinMode(TDS_SENSOR, INPUT);      // TDS
+  pinMode(LDR_SENSOR, INPUT);      // LDR
+  pinMode(ECHO_PIN, INPUT);        // Ultrasonic Echo Pin
+  pinMode(BUZZER_PIN, OUTPUT);     // Buzzer Pin
+  pinMode(TRIG_PIN, OUTPUT);       // Ultrasonic Trigger Pin
+  pinMode(WATER_PUMP_PIN, OUTPUT); // Water Pump Pin
+
   digitalWrite(WATER_PUMP_PIN, LOW); // Start with pump off
 
   String ssid, password;
@@ -133,14 +134,14 @@ void setupTask(void *parameter)
     connectToWiFi(ssid, password);
 
   setupFinished = true;
-  vTaskDelete(NULL); // Ends setup task
+  vTaskDelete(NULL);
 }
 
 bool getWiFiInfo(String &ssid, String &password)
 {
-  preferences.begin("wifi", false); // namespace = "wifi"
+  preferences.begin("wifi", false);
 
-  preferences.clear(); // Uncomment this line to clear all stored WiFi credentials
+  preferences.clear();
 
   ssid = preferences.getString("ssid", "");
   password = preferences.getString("pass", "");
@@ -161,9 +162,8 @@ bool getWiFiInfo(String &ssid, String &password)
     if (ssid == "" || password == "")
     {
       Serial.println("No WiFi credentials received via Bluetooth.\n\n");
-      return false; // No credentials received
+      return false;
     }
-    // Save them to NVS
     preferences.putString("ssid", ssid);
     preferences.putString("pass", password);
   }
@@ -272,7 +272,7 @@ void loop()
 
     Serial.println();
 
-    delay(2000); // espera 2 segundos entre leituras
+    delay(2000); // Delay between readings
   }
 }
 
@@ -299,7 +299,7 @@ float readTDS(float temperature)
   for (int i = 0; i < SAMPLES_TDS; i++)
   {
     tds_buf[i] = analogRead(TDS_SENSOR);
-    delay(2); // pequeno delay para estabilidade entre amostras (2 milissegundos)
+    delay(2);
   }
 
   int medianValue = getMedianNum(tds_buf, SAMPLES_TDS);
@@ -338,9 +338,9 @@ int readDepth()
   digitalWrite(TRIG_PIN, LOW);
 
   long duration = pulseIn(ECHO_PIN, HIGH);
-  long cm = microsecondsToCentimeters(duration); // Distance from the sensor to the water level
+  long cm = microsecondsToCentimeters(duration);
 
-  int waterDepth = DIST_ULTRA_TO_GROUND - cm; // Distance from the water level to the ground
+  int waterDepth = DIST_ULTRA_TO_GROUND - cm;
 
   Serial.print("Depth: ");
   Serial.print(waterDepth);
@@ -525,7 +525,6 @@ void printHeader()
   int16_t x1, y1;
   uint16_t w1, h1, w2, h2;
 
-  // Measure text
   display.getTextBounds(line1, 0, 0, &x1, &y1, &w1, &h1);
   display.getTextBounds(line2, 0, 0, &x1, &y1, &w2, &h2);
 
