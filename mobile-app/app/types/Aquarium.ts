@@ -10,6 +10,7 @@ export type Aquarium = {
 	threshold: ThresholdResponse;
 	snapshot: Snapshot;
 	notifications: NotificationNew[];
+	history?: Snapshot[];
 };
 
 export type ThresholdResponse = {
@@ -84,14 +85,33 @@ export type LastSnapshotResponse = {
 	isBombWorking: boolean;
 };
 
+export type pageResponse<T> = {
+	pageSize: number;
+	page: number;
+	totalPages: number;
+	total: number;
+	content: T[];
+};
+
 export type Snapshot = {
-	snapshotId: string;
+	id: string;
 	temperature: number;
+	ldr?: boolean;
 	ph: number;
 	tds: number;
-	light: boolean;
 	height: number;
 	isBombWorking: boolean;
+	createdDate?: string;
+	aquariumId?: string;
+	minTemperature?: string;
+	maxTemperature?: string;
+	minPh?: string;
+	maxPh?: string;
+	minTds?: string;
+	maxTds?: string;
+	minHeight?: string;
+	maxHeight?: string;
+	areValuesNormal?: boolean;
 };
 
 export type CreateAquariumRequest = {

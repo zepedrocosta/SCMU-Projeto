@@ -41,8 +41,10 @@ public class AquariumService {
         if (response.isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         var aquarium = response.get();
+        var isBombWorking = aquarium.isBombWorking();
         snapshot.setAquarium(aquarium);
         snapshot.setThreshold(new ThresholdSnapshot(aquarium.getThreshold()));
+        snapshot.setBombWorking(isBombWorking);
         snapshots.save(snapshot);
 
         var threshold = aquarium.getThreshold();
@@ -99,7 +101,7 @@ public class AquariumService {
         snapshot.setAreValuesNormal(!exceedsThreshold);
         snapshots.save(snapshot);
 
-        return new SetSnapshotResponse(aquarium.isBombWorking(), !exceedsThreshold);
+        return new SetSnapshotResponse(isBombWorking, !exceedsThreshold);
     }
 
     public SensorsSnapshot getLastSnapshot(String aquariumId) {
@@ -117,7 +119,7 @@ public class AquariumService {
     }
 
     @Async
-    public Future<Page<SensorsSnapshot>> getSnapshots(String aquariumId, int page, int size) {
+    public Future<Page<SensorsSnapshot>> getSnapshots(String aquariumId, LocalDateTime date, int page, int size) {
         var pageable = PageRequest.of(page, size);
         var res = aquariums.findById(UUID.fromString(aquariumId));
         if (res.isEmpty()) {

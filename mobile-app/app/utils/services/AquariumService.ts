@@ -7,6 +7,7 @@ import {
 	deleteAquarium,
 	editAquarium,
 	fetchNotifications,
+	getAquariumSnapshots,
 	getLastAquariumSnapshot,
 	shareAquarium,
 	updateThresholds,
@@ -35,7 +36,40 @@ export function useGetLastAquariumSnapshot(aquariumId: string) {
 				type: EVENTS.UPDATE_AQUARIUM_SNAPSHOT,
 				payload: {
 					aquariumId,
-					snapshot: query.data,
+					snapshot: {
+						id: query.data.id,
+						temperature: query.data.temperature,
+						light: query.data.ldr ? true : false,
+						ph: query.data.ph,
+						tds: query.data.tds,
+						height: query.data.height,
+						isBombWorking: query.data.isBombWorking,
+					},
+				},
+			});
+		}
+	}, [query.data, aquariumId, dispatch]);
+
+	return query;
+}
+
+export function useGetAquariumSnapshots(aquariumId: string) {
+	const { dispatch } = useStateContext();
+
+	const query = useQuery({
+		queryKey: ["snapshots", aquariumId],
+		queryFn: () => getAquariumSnapshots(aquariumId),
+		refetchInterval: 5000,
+	});
+
+	useEffect(() => {
+		const snapshots = query.data || [];
+		if (snapshots) {
+			dispatch({
+				type: EVENTS.UPDATE_HISTORY,
+				payload: {
+					aquariumId: aquariumId,
+					snapshots: snapshots,
 				},
 			});
 		}

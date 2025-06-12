@@ -6,10 +6,16 @@ import { useRoutes } from "../../utils/routes";
 import {
 	useGetAquariumNotifications,
 	useGetLastAquariumSnapshot,
+	useGetAquariumSnapshots,
 } from "../../utils/services/AquariumService";
 
-function AquariumSnapshotFetcher({ aquariumId }: { aquariumId: string }) {
+function AquariumLastSnapshotFetcher({ aquariumId }: { aquariumId: string }) {
 	useGetLastAquariumSnapshot(aquariumId);
+	return null;
+}
+
+function AquariumHistoryFecther({ aquariumId }: { aquariumId: string }) {
+	useGetAquariumSnapshots(aquariumId);
 	return null;
 }
 
@@ -65,7 +71,10 @@ export default function PagesLayout() {
 	return (
 		<>
 			{aquariums.map((aq) => (
-				<AquariumSnapshotFetcher key={aq.id} aquariumId={aq.id} />
+				<>
+					<AquariumLastSnapshotFetcher key={aq.id} aquariumId={aq.id} />
+					<AquariumHistoryFecther key={`history-${aq.id}`} aquariumId={aq.id} />
+				</>
 			))}
 
 			{defaults.receiveNotifications && <AquariumNotificationsFetcher />}

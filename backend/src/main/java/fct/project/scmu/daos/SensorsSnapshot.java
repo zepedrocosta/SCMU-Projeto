@@ -52,6 +52,9 @@ public class SensorsSnapshot implements Serializable {
     @Column(nullable = false)
     private boolean areValuesNormal = true;
 
+    @Column(nullable = false)
+    private boolean isBombWorking = false;
+
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToOne(cascade = CascadeType.MERGE)

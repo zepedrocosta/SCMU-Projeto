@@ -1,23 +1,17 @@
-import { createIconSetFromFontello } from "react-native-vector-icons";
 import {
 	Aquarium,
-	AquariumListResponse,
 	AquariumResponse,
 	CreateAquariumRequest,
-	CreateAquariumResponse,
 	EditAquarium,
 	LastSnapshotResponse,
+	pageResponse,
 	ShareAquariumRequest,
 	SimpleAquarium,
 	Snapshot,
 	ThresholdResponse,
 	updateThresholdsRequest,
 } from "../../types/Aquarium";
-import {
-	NotificationListResponse,
-	NotificationNew,
-	NotificationResponse,
-} from "../../types/Notification";
+import { NotificationNew, NotificationResponse } from "../../types/Notification";
 import { axiosInstance, sleep, URL_PLACEHOLDER } from "./axiosConfig";
 
 const basePath = "/aquariums";
@@ -30,18 +24,30 @@ const ENDPOINTS = {
 	UPDATE_THRESHOLDS: `${basePath}/threshold`,
 	UPDATE_AQUARIUM: basePath,
 	GET_LAST_SNAPSHOT: `${basePath}/snapshot/${URL_PLACEHOLDER.AQUARIUM_ID}`,
+	GET_SNAPSHOTS: `${basePath}/snapshot/${URL_PLACEHOLDER.AQUARIUM_ID}/history`,
 	DELETE_AQUARIUM: `${basePath}/${URL_PLACEHOLDER.AQUARIUM_ID}`,
 	SHARE_AQUARIUM: `${basePath}/manage`,
 	FETCH_NOTIFICATIONS: `${basePath}/notifications?startDate=`,
 };
 
 const mockSnapshot: Snapshot = {
-	snapshotId: "0",
+	id: "0",
 	temperature: 0,
-	light: false,
+	ldr: false,
 	ph: 0,
 	tds: 0,
 	height: 0,
+	createdDate: "2024-01-01T00:00:00Z",
+	aquariumId: "0",
+	minTemperature: "20",
+	maxTemperature: "28",
+	minPh: "6.5",
+	maxPh: "8.5",
+	minTds: "100",
+	maxTds: "500",
+	minHeight: "10",
+	maxHeight: "10",
+	areValuesNormal: true,
 	isBombWorking: false,
 };
 
@@ -57,209 +63,6 @@ const mockThreshold: ThresholdResponse = {
 	minHeight: 30,
 	maxHeight: 60,
 };
-
-const mockResponse: AquariumResponse[] = [
-	{
-		id: "1",
-		name: "Aquarium 1",
-		location: "Living Room",
-		isBombWorking: true,
-		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "johndoe1",
-		threshold: {
-			minTemperature: 20,
-			maxTemperature: 28,
-			minPH: 6.5,
-			maxPH: 8.5,
-			minTds: 100,
-			maxTds: 500,
-			minHeight: 30,
-			maxHeight: 60,
-		},
-		snapshot: mockSnapshot,
-		notifications: mockNotifications,
-	},
-	{
-		id: "2",
-		name: "Aquarium 2",
-		location: "Lisbon",
-		isBombWorking: true,
-		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "johndoe",
-		threshold: {
-			minTemperature: 20,
-			maxTemperature: 28,
-			minPH: 6.5,
-			maxPH: 8.5,
-			minTds: 100,
-			maxTds: 500,
-			minHeight: 30,
-			maxHeight: 60,
-		},
-		snapshot: mockSnapshot,
-		notifications: mockNotifications,
-	},
-	{
-		id: "3",
-		name: "Aquarium 3",
-		location: "Kitchen",
-		isBombWorking: false,
-		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "johndoe",
-		threshold: {
-			minTemperature: 20,
-			maxTemperature: 28,
-			minPH: 6.5,
-			maxPH: 8.5,
-			minTds: 100,
-			maxTds: 500,
-			minHeight: 30,
-			maxHeight: 60,
-		},
-		snapshot: mockSnapshot,
-		notifications: mockNotifications,
-	},
-	{
-		id: "4",
-		name: "Aquarium 4",
-		location: "Bedroom",
-		isBombWorking: true,
-		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "johndoe",
-		threshold: {
-			minTemperature: 20,
-			maxTemperature: 28,
-			minPH: 6.5,
-			maxPH: 8.5,
-			minTds: 100,
-			maxTds: 500,
-			minHeight: 30,
-			maxHeight: 60,
-		},
-		snapshot: mockSnapshot,
-		notifications: mockNotifications,
-	},
-	{
-		id: "5",
-		name: "Aquarium 5",
-		location: "Office",
-		isBombWorking: true,
-		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "johndoe",
-		threshold: {
-			minTemperature: 20,
-			maxTemperature: 28,
-			minPH: 6.5,
-			maxPH: 8.5,
-			minTds: 100,
-			maxTds: 500,
-			minHeight: 30,
-			maxHeight: 60,
-		},
-		snapshot: mockSnapshot,
-		notifications: mockNotifications,
-	},
-	{
-		id: "6",
-		name: "Aquarium 6",
-		location: "Garage",
-		isBombWorking: false,
-		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "johndoe",
-		threshold: {
-			minTemperature: 20,
-			maxTemperature: 28,
-			minPH: 6.5,
-			maxPH: 8.5,
-			minTds: 100,
-			maxTds: 500,
-			minHeight: 30,
-			maxHeight: 60,
-		},
-		snapshot: mockSnapshot,
-		notifications: mockNotifications,
-	},
-	{
-		id: "7",
-		name: "Aquarium 7",
-		location: "Balcony",
-		isBombWorking: true,
-		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "johndoe",
-		threshold: {
-			minTemperature: 20,
-			maxTemperature: 28,
-			minPH: 6.5,
-			maxPH: 8.5,
-			minTds: 100,
-			maxTds: 500,
-			minHeight: 30,
-			maxHeight: 60,
-		},
-		snapshot: mockSnapshot,
-		notifications: mockNotifications,
-	},
-	{
-		id: "8",
-		name: "Aquarium 8",
-		location: "Garden",
-		isBombWorking: false,
-		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "johndoe",
-		threshold: {
-			minTemperature: 20,
-			maxTemperature: 28,
-			minPH: 6.5,
-			maxPH: 8.5,
-			minTds: 100,
-			maxTds: 500,
-			minHeight: 30,
-			maxHeight: 60,
-		},
-		snapshot: mockSnapshot,
-		notifications: mockNotifications,
-	},
-	{
-		id: "9",
-		name: "Aquarium 9",
-		location: "Patio",
-		isBombWorking: true,
-		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "johndoe",
-		threshold: {
-			minTemperature: 20,
-			maxTemperature: 28,
-			minPH: 6.5,
-			maxPH: 8.5,
-			minTds: 100,
-			maxTds: 500,
-			minHeight: 30,
-			maxHeight: 60,
-		},
-		snapshot: mockSnapshot,
-		notifications: mockNotifications,
-	},
-	{
-		id: "10",
-		name: "Aquarium 10",
-		location: "Veranda",
-		isBombWorking: false,
-		createdDate: "2024-01-01T00:00:00Z",
-		ownerUsername: "johndoe",
-		threshold: {
-			minTemperature: 20,
-			maxTemperature: 28,
-			minPH: 6.5,
-			maxPH: 8.5,
-			minTds: 100,
-			maxTds: 500,
-			minHeight: 30,
-			maxHeight: 60,
-		},
-		snapshot: mockSnapshot,
-		notifications: mockNotifications,
-	},
-];
 
 // Helper functions to map AquariumResponse to Aquarium type
 export function mapToAquariumResponse(aquarium: AquariumResponse): Aquarium {
@@ -320,7 +123,7 @@ export async function shareAquarium(
 export async function fetchNotifications(timestamp: string): Promise<NotificationResponse[]> {
 	console.log(`Fetching notifications since ${timestamp}`);
 	return await axiosInstance
-		.get<NotificationResponse[]>(ENDPOINTS.FETCH_NOTIFICATIONS)
+		.get<NotificationResponse[]>(ENDPOINTS.FETCH_NOTIFICATIONS + timestamp)
 		.then((response) => {
 			console.log("Fetched notifications:", response.data);
 			return response.data;
@@ -352,7 +155,8 @@ export async function getLastAquariumSnapshot(aquariumId: string): Promise<Snaps
 		.then((response) => {
 			console.log("Fetched aquarium last snapshot:", response.data);
 			return {
-				snapshotId: response.data.id,
+				...mockSnapshot,
+				id: response.data.id,
 				temperature: response.data.temperature,
 				ph: response.data.ph,
 				tds: response.data.tds,
@@ -368,15 +172,28 @@ export async function getLastAquariumSnapshot(aquariumId: string): Promise<Snaps
 				console.error("Error fetching aquarium snapshots:", error);
 			}
 			// Return a mock snapshot in case of error or 404
-			return {
-				snapshotId: "0",
-				temperature: 0,
-				ph: 0,
-				tds: 0,
-				light: false,
-				height: 0,
-				isBombWorking: false,
-			};
+			return mockSnapshot;
+		});
+}
+
+export async function getAquariumSnapshots(aquariumId: string): Promise<Snapshot[]> {
+	console.log(`Getting snapshots for aquarium ID: ${aquariumId}`);
+	return await axiosInstance
+		.get<pageResponse<Snapshot>>(
+			ENDPOINTS.GET_SNAPSHOTS.replace(URL_PLACEHOLDER.AQUARIUM_ID, aquariumId)
+		)
+		.then((response) => {
+			console.log("Fetched aquarium Snapshots:", response.data);
+			return response.data.content || [];
+		})
+		.catch((error) => {
+			if (error.response && error.response.status === 404) {
+				console.warn("Snapshots not found, returning empty array.");
+			} else {
+				console.error("Error fetching aquarium snapshots:", error);
+			}
+			// Return an empty array in case of error or 404
+			return [];
 		});
 }
 //eregion

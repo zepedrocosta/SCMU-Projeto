@@ -1,6 +1,6 @@
 import { defaultUser, State } from "./state";
 import { User, UserDefaults } from "../types/User";
-import { Aquarium, EditAquarium } from "../types/Aquarium";
+import { Aquarium, EditAquarium, Snapshot } from "../types/Aquarium";
 import { Group } from "../types/Group";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NotificationNew } from "../types/Notification";
@@ -23,6 +23,7 @@ export const EVENTS = {
 	CHANGE_NOTIFICATIONS_STATUS: "CHANGE_NOTIFICATIONS_STATUS",
 	UPDATE_NOTIFICATIONS: "UPDATE_NOTIFICATIONS",
 	MARK_AS_READ: "MARK_AS_READ",
+	UPDATE_HISTORY: "UPDATE_HISTORY",
 	CLEAR_USER: "CLEAR_USER",
 	LOAD_STATE: "LOAD_STATE",
 } as const;
@@ -81,7 +82,7 @@ export type Action =
 			payload: {
 				aquariumId: string;
 				snapshot: {
-					snapshotId: string;
+					id: string;
 					temperature: number;
 					light: boolean;
 					ph: number;
@@ -99,6 +100,13 @@ export type Action =
 			};
 	  }
 	| { type: typeof EVENTS.MARK_AS_READ; payload: string } // Notification ID
+	| {
+			type: typeof EVENTS.UPDATE_HISTORY;
+			payload: {
+				aquariumId: string;
+				snapshots: Snapshot[];
+			};
+	  }
 	| { type: typeof EVENTS.CLEAR_USER }
 	| { type: typeof EVENTS.LOAD_STATE; payload: State };
 
@@ -291,6 +299,19 @@ export function reducer(state: State, action: Action): State {
 					}
 				);
 				return { ...aquarium, notifications: updatedNotifications };
+			});
+			return { ...state, aquariums: updatedAquariums };
+		}
+		case EVENTS.UPDATE_HISTORY: {
+			const { aquariumId, snapshots } = action.payload;
+			const updatedAquariums = state.aquariums.map((aquarium) => {
+				if (aquarium.id === aquariumId) {
+					return {
+						...aquarium,
+						history: snapshots,
+					};
+				}
+				return aquarium;
 			});
 			return { ...state, aquariums: updatedAquariums };
 		}

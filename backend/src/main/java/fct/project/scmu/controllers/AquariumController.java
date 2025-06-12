@@ -38,12 +38,16 @@ public class AquariumController extends AbstractController{
     }
 
     @SneakyThrows
-    @GetMapping("/snapshot/{aquariumId}/history") //TODO: REVIEW
-    public ResponseEntity<Page<SensorsSnapshot>> getSnapshots(@PathVariable String aquariumId,
-                                                              @RequestParam(required = false) LocalDateTime date,
-                                                              @RequestParam(defaultValue = "0") Integer page,
-                                                              @RequestParam(defaultValue = "288") Integer size) {
-        return ok(aquariumService.getSnapshots(aquariumId, page, size).get());
+    @GetMapping("/snapshot/{aquariumId}/history")
+    public ResponseEntity<Page<SensorResponseSnapshot>> getSnapshots(
+        @PathVariable String aquariumId,
+        @RequestParam(required = false) LocalDateTime date,
+        @RequestParam(defaultValue = "0") Integer page,
+        @RequestParam(defaultValue = "288") Integer size
+    ) {
+        var snapshots = aquariumService.getSnapshots(aquariumId, date, page, size).get();
+        var dtoPage = snapshots.map(AquariumController::toDto);
+        return ResponseEntity.ok(dtoPage);
     }
 
     @PostMapping
@@ -160,6 +164,30 @@ public class AquariumController extends AbstractController{
                         n.getSnapshotId(),
                         n.getAquariumId()
                 )).toList();
+    }
+
+    private static SensorResponseSnapshot toDto(SensorsSnapshot entity) {
+        var threshold = entity.getThreshold();
+        return new SensorResponseSnapshot(
+                entity.getId() != null ? entity.getId().toString() : null,
+                entity.getTemperature(),
+                entity.isLdr(),
+                entity.getPh(),
+                entity.getTds(),
+                entity.getHeight(),
+                entity.isAreValuesNormal(),
+                entity.getCreatedDate() != null ? entity.getCreatedDate().toString() : null,
+                entity.getAquarium() != null ? entity.getAquarium().getId().toString() : null,
+                threshold != null ? String.valueOf(threshold.getMinTemperature()) : null,
+                threshold != null ? String.valueOf(threshold.getMaxTemperature()) : null,
+                threshold != null ? String.valueOf(threshold.getMinPH()) : null,
+                threshold != null ? String.valueOf(threshold.getMaxPH()) : null,
+                threshold != null ? String.valueOf(threshold.getMinTds()) : null,
+                threshold != null ? String.valueOf(threshold.getMaxTds()) : null,
+                threshold != null ? String.valueOf(threshold.getMinHeight()) : null,
+                threshold != null ? String.valueOf(threshold.getMaxHeight()) : null,
+                entity.isBombWorking()
+        );
     }
 
 }
