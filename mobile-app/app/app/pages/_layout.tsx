@@ -1,7 +1,7 @@
 import { Slot } from "expo-router";
 import BottomBar from "../../components/BottomBar";
 import { useStateContext } from "../../context/StateContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRoutes } from "../../utils/routes";
 import {
 	useGetAquariumNotifications,
@@ -14,23 +14,37 @@ function AquariumSnapshotFetcher({ aquariumId }: { aquariumId: string }) {
 }
 
 function AquariumNotificationsFetcher() {
-	const now = new Date();
-	const oneMinuteAgo = new Date(now);
-	oneMinuteAgo.setMinutes(now.getMinutes() - 1);
+	const [timestamp, setTimestamp] = useState(() => {
+		const now = new Date();
+		now.setMinutes(now.getMinutes() - 1);
+		const datePart = now.toISOString().slice(0, 19);
+		const ms = String(now.getMilliseconds()).padStart(3, "0");
+		const micros =
+			ms +
+			Math.floor(Math.random() * 1000)
+				.toString()
+				.padStart(3, "0");
+		return `${datePart}.${micros}`;
+	});
 
-	const datePart = oneMinuteAgo.toISOString().slice(0, 19);
+	useEffect(() => {
+		const interval = setInterval(() => {
+			const now = new Date();
+			now.setMinutes(now.getMinutes() - 1);
+			const datePart = now.toISOString().slice(0, 19);
+			const ms = String(now.getMilliseconds()).padStart(3, "0");
+			const micros =
+				ms +
+				Math.floor(Math.random() * 1000)
+					.toString()
+					.padStart(3, "0");
+			setTimestamp(`${datePart}.${micros}`);
+		}, 60000);
 
-	const ms = String(oneMinuteAgo.getMilliseconds()).padStart(3, "0");
+		return () => clearInterval(interval);
+	}, []);
 
-	const micros =
-		ms +
-		Math.floor(Math.random() * 1000)
-			.toString()
-			.padStart(3, "0");
-
-	const date = `${datePart}.${micros}`;
-
-	useGetAquariumNotifications(date);
+	useGetAquariumNotifications(timestamp);
 	return null;
 }
 
@@ -50,14 +64,11 @@ export default function PagesLayout() {
 
 	return (
 		<>
-			{/* {aquariums.map((aq) => (
+			{aquariums.map((aq) => (
 				<AquariumSnapshotFetcher key={aq.id} aquariumId={aq.id} />
 			))}
 
-			{defaults.receiveNotifications &&
-				aquariums.map((aq) => (
-					<AquariumNotificationsFetcher key={aq.id} aquariumId={aq.id} />
-				))} */}
+			{defaults.receiveNotifications && <AquariumNotificationsFetcher />}
 			<Slot />
 			<BottomBar />
 		</>

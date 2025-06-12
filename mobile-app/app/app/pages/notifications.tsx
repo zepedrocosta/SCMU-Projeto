@@ -55,33 +55,48 @@ export default function NotificationsPage() {
 	const { aquariums, dispatch } = useStateContext();
 	const router = useRoutes();
 
-	const notifications = aquariums.flatMap((aq) =>
-		aq.notifications.map((notif) => ({
-			id: notif.notificationId,
-			aquariumId: aq.id,
-			metrics: parseMetrics(notif.message),
-			unread: notif.unread,
-			date: new Date(notif.createdDate).toLocaleString("en-US", {
-				year: "numeric",
-				month: "2-digit",
-				day: "2-digit",
-				hour: "2-digit",
-				minute: "2-digit",
-				hour12: false,
-			}),
-			snapshotId: notif.snapshotId,
-		}))
-	);
+	const notifications = aquariums
+		.flatMap((aq) =>
+			aq.notifications.map((notif) => ({
+				id: notif.notificationId,
+				aquarium: aq,
+				metrics: parseMetrics(notif.message),
+				unread: notif.unread,
+				date: new Date(notif.createdDate).toLocaleString("en-GB", {
+					year: "2-digit",
+					month: "2-digit",
+					day: "2-digit",
+					hour: "2-digit",
+					minute: "2-digit",
+				}),
+				snapshotId: notif.snapshotId,
+			}))
+		)
+		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
 	const renderItem = ({ item: notif }: { item: (typeof notifications)[0] }) => (
-		<View style={[styles.notificationCard, notif.unread ? styles.unread : undefined]}>
-			<View style={styles.row}>
-				<List.Icon
-					icon={notif.unread ? "email" : "email-open"}
-					color={notif.unread ? "#1976d2" : "#888"}
-					style={{ margin: 0, marginRight: 8 }}
-				/>
-				<View style={styles.metricsRow}>
+		<View style={[styles.notificationCard, notif.unread && styles.unread]}>
+			<View style={styles.topRow}>
+				<View style={{ flexDirection: "row", alignItems: "center" }}>
+					<Avatar.Icon
+						icon="fishbowl"
+						size={24}
+						style={{ backgroundColor: "#e3f2fd", marginRight: 6 }}
+						color="#1976d2"
+					/>
+					<Text style={styles.aquariumName}>{notif.aquarium.name}</Text>
+				</View>
+				<Text style={styles.date}>{notif.date}</Text>
+			</View>
+			<View style={styles.mainContent}>
+				<View style={styles.leftSection}>
+					<List.Icon
+						icon={notif.unread ? "email" : "email-open"}
+						color={notif.unread ? "#1976d2" : "#888"}
+						style={{ margin: 0 }}
+					/>
+				</View>
+				<View style={styles.metricsGrid}>
 					{notif.metrics.map((metric) => {
 						const metricInfo = metricsAux.find(
 							(m) =>
@@ -89,19 +104,11 @@ export default function NotificationsPage() {
 								metric.includes(m.label.toLowerCase())
 						);
 						return metricInfo ? (
-							<View
-								key={metricInfo.key}
-								style={[
-									styles.metricIconWrapper,
-									{ backgroundColor: metricInfo.bgColor },
-								]}
-							>
+							<View key={metricInfo.key} style={styles.metricWrapper}>
 								<Avatar.Icon
 									icon={metricInfo.icon}
 									size={22}
-									style={{
-										backgroundColor: "transparent",
-									}}
+									style={{ backgroundColor: metricInfo.bgColor }}
 									color={metricInfo.iconColor}
 								/>
 								<Text style={styles.metricLabel}>{metricInfo.label}</Text>
@@ -109,12 +116,8 @@ export default function NotificationsPage() {
 						) : null;
 					})}
 				</View>
-				<View style={{ flex: 1, alignItems: "flex-end" }}>
-					<Text style={styles.date}>{notif.date}</Text>
-				</View>
 			</View>
 			<View style={styles.bottomRow}>
-				<View style={{ flex: 1 }} />
 				<Text
 					style={styles.link}
 					onPress={() => {
@@ -157,13 +160,7 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		padding: 16,
-		backgroundColor: "#fff",
-	},
-	topRow: {
-		flexDirection: "row",
-		justifyContent: "flex-end",
-		alignItems: "center",
-		marginBottom: 4,
+		backgroundColor: "#f5f5f5",
 	},
 	header: {
 		marginBottom: 16,
@@ -174,55 +171,70 @@ const styles = StyleSheet.create({
 		borderRadius: 14,
 		padding: 16,
 		shadowColor: "#000",
-		shadowOpacity: 0.06,
-		shadowRadius: 4,
-		elevation: 2,
+		shadowOpacity: 0.08,
+		shadowRadius: 10,
+		shadowOffset: { width: 0, height: 2 },
+		elevation: 3,
 	},
 	unread: {
 		backgroundColor: "#e3f2fd",
+		borderWidth: 1,
+		borderColor: "#1976d2",
 	},
-	row: {
+	topRow: {
 		flexDirection: "row",
+		justifyContent: "space-between",
 		alignItems: "center",
+		marginBottom: 12,
 	},
-	metricsRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		flexWrap: "wrap",
-	},
-	bottomRow: {
-		flexDirection: "row",
-		justifyContent: "flex-end",
-		alignItems: "center",
-		marginTop: 10,
-	},
-	description: {
-		fontSize: 15,
-		color: "#222",
-		marginBottom: 4,
-	},
-
-	metricIconWrapper: {
-		flexDirection: "row",
-		alignItems: "center",
-		borderRadius: 16,
-		paddingHorizontal: 8,
-		paddingVertical: 2,
-		marginRight: 8,
-		marginBottom: 4,
-	},
-	metricLabel: {
-		marginLeft: 4,
-		fontSize: 13,
-		color: "#444",
+	aquariumName: {
+		fontSize: 16,
+		fontWeight: "bold",
+		color: "#333",
 	},
 	date: {
 		color: "#888",
 		fontSize: 12,
 	},
+	mainContent: {
+		flexDirection: "row",
+		alignItems: "center",
+	},
+	leftSection: {
+		marginRight: 16,
+	},
+	metricsGrid: {
+		flex: 1,
+		flexDirection: "row",
+		flexWrap: "wrap",
+		justifyContent: "flex-start",
+	},
+	metricWrapper: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "#1a1818",
+		borderRadius: 999,
+		paddingHorizontal: 12,
+		paddingVertical: 6,
+		marginRight: 8,
+		marginBottom: 8,
+		alignSelf: "flex-start",
+	},
+	metricLabel: {
+		marginLeft: 6,
+		fontSize: 13,
+		fontWeight: "bold",
+		color: "#ffffff",
+	},
+	bottomRow: {
+		flexDirection: "row",
+		justifyContent: "flex-end",
+		alignItems: "center",
+		marginTop: 12,
+	},
 	link: {
 		color: "#1976d2",
-		fontSize: 13,
+		fontSize: 14,
 		fontWeight: "bold",
 	},
 });
