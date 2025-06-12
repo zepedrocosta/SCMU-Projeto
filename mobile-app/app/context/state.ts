@@ -13,6 +13,7 @@ export interface State {
 	aquariums: Aquarium[];
 	defaults: UserDefaults;
 	groups: Group[];
+	unreadNotifications: number;
 }
 
 export const initialState: State = {
@@ -23,4 +24,5 @@ export const initialState: State = {
 		darkMode: false,
 		receiveNotifications: true,
 	},
+	unreadNotifications: 0,
 };

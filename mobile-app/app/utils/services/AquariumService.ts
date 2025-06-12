@@ -79,7 +79,7 @@ export function useGetAquariumSnapshots(aquariumId: string) {
 }
 
 export function useGetAquariumNotifications(timestamp: string) {
-	const { dispatch } = useStateContext();
+	const { dispatch, unreadNotifications } = useStateContext();
 
 	const query = useQuery({
 		queryKey: ["notifications", timestamp],
@@ -100,6 +100,10 @@ export function useGetAquariumNotifications(timestamp: string) {
 						aquariumId: notification.aquariumId,
 					})),
 				},
+			});
+			dispatch({
+				type: EVENTS.SET_UNREAD_NOTIFICATIONS,
+				payload: query.data.length + unreadNotifications,
 			});
 		}
 	}, [query.data, dispatch]);

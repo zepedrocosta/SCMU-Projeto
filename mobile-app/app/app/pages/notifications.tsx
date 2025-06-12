@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, FlatList } from "react-native";
+import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { List, Text, Avatar } from "react-native-paper";
 import { useRoutes } from "../../utils/routes";
 import { useStateContext } from "../../context/StateContext";
@@ -72,7 +72,8 @@ export default function NotificationsPage() {
 				snapshotId: notif.snapshotId,
 			}))
 		)
-		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+		.reverse();
 
 	const renderItem = ({ item: notif }: { item: (typeof notifications)[0] }) => (
 		<View style={[styles.notificationCard, notif.unread && styles.unread]}>
@@ -80,8 +81,12 @@ export default function NotificationsPage() {
 				<View style={{ flexDirection: "row", alignItems: "center" }}>
 					<Avatar.Icon
 						icon="fishbowl"
-						size={24}
-						style={{ backgroundColor: "#e3f2fd", marginRight: 6 }}
+						size={36}
+						style={{
+							backgroundColor: "#e3f2fd",
+							marginRight: 10,
+							marginLeft: -6,
+						}}
 						color="#1976d2"
 					/>
 					<Text style={styles.aquariumName}>{notif.aquarium.name}</Text>
@@ -118,8 +123,9 @@ export default function NotificationsPage() {
 				</View>
 			</View>
 			<View style={styles.bottomRow}>
-				<Text
-					style={styles.link}
+				<TouchableOpacity
+					activeOpacity={0.8}
+					style={styles.button}
 					onPress={() => {
 						router.gotoSnapshot(notif.snapshotId);
 						dispatch({
@@ -128,8 +134,8 @@ export default function NotificationsPage() {
 						});
 					}}
 				>
-					View snapshot
-				</Text>
+					<Text style={styles.buttonText}>View snapshot</Text>
+				</TouchableOpacity>
 			</View>
 		</View>
 	);
@@ -166,6 +172,18 @@ const styles = StyleSheet.create({
 		marginBottom: 16,
 		fontWeight: "bold",
 	},
+	button: {
+		backgroundColor: "#1976d2",
+		paddingVertical: 8,
+		paddingHorizontal: 20,
+		borderRadius: 8,
+	},
+	buttonText: {
+		color: "#fff",
+		fontWeight: "bold",
+		fontSize: 15,
+		textAlign: "center",
+	},
 	notificationCard: {
 		backgroundColor: "#ffffff",
 		borderRadius: 14,
@@ -188,13 +206,14 @@ const styles = StyleSheet.create({
 		marginBottom: 12,
 	},
 	aquariumName: {
-		fontSize: 16,
+		fontSize: 18,
 		fontWeight: "bold",
 		color: "#333",
 	},
 	date: {
-		color: "#888",
-		fontSize: 12,
+		color: "#0e0e0e",
+		fontSize: 14,
+		fontWeight: "bold",
 	},
 	mainContent: {
 		flexDirection: "row",
@@ -231,10 +250,5 @@ const styles = StyleSheet.create({
 		justifyContent: "flex-end",
 		alignItems: "center",
 		marginTop: 12,
-	},
-	link: {
-		color: "#1976d2",
-		fontSize: 14,
-		fontWeight: "bold",
 	},
 });

@@ -1,14 +1,12 @@
-import { useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { Appbar, Badge, Menu } from "react-native-paper";
+import { Appbar, Badge } from "react-native-paper";
 import { useRoutes } from "../utils/routes";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useStateContext } from "../context/StateContext";
 
 export default function BottomBar() {
 	const router = useRoutes();
-	const [menuVisible, setMenuVisible] = useState(false);
 
-	const notifications = -1;
+	const { unreadNotifications } = useStateContext();
 
 	return (
 		<Appbar style={styles.bottomBar}>
@@ -38,7 +36,9 @@ export default function BottomBar() {
 					icon="bell"
 					onPress={() => router.gotoNotifications()}
 				/>
-				{notifications > 0 && <Badge style={styles.badge}>{notifications}</Badge>}
+				{unreadNotifications > 0 && (
+					<Badge style={styles.badge}>{unreadNotifications}</Badge>
+				)}
 			</View>
 		</Appbar>
 	);

@@ -24,6 +24,7 @@ export const EVENTS = {
 	UPDATE_NOTIFICATIONS: "UPDATE_NOTIFICATIONS",
 	MARK_AS_READ: "MARK_AS_READ",
 	UPDATE_HISTORY: "UPDATE_HISTORY",
+	SET_UNREAD_NOTIFICATIONS: "SET_UNREAD_NOTIFICATIONS",
 	CLEAR_USER: "CLEAR_USER",
 	LOAD_STATE: "LOAD_STATE",
 } as const;
@@ -107,6 +108,7 @@ export type Action =
 				snapshots: Snapshot[];
 			};
 	  }
+	| { type: typeof EVENTS.SET_UNREAD_NOTIFICATIONS; payload: number }
 	| { type: typeof EVENTS.CLEAR_USER }
 	| { type: typeof EVENTS.LOAD_STATE; payload: State };
 
@@ -300,7 +302,16 @@ export function reducer(state: State, action: Action): State {
 				);
 				return { ...aquarium, notifications: updatedNotifications };
 			});
-			return { ...state, aquariums: updatedAquariums };
+			// Update unread notifications count
+			const unreadNotifications = updatedAquariums.reduce(
+				(count, aquarium) =>
+					count +
+					(aquarium.notifications
+						? aquarium.notifications.filter((n) => n.unread).length
+						: 0),
+				0
+			);
+			return { ...state, aquariums: updatedAquariums, unreadNotifications };
 		}
 		case EVENTS.UPDATE_HISTORY: {
 			const { aquariumId, snapshots } = action.payload;
@@ -324,6 +335,10 @@ export function reducer(state: State, action: Action): State {
 				groups: [],
 				defaults: { darkMode: false, receiveNotifications: true },
 			};
+		}
+		case EVENTS.SET_UNREAD_NOTIFICATIONS: {
+			const unreadNotifications = action.payload;
+			return { ...state, unreadNotifications };
 		}
 		case EVENTS.LOAD_STATE:
 			return { ...action.payload };

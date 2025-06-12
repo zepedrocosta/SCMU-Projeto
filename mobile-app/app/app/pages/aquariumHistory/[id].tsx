@@ -1,90 +1,116 @@
-import React from "react";
 import { View, FlatList, StyleSheet } from "react-native";
 import { Text, Avatar, IconButton } from "react-native-paper";
 import { useRoutes } from "../../../utils/routes";
 import { useLocalSearchParams } from "expo-router";
 import { useStateContext } from "../../../context/StateContext";
-
-const mockHistory = [
-	{
-		date: "2025-06-10",
-		metrics: {
-			temp: { value: 32, min: 20, max: 30 },
-			ph: { value: 8.5, min: 6.5, max: 8.0 },
-			tds: { value: 420, min: 400, max: 600 },
-			height: { value: 22, min: 25, max: 35 },
-			light: { value: 950, min: 500, max: 1000 },
-		},
-	},
-	{
-		date: "2025-06-09",
-		metrics: {
-			temp: { value: 32, min: 20, max: 30 },
-			ph: { value: 8.5, min: 6.5, max: 8.0 },
-			tds: { value: 420, min: 400, max: 600 },
-			height: { value: 22, min: 25, max: 35 },
-			light: { value: 950, min: 500, max: 1000 },
-		},
-	},
-	{
-		date: "2025-06-08",
-		metrics: {
-			temp: { value: 32, min: 20, max: 30 },
-			ph: { value: 8.5, min: 6.5, max: 8.0 },
-			tds: { value: 420, min: 400, max: 600 },
-			height: { value: 22, min: 25, max: 35 },
-			light: { value: 950, min: 500, max: 1000 },
-		},
-	},
-	{
-		date: "2025-06-07",
-		metrics: {
-			temp: { value: 32, min: 20, max: 30 },
-			ph: { value: 8.5, min: 6.5, max: 8.0 },
-			tds: { value: 420, min: 400, max: 600 },
-			height: { value: 22, min: 25, max: 35 },
-			light: { value: 950, min: 500, max: 1000 },
-		},
-	},
-	{
-		date: "2025-06-06",
-		metrics: {
-			temp: { value: 27, min: 20, max: 30 },
-			ph: { value: 7.2, min: 6.5, max: 8.0 },
-			tds: { value: 480, min: 400, max: 600 },
-			height: { value: 30, min: 25, max: 35 },
-			light: { value: 800, min: 500, max: 1000 },
-		},
-	},
-	{
-		date: "2025-06-05",
-		metrics: {
-			temp: { value: 32, min: 20, max: 30 },
-			ph: { value: 8.5, min: 6.5, max: 8.0 },
-			tds: { value: 420, min: 400, max: 600 },
-			height: { value: 22, min: 25, max: 35 },
-			light: { value: 950, min: 500, max: 1000 },
-		},
-	},
-];
+import React, { useState, useMemo } from "react";
+import { Snapshot } from "../../../types/Aquarium";
 
 const metricMeta = [
-	{ key: "temp", icon: "thermometer", color: "#d23519", unit: "°C", bgColor: "#ffebee" },
-	{ key: "ph", icon: "water", color: "#8e24aa", unit: "", bgColor: "#f3e5f5" },
-	{ key: "tds", icon: "molecule", color: "#00bcd4", unit: "ppm", bgColor: "#e0f7fa" },
-	{ key: "height", icon: "waves", color: "#2f90ff", unit: "cm", bgColor: "#e0ebfa" },
-	{ key: "light", icon: "lightbulb", color: "#fbc02d", unit: "lux", bgColor: "#fffde7" },
+	{
+		key: "temperature",
+		icon: "thermometer",
+		color: "#d23519",
+		unit: "°C",
+		bgColor: "#ffebee",
+		minKey: "minTemperature",
+		maxKey: "maxTemperature",
+	},
+	{
+		key: "ph",
+		icon: "water",
+		color: "#8e24aa",
+		unit: "",
+		bgColor: "#f3e5f5",
+		minKey: "minPh",
+		maxKey: "maxPh",
+	},
+	{
+		key: "tds",
+		icon: "molecule",
+		color: "#00bcd4",
+		unit: "ppm",
+		bgColor: "#e0f7fa",
+		minKey: "minTds",
+		maxKey: "maxTds",
+	},
+	{
+		key: "height",
+		icon: "waves",
+		color: "#2f90ff",
+		unit: "cm",
+		bgColor: "#e0ebfa",
+		minKey: "minHeight",
+		maxKey: "maxHeight",
+	},
+	{
+		key: "ldr",
+		icon: "lightbulb",
+		color: "#fbc02d",
+		unit: "lux",
+		bgColor: "#fffde7",
+		minKey: null,
+		maxKey: null,
+	}, // ldr is boolean, so no min/max
 ];
 
-function isWithinThreshold(value: number, min: number, max: number) {
-	return value >= min && value <= max;
+function isWithinThreshold(value: number, min?: number, max?: number) {
+	if (typeof min === "number" && typeof max === "number") {
+		return value >= min && value <= max;
+	}
+	return true;
+}
+
+// ...other imports...
+
+function aggregateHistory(
+	history: Snapshot[] | undefined,
+	unit: "minute" | "hour"
+): Snapshot[] {
+	if (!history) return [];
+	const groups: { [key: string]: Snapshot[] } = {};
+
+	history.forEach((item) => {
+		const date = new Date(item.createdDate ?? "");
+		let key: string;
+		if (unit === "minute") {
+			key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
+		} else {
+			key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()} ${date.getHours()}`;
+		}
+		if (!groups[key]) groups[key] = [];
+		groups[key].push(item);
+	});
+
+	return Object.entries(groups).map(([groupKey, items]) => {
+		const base: any = { ...items[items.length - 1] };
+		metricMeta.forEach((meta) => {
+			const values = items
+				.map((i) => Number(i[meta.key as keyof Snapshot]))
+				.filter((v) => !isNaN(v));
+			if (values.length) {
+				let avg = values.reduce((a, b) => a + b, 0) / values.length;
+				if (meta.key === "temperature") {
+					base[meta.key] = avg < 100 ? Math.round(avg * 10) / 10 : Math.round(avg);
+				} else if (meta.key === "ph") {
+					base[meta.key] = Math.round(avg * 10) / 10;
+				} else if (meta.key === "tds" || meta.key === "height") {
+					base[meta.key] = Math.round(avg);
+				} else {
+					base[meta.key] = avg;
+				}
+			}
+		});
+		base.createdDate = items[items.length - 1].createdDate;
+		return base;
+	});
 }
 
 const MetricColumn = ({ icon, iconColor, bgColor, value, unit, ok }: any) => (
 	<View style={styles.metricColumn}>
 		<Avatar.Icon
 			icon={ok ? "check-circle" : "close-circle"}
-			size={22}
+			size={24}
 			style={{
 				backgroundColor: "transparent",
 				marginBottom: 2,
@@ -97,7 +123,11 @@ const MetricColumn = ({ icon, iconColor, bgColor, value, unit, ok }: any) => (
 			style={[styles.metricIcon, { backgroundColor: iconColor }]}
 			color="#fff"
 		/>
-		<Text style={[styles.metricValue, { color: iconColor }]}>
+		<Text
+			style={[styles.metricValue, { color: iconColor }]}
+			// numberOfLines={1}
+			adjustsFontSizeToFit
+		>
 			{value}
 			{unit ? ` ${unit}` : ""}
 		</Text>
@@ -106,10 +136,27 @@ const MetricColumn = ({ icon, iconColor, bgColor, value, unit, ok }: any) => (
 
 export default function AquariumHistory() {
 	const router = useRoutes();
-
 	const { id } = useLocalSearchParams();
 	const { aquariums } = useStateContext();
 	const aquarium = aquariums.find((aq) => aq.id === id);
+
+	const [aggregation, setAggregation] = useState<"minute" | "hour" | "raw">("minute");
+
+	const aggregatedHistory = useMemo(
+		() =>
+			aggregation === "raw"
+				? aquarium?.history || []
+				: aggregateHistory(aquarium?.history, aggregation as "minute" | "hour"),
+		[aquarium?.history, aggregation]
+	);
+
+	if (!aquarium || !aquarium.history) {
+		return (
+			<View style={styles.container}>
+				<Text style={styles.title}>Aquarium not found</Text>
+			</View>
+		);
+	}
 
 	return (
 		<View style={styles.container}>
@@ -123,25 +170,109 @@ export default function AquariumHistory() {
 				/>
 				<Text style={styles.title}>History for {aquarium?.name}</Text>
 			</View>
+			<View style={{ flexDirection: "row", justifyContent: "center", marginBottom: 8 }}>
+				<Text
+					style={{
+						marginHorizontal: 8,
+						fontWeight: aggregation === "minute" ? "bold" : "normal",
+						color: aggregation === "minute" ? "#1976d2" : "#888",
+						padding: 6,
+					}}
+					onPress={() => setAggregation("minute")}
+				>
+					By Minute
+				</Text>
+				<Text
+					style={{
+						marginHorizontal: 8,
+						fontWeight: aggregation === "hour" ? "bold" : "normal",
+						color: aggregation === "hour" ? "#1976d2" : "#888",
+						padding: 6,
+					}}
+					onPress={() => setAggregation("hour")}
+				>
+					By Hour
+				</Text>
+				<Text
+					style={{
+						marginHorizontal: 8,
+						fontWeight: aggregation === "raw" ? "bold" : "normal",
+						color: aggregation === "raw" ? "#1976d2" : "#888",
+						padding: 6,
+					}}
+					onPress={() => setAggregation("raw")}
+				>
+					Raw
+				</Text>
+			</View>
 			<FlatList
-				data={mockHistory}
-				keyExtractor={(item) => item.date}
+				data={aggregatedHistory}
+				keyExtractor={(item) => item.id + item.createdDate}
 				renderItem={({ item }) => (
 					<View style={styles.card}>
 						<Text style={styles.date}>
-							{new Date(item.date).toLocaleDateString()}
+							{item.createdDate
+								? `${new Date(
+										item.createdDate
+								  ).toLocaleDateString()} ${new Date(
+										item.createdDate
+								  ).toLocaleTimeString([], {
+										hour: "2-digit",
+										minute: "2-digit",
+								  })}`
+								: ""}
 						</Text>
 						<View style={styles.metricsRow}>
 							{metricMeta.map((meta) => {
-								const m = item.metrics[meta.key as keyof typeof item.metrics];
-								const ok = isWithinThreshold(m.value, m.min, m.max);
+								let value = item[meta.key as keyof Snapshot];
+								let min = meta.minKey
+									? Number(item[meta.minKey as keyof Snapshot] ?? "")
+									: undefined;
+								let max = meta.maxKey
+									? Number(item[meta.maxKey as keyof Snapshot] ?? "")
+									: undefined;
+								let ok = true;
+
+								// Format value for display
+								if (meta.key === "ldr") {
+									value = value ? "On" : "Off";
+									ok = true;
+								} else if (
+									meta.key === "temperature" &&
+									typeof value === "number"
+								) {
+									value =
+										value < 100
+											? value.toFixed(1)
+											: Math.round(value).toString();
+								} else if (meta.key === "ph" && typeof value === "number") {
+									value = value.toFixed(1);
+								} else if (
+									(meta.key === "tds" || meta.key === "height") &&
+									typeof value === "number"
+								) {
+									value = Math.round(value).toString();
+								}
+
+								if (
+									typeof item[meta.key as keyof Snapshot] === "number" &&
+									typeof min === "number" &&
+									typeof max === "number"
+								) {
+									ok = isWithinThreshold(
+										item[meta.key as keyof Snapshot] as number,
+										min,
+										max
+									);
+								}
+
 								return (
 									<MetricColumn
 										key={meta.key}
 										icon={meta.icon}
 										iconColor={meta.color}
 										bgColor={meta.bgColor}
-										value={m.value}
+										value={value}
 										unit={meta.unit}
 										ok={ok}
 									/>
@@ -192,7 +323,8 @@ const styles = StyleSheet.create({
 		marginBottom: 10,
 	},
 	date: {
-		fontSize: 13,
+		fontSize: 15,
+		fontWeight: "bold",
 		color: "#888",
 		marginBottom: 6,
 		marginLeft: 2,
@@ -214,7 +346,7 @@ const styles = StyleSheet.create({
 	},
 	metricValue: {
 		fontWeight: "bold",
-		fontSize: 14,
+		fontSize: 13,
 		marginTop: 2,
 	},
 	separator: {

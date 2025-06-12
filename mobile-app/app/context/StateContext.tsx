@@ -23,6 +23,7 @@ const StateContext = createContext<{
 	dispatch: Dispatch<Action>;
 	isLoggedIn: boolean;
 	loading: boolean;
+	unreadNotifications: number;
 }>({
 	user: initialState.user,
 	aquariums: initialState.aquariums,
@@ -31,6 +32,7 @@ const StateContext = createContext<{
 	dispatch: () => undefined,
 	isLoggedIn: false,
 	loading: true,
+	unreadNotifications: 0,
 });
 
 export const StateProvider: FC<{ children: ReactNode }> = ({ children }) => {
@@ -52,7 +54,7 @@ export const StateProvider: FC<{ children: ReactNode }> = ({ children }) => {
 						try {
 							const [userInfo, userAquariums] = await Promise.all([
 								getUserInfo(userId),
-								getUserAquariums(userId),
+								getUserAquariums(),
 							]);
 							dispatch({ type: EVENTS.SET_USER, payload: userInfo });
 							dispatch({
@@ -75,7 +77,7 @@ export const StateProvider: FC<{ children: ReactNode }> = ({ children }) => {
 		AsyncStorage.setItem("appState", JSON.stringify(state));
 	}, [state]);
 
-	const { user, aquariums, groups, defaults } = state;
+	const { user, aquariums, groups, defaults, unreadNotifications } = state;
 	const isLoggedIn =
 		typeof user.nickname === "string" && user.nickname.length > 0 && user.nickname !== "0";
 
@@ -92,7 +94,16 @@ export const StateProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
 	return (
 		<StateContext.Provider
-			value={{ user, aquariums, groups, defaults, dispatch, isLoggedIn, loading }}
+			value={{
+				user,
+				aquariums,
+				groups,
+				defaults,
+				dispatch,
+				isLoggedIn,
+				loading,
+				unreadNotifications,
+			}}
 		>
 			{children}
 		</StateContext.Provider>
