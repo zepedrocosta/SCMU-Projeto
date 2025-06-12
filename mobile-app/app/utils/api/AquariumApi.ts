@@ -32,7 +32,7 @@ const ENDPOINTS = {
 	GET_LAST_SNAPSHOT: `${basePath}/snapshot/${URL_PLACEHOLDER.AQUARIUM_ID}`,
 	DELETE_AQUARIUM: `${basePath}/${URL_PLACEHOLDER.AQUARIUM_ID}`,
 	SHARE_AQUARIUM: `${basePath}/manage`,
-	FETCH_NOTIFICATIONS: `${basePath}/notifications`,
+	FETCH_NOTIFICATIONS: `${basePath}/notifications?startDate=`,
 };
 
 const mockSnapshot: Snapshot = {
@@ -317,23 +317,21 @@ export async function shareAquarium(
 //endregion
 
 //region GET
-export async function fetchAquariumsNotifications(
-	timestamp: string
-): Promise<NotificationResponse[]> {
+export async function fetchNotifications(timestamp: string): Promise<NotificationResponse[]> {
 	console.log(`Fetching notifications since ${timestamp}`);
 	return await axiosInstance
 		.get<NotificationResponse[]>(ENDPOINTS.FETCH_NOTIFICATIONS)
 		.then((response) => {
-			console.log("Fetched aquariums:", response.data);
+			console.log("Fetched notifications:", response.data);
 			return response.data;
 		})
 		.catch((error) => {
-			console.error("Error fetching aquariums:", error);
+			console.error("Error fetching notifications:", error);
 			throw error;
 		});
 }
 
-export async function getUserAquariums(nickname: string): Promise<Aquarium[]> {
+export async function getUserAquariums(): Promise<Aquarium[]> {
 	return await axiosInstance
 		.get<AquariumResponse[]>(ENDPOINTS.USER_AQUARIUMS)
 		.then((response) => {

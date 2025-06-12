@@ -6,7 +6,7 @@ import {
 	createAquarium,
 	deleteAquarium,
 	editAquarium,
-	fetchAquariumsNotifications,
+	fetchNotifications,
 	getLastAquariumSnapshot,
 	shareAquarium,
 	updateThresholds,
@@ -49,8 +49,7 @@ export function useGetAquariumNotifications(timestamp: string) {
 
 	const query = useQuery({
 		queryKey: ["notifications", timestamp],
-		queryFn: () => fetchAquariumsNotifications(timestamp),
-		refetchInterval: 60000,
+		queryFn: () => fetchNotifications(timestamp),
 	});
 
 	useEffect(() => {

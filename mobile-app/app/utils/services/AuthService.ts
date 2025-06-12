@@ -29,7 +29,7 @@ export function useLogin() {
 			try {
 				const [userInfo, userAquariums, userGroups] = await Promise.all([
 					getUserInfo(data.nickname),
-					getUserAquariums(data.nickname),
+					getUserAquariums(),
 					getUserGroups(),
 				]);
 

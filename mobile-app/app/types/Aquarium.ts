@@ -1,4 +1,4 @@
-import { Notification, NotificationNew } from "./Notification";
+import { NotificationNew } from "./Notification";
 
 export type Aquarium = {
 	id: string;
