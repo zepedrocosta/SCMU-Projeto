@@ -1,11 +1,11 @@
 {
   "expo": {
-    "scheme": "app",
-    "name": "app",
-    "slug": "app",
+    "scheme": "Smart Aquarium",
+    "name": "Smart Aquarium",
+    "slug": "smart-aquarium",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/fishbowl-outline-custom.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -22,7 +22,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.yooo35425.app",
+      "package": "com.zepedrocosta.smart-aquarium",
       "permissions": [
         "BLUETOOTH",
         "BLUETOOTH_ADMIN",
@@ -44,7 +44,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "801c6da7-7523-42c0-8d50-10e4b6cfd89a"
+        "projectId": "f9569ead-3a51-47a5-87f6-31ca118d2956"
       }
     }
   }
