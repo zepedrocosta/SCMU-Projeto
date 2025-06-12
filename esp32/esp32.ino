@@ -155,7 +155,7 @@ bool getWiFiInfo(String &ssid, String &password)
 {
   preferences.begin("wifi", false);
 
-  preferences.clear();
+  // preferences.clear();
 
   ssid = preferences.getString("ssid", "");
   password = preferences.getString("pass", "");
