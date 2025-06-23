@@ -36,6 +36,8 @@
 #define PH_SENSOR 25         // pH Sensor
 #define BUZZER_PIN 18        // Buzzer Pin
 #define WATER_PUMP_PIN 19    // Water Pump Pin
+#define OLED_SDA 21          // OLED SDA Pin
+#define OLED_SCL 22          // OLED SCL Pin
 
 #define VREF 3.3       // Reference voltage for the ADC
 #define SAMPLES_TDS 30 // Number of samples for TDS
@@ -98,7 +100,7 @@ void setup()
   delay(2000); // Wait for serial monitor to open
   Serial.println("\nInitializing SCMU project!\n");
 
-  Wire.begin(21, 22); // Ensure correct I2C pins are used
+  Wire.begin(OLED_SDA, OLED_SCL);
 
   if (isI2CDeviceConnected(SCREEN_ADDRESS))
   {
@@ -138,7 +140,7 @@ void setupTask(void *parameter)
   pinMode(TRIG_PIN, OUTPUT);       // Ultrasonic Trigger Pin
   pinMode(WATER_PUMP_PIN, OUTPUT); // Water Pump Pin
 
-  digitalWrite(WATER_PUMP_PIN, LOW); // Start with pump off
+  digitalWrite(WATER_PUMP_PIN, HIGH); // Start with pump off
 
   String ssid, password;
 
@@ -608,11 +610,11 @@ void controlWaterPump()
   if (isBombWorking)
   {
     Serial.println("Water pump ON!");
-    digitalWrite(WATER_PUMP_PIN, HIGH);
+    digitalWrite(WATER_PUMP_PIN, LOW);
   }
   else
   {
-    digitalWrite(WATER_PUMP_PIN, LOW);
+    digitalWrite(WATER_PUMP_PIN, HIGH);
   }
 }
 
